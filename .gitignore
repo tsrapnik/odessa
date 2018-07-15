@@ -1,5 +1,9 @@
 /.vscode
 /compiled_code
 /compiler
-/example_and_test_code
+/example_and_test_code/banana_pi_version
+/example_and_test_code/circle32
+/example_and_test_code/circle64
+/example_and_test_code/circle64_stripped/compiler
+/example_and_test_code/userland
 /source_code_backups
