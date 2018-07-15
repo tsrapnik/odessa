@@ -25,7 +25,7 @@ void effect::setOwnScreen( screen* ownScreen )
 	for( buttonsIterator.toFirst(); !buttonsIterator.atEnd(); buttonsIterator++ )
 		buttonsIterator.getDataCopy()->setOwnScreen( ownScreen );
 }
-
+//commit1
 void effect::addButton( button* newButton )
 {
 	newButton->setBoundaries( &this->footprint );
