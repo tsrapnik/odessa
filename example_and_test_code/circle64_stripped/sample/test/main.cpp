@@ -88,7 +88,7 @@ int main (void)
 {
 	initialize_memory();
 
-	CBcmMailBox m_MailBox(MAILBOX_CHANNEL_FB);
+	//CBcmMailBox m_MailBox(MAILBOX_CHANNEL_FB);
 	volatile Bcm2835FrameBufferInfo* m_pInfo = new Bcm2835FrameBufferInfo;
 	m_pInfo->Width      = 800;
 	m_pInfo->Height     = 480;
@@ -103,7 +103,34 @@ int main (void)
 
 	CleanDataCache ();
 	DataSyncBarrier ();
-	u32 nResult = m_MailBox.WriteRead (0xC0000000 + (u32) (u64) m_pInfo);
+
+	//u32 nResult = m_MailBox.WriteRead (0xC0000000 + (u32) (u64) m_pInfo);
+	//Flush ();
+	while (!(*(u32 volatile *)(MAILBOX0_STATUS) & MAILBOX_STATUS_EMPTY))
+	{
+		*(u32 volatile *)(MAILBOX0_READ);
+
+		//CTimer::SimpleMsDelay (20);
+		#define CLOCKHZ	1000000
+		u32 nTicks = 20 * 1000 * (CLOCKHZ / 1000000);
+		u32 nStartTicks = *(u32 volatile *) (ARM_SYSTIMER_CLO);
+		while(*(u32 volatile *)(ARM_SYSTIMER_CLO) - nStartTicks < nTicks);
+	}
+
+	//Write (0xC0000000 + (u32) (u64) m_pInfo);
+	while (*(u32 volatile *) (MAILBOX1_STATUS) & MAILBOX_STATUS_FULL);
+	*(u32 volatile *) (MAILBOX1_WRITE)= MAILBOX_CHANNEL_FB | (0xC0000000 + (u32) (u64) m_pInfo);	// channel number is in the lower 4 bits
+
+	//u32 nResult = Read ();
+	u32 nResult;
+	do
+	{
+		while (*(u32 volatile *) (MAILBOX0_STATUS) & MAILBOX_STATUS_EMPTY);
+		nResult = *(u32 volatile *) (MAILBOX0_READ);
+	}
+	while ((nResult & 0xF) != MAILBOX_CHANNEL_FB);		// channel number is in the lower 4 bits
+	nResult = nResult & ~0xF;
+
 	InvalidateDataCache ();
 	DataMemBarrier ();
 
