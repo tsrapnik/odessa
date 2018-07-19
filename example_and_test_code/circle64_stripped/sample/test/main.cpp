@@ -1,6 +1,5 @@
 #include <circle/alloc.h>
 #include <circle/translationtable.h>
-#include <circle/bcmframebuffer.h>
 
 CTranslationTable *m_pTranslationTable;
 u64 m_nMemSize;
@@ -84,6 +83,59 @@ void initialize_memory()
 	enable_mmu();
 }
 
+struct Bcm2835FrameBufferInfo
+{
+	u32 Width;		// Physical width of display in pixel
+	u32 Height;		// Physical height of display in pixel
+	u32 VirtWidth;		// always as physical width so far
+	u32 VirtHeight;		// always as physical height so far
+	u32 Pitch;		// Should be init with 0
+	u32 Depth;		// Number of bits per pixel
+	u32 OffsetX;		// Normally zero
+	u32 OffsetY;		// Normally zero
+	u32 BufferPtr;		// Address of frame buffer (init with 0, set by GPU)
+	u32 BufferSize;		// Size of frame buffer (init with 0, set by GPU)
+
+	u16 Palette[0];		// with Depth <= 8 only (256 entries)
+#define PALETTE_ENTRIES		256
+}
+PACKED;
+
+#define GPU_MEM_BASE	0xC0000000
+#define ARM_IO_BASE		0x3F000000
+
+#define ARM_SYSTIMER_BASE	(ARM_IO_BASE + 0x3000)
+#define ARM_SYSTIMER_CLO	(ARM_SYSTIMER_BASE + 0x04)
+
+#define MAILBOX_BASE		(ARM_IO_BASE + 0xB880)
+
+#define MAILBOX0_READ  		(MAILBOX_BASE + 0x00)
+#define MAILBOX0_STATUS 	(MAILBOX_BASE + 0x18)
+	#define MAILBOX_STATUS_EMPTY	0x40000000
+#define MAILBOX1_WRITE		(MAILBOX_BASE + 0x20)
+#define MAILBOX1_STATUS 	(MAILBOX_BASE + 0x38)
+	#define MAILBOX_STATUS_FULL	0x80000000
+
+#define MAILBOX_CHANNEL_PM	0			// power management
+#define MAILBOX_CHANNEL_FB 	1			// frame buffer
+#define BCM_MAILBOX_PROP_OUT	8			// property tags (ARM to VC)
+
+#define SETWAY_LEVEL_SHIFT		1
+
+#define L1_DATA_CACHE_SETS		128
+#define L1_DATA_CACHE_WAYS		4
+	#define L1_SETWAY_WAY_SHIFT		30	// 32-Log2(L1_DATA_CACHE_WAYS)
+#define L1_DATA_CACHE_LINE_LENGTH	64
+	#define L1_SETWAY_SET_SHIFT		6	// Log2(L1_DATA_CACHE_LINE_LENGTH)
+
+#define L2_CACHE_SETS			512
+#define L2_CACHE_WAYS			16
+	#define L2_SETWAY_WAY_SHIFT		28	// 32-Log2(L2_CACHE_WAYS)
+#define L2_CACHE_LINE_LENGTH		64
+	#define L2_SETWAY_SET_SHIFT		6	// Log2(L2_CACHE_LINE_LENGTH)
+
+#define DATA_CACHE_LINE_LENGTH_MIN	64		// min(L1_DATA_CACHE_LINE_LENGTH, L2_CACHE_LINE_LENGTH)
+
 int main (void)
 {
 	initialize_memory();
@@ -101,8 +153,35 @@ int main (void)
 	m_pInfo->BufferPtr  = 0;
 	m_pInfo->BufferSize = 0;
 
-	CleanDataCache ();
-	DataSyncBarrier ();
+	//CleanDataCache ();
+	// clean L1 data cache
+	for (register unsigned nSet = 0; nSet < L1_DATA_CACHE_SETS; nSet++)
+	{
+		for (register unsigned nWay = 0; nWay < L1_DATA_CACHE_WAYS; nWay++)
+		{
+			register u64 nSetWayLevel =   nWay << L1_SETWAY_WAY_SHIFT
+						    | nSet << L1_SETWAY_SET_SHIFT
+						    | 0 << SETWAY_LEVEL_SHIFT;
+
+			asm volatile ("dc csw, %0" : : "r" (nSetWayLevel) : "memory");
+		}
+	}
+
+	// clean L2 unified cache
+	for (register unsigned nSet = 0; nSet < L2_CACHE_SETS; nSet++)
+	{
+		for (register unsigned nWay = 0; nWay < L2_CACHE_WAYS; nWay++)
+		{
+			register u64 nSetWayLevel =   nWay << L2_SETWAY_WAY_SHIFT
+						    | nSet << L2_SETWAY_SET_SHIFT
+						    | 1 << SETWAY_LEVEL_SHIFT;
+
+			asm volatile ("dc csw, %0" : : "r" (nSetWayLevel) : "memory");
+		}
+	}
+
+	//DataSyncBarrier ();
+	asm volatile ("dsb sy" ::: "memory");
 
 	//u32 nResult = m_MailBox.WriteRead (0xC0000000 + (u32) (u64) m_pInfo);
 	//Flush ();
@@ -119,7 +198,7 @@ int main (void)
 
 	//Write (0xC0000000 + (u32) (u64) m_pInfo);
 	while (*(u32 volatile *) (MAILBOX1_STATUS) & MAILBOX_STATUS_FULL);
-	*(u32 volatile *) (MAILBOX1_WRITE)= MAILBOX_CHANNEL_FB | (0xC0000000 + (u32) (u64) m_pInfo);	// channel number is in the lower 4 bits
+	*(u32 volatile *) (MAILBOX1_WRITE)= MAILBOX_CHANNEL_FB | (GPU_MEM_BASE + (u32) (u64) m_pInfo);	// channel number is in the lower 4 bits
 
 	//u32 nResult = Read ();
 	u32 nResult;
@@ -131,8 +210,35 @@ int main (void)
 	while ((nResult & 0xF) != MAILBOX_CHANNEL_FB);		// channel number is in the lower 4 bits
 	nResult = nResult & ~0xF;
 
-	InvalidateDataCache ();
-	DataMemBarrier ();
+	//InvalidateDataCache ();
+	// invalidate L1 data cache
+	for (register unsigned nSet = 0; nSet < L1_DATA_CACHE_SETS; nSet++)
+	{
+		for (register unsigned nWay = 0; nWay < L1_DATA_CACHE_WAYS; nWay++)
+		{
+			register u64 nSetWayLevel =   nWay << L1_SETWAY_WAY_SHIFT
+						    | nSet << L1_SETWAY_SET_SHIFT
+						    | 0 << SETWAY_LEVEL_SHIFT;
+
+			asm volatile ("dc isw, %0" : : "r" (nSetWayLevel) : "memory");
+		}
+	}
+
+	// invalidate L2 unified cache
+	for (register unsigned nSet = 0; nSet < L2_CACHE_SETS; nSet++)
+	{
+		for (register unsigned nWay = 0; nWay < L2_CACHE_WAYS; nWay++)
+		{
+			register u64 nSetWayLevel =   nWay << L2_SETWAY_WAY_SHIFT
+						    | nSet << L2_SETWAY_SET_SHIFT
+						    | 1 << SETWAY_LEVEL_SHIFT;
+
+			asm volatile ("dc isw, %0" : : "r" (nSetWayLevel) : "memory");
+		}
+	}
+
+	//DataMemBarrier ();
+	asm volatile ("dmb sy" ::: "memory");
 
 	u32* buffer = (u32 *) (u64)( m_pInfo->BufferPtr & 0x3FFFFFFF );
 	
