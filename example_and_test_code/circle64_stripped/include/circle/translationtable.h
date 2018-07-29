@@ -37,10 +37,10 @@ public:
 
 	u64 GetBaseAddress (void) const;
 
-private:
+public:
 	TARMV8MMU_LEVEL3_DESCRIPTOR *CreateLevel3Table (u64 nBaseAddress) NOOPT;
 
-private:
+public:
 	u64 m_nMemSize;
 
 	TARMV8MMU_LEVEL2_DESCRIPTOR *m_pTable;

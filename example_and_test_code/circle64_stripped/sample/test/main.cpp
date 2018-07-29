@@ -1,8 +1,14 @@
 #include <circle/alloc.h>
 #include <circle/translationtable.h>
+//#include <circle/armv8mmu.h>
+
+typedef unsigned int		u32;
+typedef unsigned long		u64;
+typedef unsigned long	size_t;
 
 CTranslationTable *m_pTranslationTable;
 u64 m_nMemSize;
+TARMV8MMU_LEVEL2_DESCRIPTOR *m_pTable;
 
 #define ATTRINDX_NORMAL		0
 #define ATTRINDX_DEVICE		1
@@ -36,6 +42,8 @@ u64 m_nMemSize;
 #define TCR_EL1_T0SZ__MASK	(0x3F << 0)
 	#define TCR_EL1_T0SZ_4GB	32
 
+#define MEM_COHERENT_REGION	0x400000
+#define MEM_HEAP_START		0x500000
 
 void enable_mmu()
 {
@@ -45,6 +53,7 @@ void enable_mmu()
 	asm volatile ("msr mair_el1, %0" : : "r" (nMAIR_EL1));
 
 	asm volatile ("msr ttbr0_el1, %0" : : "r" (m_pTranslationTable->GetBaseAddress ()));
+	//asm volatile ("msr ttbr0_el1, %0" : : "r" ((u64) m_pTable));
 
 	u64 nTCR_EL1;
 	asm volatile ("mrs %0, tcr_el1" : "=r" (nTCR_EL1));
@@ -75,11 +84,104 @@ void enable_mmu()
 	asm volatile ("msr sctlr_el1, %0" : : "r" (nSCTLR_EL1) : "memory");
 }
 
+void *memset (void *pBuffer, int nValue, size_t nLength)
+{
+	char *p = (char *) pBuffer;
+
+	while (nLength--)
+	{
+		*p++ = (char) nValue;
+	}
+
+	return pBuffer;
+}
+
+TARMV8MMU_LEVEL3_DESCRIPTOR* NOOPT CreateLevel3Table (u64 nBaseAddress)
+{
+	TARMV8MMU_LEVEL3_DESCRIPTOR *pTable = (TARMV8MMU_LEVEL3_DESCRIPTOR *) palloc ();
+
+	for (unsigned nPage = 0; nPage < ARMV8MMU_TABLE_ENTRIES; nPage++)	// 8192 entries a 64KB
+	{
+		TARMV8MMU_LEVEL3_PAGE_DESCRIPTOR *pDesc = &pTable[nPage].Page;
+
+		pDesc->Value11	     = 3;
+		pDesc->AttrIndx	     = ATTRINDX_NORMAL;
+		pDesc->NS	     = 0;
+		pDesc->AP	     = ATTRIB_AP_RW_EL1;
+		pDesc->SH	     = ATTRIB_SH_INNER_SHAREABLE;
+		pDesc->AF	     = 1;
+		pDesc->nG	     = 0;
+		pDesc->Reserved0_1   = 0;
+		pDesc->OutputAddress = ARMV8MMUL3PAGEADDR (nBaseAddress);
+		pDesc->Reserved0_2   = 0;
+		pDesc->Continous     = 0;
+		pDesc->PXN	     = 0;
+		pDesc->UXN	     = 1;
+		pDesc->Ignored	     = 0;
+
+		extern u8 _etext;
+		if (nBaseAddress >= (u64) &_etext)
+		{
+			pDesc->PXN = 1;
+
+			if (nBaseAddress >= m_nMemSize)
+			{
+				pDesc->AttrIndx = ATTRINDX_DEVICE;
+				pDesc->SH	= ATTRIB_SH_OUTER_SHAREABLE;
+			}
+			else if (   nBaseAddress >= MEM_COHERENT_REGION
+				 && nBaseAddress <  MEM_HEAP_START)
+			{
+				pDesc->AttrIndx = ATTRINDX_COHERENT;
+				pDesc->SH	= ATTRIB_SH_OUTER_SHAREABLE;
+			}
+		}
+
+		nBaseAddress += ARMV8MMU_LEVEL3_PAGE_SIZE;
+	}
+
+	return pTable;
+}
+
+TARMV8MMU_LEVEL2_DESCRIPTOR * NOOPT createLevel2Table()
+{
+	TARMV8MMU_LEVEL2_DESCRIPTOR * pTable;
+	pTable = (TARMV8MMU_LEVEL2_DESCRIPTOR *) palloc ();
+
+	#define PAGE_SIZE		0x10000	
+	memset (m_pTable, 0, PAGE_SIZE);
+
+	for (unsigned nEntry = 0; nEntry < 3; nEntry++)		// 3 entries a 512MB
+	{
+		u64 nBaseAddress = (u64) nEntry * ARMV8MMU_TABLE_ENTRIES * ARMV8MMU_LEVEL3_PAGE_SIZE;
+
+		TARMV8MMU_LEVEL3_DESCRIPTOR *pTable = CreateLevel3Table (nBaseAddress);
+
+		TARMV8MMU_LEVEL2_TABLE_DESCRIPTOR *pDesc = &m_pTable[nEntry].Table;
+
+		pDesc->Value11	    = 3;
+		pDesc->Ignored1	    = 0;
+		pDesc->TableAddress = ARMV8MMUL2TABLEADDR ((u64) pTable);
+		pDesc->Reserved0    = 0;
+		pDesc->Ignored2	    = 0;
+		pDesc->PXNTable	    = 0;
+		pDesc->UXNTable	    = 0;
+		pDesc->APTable	    = AP_TABLE_ALL_ACCESS;
+		pDesc->NSTable	    = 0;
+	}
+
+	//DataSyncBarrier ();
+	asm volatile ("dsb sy" ::: "memory");
+	return pTable;
+}
+
 void initialize_memory()
 {
 	mem_init ( 0, ( 512 - 64 ) * 0x100000 );
 
-	m_pTranslationTable = new CTranslationTable (m_nMemSize);
+	m_pTranslationTable = new CTranslationTable (m_nMemSize); //( CTranslationTable* )0x00500010;
+	//m_pTable = createLevel2Table(); //( TARMV8MMU_LEVEL2_DESCRIPTOR* )0x0050018;
+
 	enable_mmu();
 }
 
@@ -141,7 +243,7 @@ int main (void)
 	initialize_memory();
 
 	//CBcmMailBox m_MailBox(MAILBOX_CHANNEL_FB);
-	volatile Bcm2835FrameBufferInfo* m_pInfo = new Bcm2835FrameBufferInfo;
+	volatile Bcm2835FrameBufferInfo* m_pInfo = ( Bcm2835FrameBufferInfo* )0x00500060; //new Bcm2835FrameBufferInfo;
 	m_pInfo->Width      = 800;
 	m_pInfo->Height     = 480;
 	m_pInfo->VirtWidth  = 800;
@@ -242,12 +344,50 @@ int main (void)
 
 	u32* buffer = (u32 *) (u64)( m_pInfo->BufferPtr & 0x3FFFFFFF );
 	
-	int color = 0x00ff0000;
+	//int color = 0x00ff0000;
 	while( true )
 	{
-		for( u32 x = 0; x < 800; x++ )
+		/*for( u32 x = 0; x < 800; x++ )
 			for( u32 y = 0; y < 480; y ++ )
 				buffer[ 800 * y + x ] = color;
-		color++;
+		color++;*/
+		u64 address_0 = ( u64 )( &(m_pTranslationTable->m_pTable) );
+		u64 address_1 = 0x1111111111111111;
+		for( u64 digit = 0; digit < 63; digit++ )
+		{
+			if( ( address_0 & ( ( u64 )1 << digit ) ) == 0 )
+			{
+				for( u32 x = ( digit * 800 ) / 64; x < ( ( digit + 1 ) * 800 ) / 64; x++ )
+					for( u32 y = 0; y < 240; y++ )
+						buffer[ 800 * y + x ] = 0;
+				for( u32 y = 0; y < 240; y++ )
+						buffer[ 800 * y + ( ( digit + 1 ) * 800 ) / 64 - 1 ] = 0xff0000ff;
+			}
+			else
+			{
+				for( u32 x = ( digit * 800 ) / 64; x < ( ( digit + 1 ) * 800 ) / 64; x++ )
+					for( u32 y = 0; y < 240; y++ )
+						buffer[ 800 * y + x ] = 0xffffffff;
+				for( u32 y = 0; y < 240; y++ )
+						buffer[ 800 * y + ( ( digit + 1 ) * 800 ) / 64 - 1 ] = 0xff0000ff;
+			}
+
+			if( ( address_1 & ( ( u64 )1 << digit ) ) == 0 )
+			{
+				for( u32 x = ( digit * 800 ) / 64; x < ( ( digit + 1 ) * 800 ) / 64; x++ )
+					for( u32 y = 240; y < 480; y++ )
+						buffer[ 800 * y + x ] = 0;
+				for( u32 y = 240; y < 480; y++ )
+						buffer[ 800 * y + ( ( digit + 1 ) * 800 ) / 64 - 1 ] = 0xff0000ff;
+			}
+			else
+			{
+				for( u32 x = ( digit * 800 ) / 64; x < ( ( digit + 1 ) * 800 ) / 64; x++ )
+					for( u32 y = 240; y < 480; y++ )
+						buffer[ 800 * y + x ] = 0xffffffff;
+				for( u32 y = 240; y < 480; y++ )
+						buffer[ 800 * y + ( ( digit + 1 ) * 800 ) / 64 - 1 ] = 0xff0000ff;
+			}
+		}
 	}
 }
