@@ -1,0 +1,1 @@
+the files in here are provided by broadcom as is. they make sure the gpu boots correctly and provide the gpu firmware. the code then later boots the kernel8.img file on the cpu.
