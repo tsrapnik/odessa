@@ -1,14 +1,14 @@
-#include "graphicObject.h"
+#include "graphic_object.h"
 
-graphicObject::graphicObject( rectangle footprint, colour ownColour )
+graphic_object::graphic_object( rectangle footprint, colour own_colour )
 {
 	this->footprint = footprint;
 	this->boundaries = nullptr;
-	this->ownScreen = nullptr;
-	this->ownColour = ownColour;
+	this->own_screen = nullptr;
+	this->own_colour = own_colour;
 }
 
-void graphicObject::setBoundaries( rectangle* boundaries )
+void graphic_object::set_boundaries( rectangle* boundaries )
 {
 	if( footprint.origin.x < 0 )
 		footprint.origin.x = 0;
@@ -19,41 +19,41 @@ void graphicObject::setBoundaries( rectangle* boundaries )
 	if( footprint.origin.y + footprint.size.y > boundaries->size.y )
 		footprint.size.y = boundaries->size.y - footprint.origin.y;
 
-	footprint.origin = vector2I::add( footprint.origin, boundaries->origin );
+	footprint.origin = vector2_i::add( footprint.origin, boundaries->origin );
 	this->boundaries = boundaries;
 }
 
-void graphicObject::setOwnScreen( screen* ownScreen )
+void graphic_object::set_own_screen( screen* own_screen )
 {
-	this->ownScreen = ownScreen;
+	this->own_screen = own_screen;
 }
 
-rectangle graphicObject::getFootprint()
+rectangle graphic_object::get_footprint()
 {
 	return footprint;
 }
 
-void graphicObject::setFootprint( rectangle newFootprint )
+void graphic_object::set_footprint( rectangle new_footprint )
 {
-	footprint = newFootprint;
+	footprint = new_footprint;
 }
 
-colour graphicObject::getColour()
+colour graphic_object::get_colour()
 {
-	return ownColour;
+	return own_colour;
 }
 
-graphicObject::~graphicObject()
+graphic_object::~graphic_object()
 {}
 
-void graphicObject::draw()
+void graphic_object::draw()
 {
 	for( int x = footprint.origin.x; x < footprint.origin.x + footprint.size.x; x++ )
 		for( int y = footprint.origin.y; y < footprint.origin.y + footprint.size.y; y++ )
-			ownScreen->putTransparentPixel( vector2I( x, y ), ownColour );
+			own_screen->put_transparent_pixel( vector2_i( x, y ), own_colour );
 }
 
-vector2I graphicObject::move( vector2I displacement )
+vector2_i graphic_object::move( vector2_i displacement )
 {
 	if( footprint.origin.x + displacement.x < boundaries->origin.x )
 		displacement.x = boundaries->origin.x - footprint.origin.x;
@@ -64,17 +64,17 @@ vector2I graphicObject::move( vector2I displacement )
 	if( footprint.origin.y + footprint.size.y + displacement.y > boundaries->origin.y + boundaries->size.y )
 		displacement.y = boundaries->origin.y + boundaries->size.y - footprint.origin.y - footprint.size.y;
 
-	footprint.origin = vector2I::add( footprint.origin, displacement );
+	footprint.origin = vector2_i::add( footprint.origin, displacement );
 
 	return displacement;
 }
 
-graphicObject * graphicObject::isSelected( vector2I mousePointer )
+graphic_object * graphic_object::is_selected( vector2_i mouse_pointer )
 {
-	if( mousePointer.x >= footprint.origin.x &&
-		mousePointer.x < footprint.origin.x + footprint.size.x &&
-		mousePointer.y >= footprint.origin.y &&
-		mousePointer.y < footprint.origin.y + footprint.size.y )
+	if( mouse_pointer.x >= footprint.origin.x &&
+		mouse_pointer.x < footprint.origin.x + footprint.size.x &&
+		mouse_pointer.y >= footprint.origin.y &&
+		mouse_pointer.y < footprint.origin.y + footprint.size.y )
 		return this;
 	return nullptr;
 }

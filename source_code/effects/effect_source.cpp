@@ -1,20 +1,20 @@
-#include "effectSource.h"
+#include "effect_source.h"
 
-void effectSource::process()
+void effect_source::process()
 {
-	monoOutput->updateFrame( ( double )*source );
+	mono_output->update_frame( ( double )*source );
 }
 
-effectSource::effectSource( signed int* source, rectangle footprint, colour ownColour ):
-	effect( footprint, ownColour ),
+effect_source::effect_source( signed int* source, rectangle footprint, colour own_colour ):
+	effect( footprint, own_colour ),
 	source( source )
 {
-	monoOutput = new output( rectangle( vector2I( 15, 20 ), vector2I( 30, 40 ) ),
+	mono_output = new output( rectangle( vector2_i( 15, 20 ), vector2_i( 30, 40 ) ),
 							 colour( 0, 255, 0, 255 ) );
-	addOutput( monoOutput );
+	add_output( mono_output );
 }
 
-effectSource::~effectSource()
+effect_source::~effect_source()
 {
-	delete monoOutput;
+	delete mono_output;
 }

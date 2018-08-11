@@ -1,14 +1,14 @@
 #pragma once
 
 #include "buffer.h"
-class bufferDelay:
+class buffer_delay:
 	public buffer
 {
 private:
-	int currentPosition;
+	int current_position;
 public:
-	bufferDelay( int maxLength );
-	~bufferDelay();
-	double getPrevious( int position );
-	void updateCurrent( double value );
+	buffer_delay( int max_length );
+	~buffer_delay();
+	double get_previous( int position );
+	void update_current( double value );
 };

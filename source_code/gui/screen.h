@@ -1,6 +1,6 @@
 #pragma once
 
-#include "typeDefinitions.h"
+#include "type_definitions.h"
 #include "colour.h"
 #include "rectangle.h"
 
@@ -8,21 +8,21 @@ class screen
 {
 private:
 	//tmp
-	//Only 32 bit colours supported.
-	//This struct is shared between GPU and ARM side
-	// Must be 16 byte aligned in memory
-	struct Bcm2835FrameBufferInfo
+	//only 32 bit colours supported.
+	//this struct is shared between g_p_u and a_r_m side
+	// must be 16 byte aligned in memory
+	struct bcm2835_frame_buffer_info
 	{
-		u32 Width;		// Physical width of display in pixel
-		u32 Height;		// Physical height of display in pixel
-		u32 VirtWidth;		// always as physical width so far
-		u32 VirtHeight;		// always as physical height so far
-		u32 Pitch;		// Should be init with 0
-		u32 Depth;		// Number of bits per pixel
-		u32 OffsetX;		// Normally zero
-		u32 OffsetY;		// Normally zero
-		u32 BufferPtr;		// Address of frame buffer (init with 0, set by GPU)
-		u32 BufferSize;		// Size of frame buffer (init with 0, set by GPU)
+		u32 width;		// physical width of display in pixel
+		u32 height;		// physical height of display in pixel
+		u32 virt_width;		// always as physical width so far
+		u32 virt_height;		// always as physical height so far
+		u32 pitch;		// should be init with 0
+		u32 depth;		// number of bits per pixel
+		u32 offset_x;		// normally zero
+		u32 offset_y;		// normally zero
+		u32 buffer_ptr;		// address of frame buffer (init with 0, set by g_p_u)
+		u32 buffer_size;		// size of frame buffer (init with 0, set by g_p_u)
 	}
 	__attribute__ ((packed));
 
@@ -31,48 +31,48 @@ private:
 public:
 	screen( u32 x_size, u32 y_size );
 	~screen();
-	char* getBuffer();
-	rectangle* getFootprint();
-	void clear( colour backGround );
-	colour getPixel( vector2I position );
-	void putTransparentPixel( vector2I position, colour ownColour );
-	void putOpaquePixel( vector2I position, colour ownColour );
-	void drawLine( vector2I begin, vector2I end, colour ownColour );
-	void drawText( const char* text, vector2I position );
+	char* get_buffer();
+	rectangle* get_footprint();
+	void clear( colour back_ground );
+	colour get_pixel( vector2_i position );
+	void put_transparent_pixel( vector2_i position, colour own_colour );
+	void put_opaque_pixel( vector2_i position, colour own_colour );
+	void draw_line( vector2_i begin, vector2_i end, colour own_colour );
+	void draw_text( const char* text, vector2_i position );
 };
 
-inline colour screen::getPixel( vector2I position )
+inline colour screen::get_pixel( vector2_i position )
 {
-	//Use some syntactic sugar trick to hide the original buffer pointer with a multidimensional
+	//use some syntactic sugar trick to hide the original buffer pointer with a multidimensional
 	//one, so you can acces it in the buffer[i][j] way in stead of using buffer[i*width+j].
 	colour ( * buffer )[ footprint.size.x ] = ( colour ( * )[ footprint.size.x ] )this->buffer;
 	
 	return buffer[ position.y ][ position.x ];
 }
 
-inline void screen::putTransparentPixel( vector2I position, colour ownColour )
+inline void screen::put_transparent_pixel( vector2_i position, colour own_colour )
 {
-	//Use some syntactic sugar trick to hide the original buffer pointer with a multidimensional
+	//use some syntactic sugar trick to hide the original buffer pointer with a multidimensional
 	//one, so you can acces it in the buffer[i][j] way in stead of using buffer[i*width+j].
 	colour ( * buffer )[ footprint.size.x ] = ( colour ( * )[ footprint.size.x ] )this->buffer;
 
-	int alpha = ownColour.alpha;
-	int antiAlpha = 255 - alpha;
+	int alpha = own_colour.alpha;
+	int anti_alpha = 255 - alpha;
 
-	colour thisColour = buffer[ position.y ][ position.x ];
+	colour this_colour = buffer[ position.y ][ position.x ];
 
-	thisColour.red = ( unsigned char )( ( thisColour.red * antiAlpha + ownColour.red * alpha ) >> 8 );
-	thisColour.green = ( unsigned char )( ( thisColour.green * antiAlpha + ownColour.green * alpha ) >> 8 );
-	thisColour.blue = ( unsigned char )( ( thisColour.blue * antiAlpha + ownColour.blue * alpha ) >> 8 );
+	this_colour.red = ( unsigned char )( ( this_colour.red * anti_alpha + own_colour.red * alpha ) >> 8 );
+	this_colour.green = ( unsigned char )( ( this_colour.green * anti_alpha + own_colour.green * alpha ) >> 8 );
+	this_colour.blue = ( unsigned char )( ( this_colour.blue * anti_alpha + own_colour.blue * alpha ) >> 8 );
 
-	buffer[ position.y ][ position.x ] = thisColour;
+	buffer[ position.y ][ position.x ] = this_colour;
 }
 
-inline void screen::putOpaquePixel( vector2I position, colour ownColour )
+inline void screen::put_opaque_pixel( vector2_i position, colour own_colour )
 {
-	//Use some syntactic sugar trick to hide the original buffer pointer with a multidimensional
+	//use some syntactic sugar trick to hide the original buffer pointer with a multidimensional
 	//one, so you can acces it in the buffer[i][j] way in stead of using buffer[i*width+j].
 	colour ( * buffer )[ footprint.size.x ] = ( colour ( * )[ footprint.size.x ] )this->buffer;
 
-	buffer[ position.y ][ position.x ] = ownColour;
+	buffer[ position.y ][ position.x ] = own_colour;
 }

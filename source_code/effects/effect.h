@@ -1,14 +1,14 @@
 #pragma once
 
 #include "list.h"
-#include "listIterator.h"
+#include "list_iterator.h"
 #include "button.h"
 #include "input.h"
 #include "output.h"
-#include "graphicObject.h"
+#include "graphic_object.h"
 
 class effect:
-	public graphicObject
+	public graphic_object
 {
 private:
 	list< button* > buttons;
@@ -16,18 +16,18 @@ private:
 	list< output* > outputs;
 	virtual void process() = 0;
 protected:
-	void addButton( button* newButton );
-	void addInput( input* newInput );
-	void addOutput( output* newOutput );
+	void add_button( button* new_button );
+	void add_input( input* new_input );
+	void add_output( output* new_output );
 public:
-	effect( rectangle footprint, colour ownColour );
+	effect( rectangle footprint, colour own_colour );
 	~effect();
-	void setOwnScreen( screen* ownScreen );
+	void set_own_screen( screen* own_screen );
 	bool update();
 	void draw();
-	void drawConnections();
-	vector2I move( vector2I displacement );
-	graphicObject* selectButton( vector2I mousePointer );
-	output* selectOutput( vector2I mousePointer );
-	input* selectInput( vector2I mousePointer );
+	void draw_connections();
+	vector2_i move( vector2_i displacement );
+	graphic_object* select_button( vector2_i mouse_pointer );
+	output* select_output( vector2_i mouse_pointer );
+	input* select_input( vector2_i mouse_pointer );
 };

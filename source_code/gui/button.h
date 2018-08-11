@@ -1,11 +1,11 @@
 #pragma once
 
-#include "graphicObject.h"
+#include "graphic_object.h"
 
 class button:
-	public graphicObject
+	public graphic_object
 {
 public:
-	button( rectangle footprint, colour ownColour );
+	button( rectangle footprint, colour own_colour );
 	~button();
 };

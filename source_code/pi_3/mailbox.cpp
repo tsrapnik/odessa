@@ -2,7 +2,7 @@
 #include "enum_flags.h"
 #include "mutex.h"
 
-extern "C" void delay_loop( int );
+extern "c" void delay_loop( int );
 
 constexpr mailbox::mail_box_registers* mailbox::mail_box_interface[ 2 ];
 

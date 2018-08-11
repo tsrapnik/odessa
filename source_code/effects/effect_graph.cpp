@@ -1,51 +1,51 @@
-#include "signalPath.h"
+#include "signal_path.h"
 
-signalPath::signalPath( screen* ownScreen )
+signal_path::signal_path( screen* own_screen )
 {
-	this->ownScreen = ownScreen;
+	this->own_screen = own_screen;
 }
 
-signalPath::~signalPath()
+signal_path::~signal_path()
 {}
 
-void signalPath::update()
+void signal_path::update()
 {
-	listIterator< effect* > currentEffect( &effects );
-	for( currentEffect.toFirst(); !currentEffect.atEnd(); currentEffect++ )
+	list_iterator< effect* > current_effect( &effects );
+	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
 	{
-		currentEffect.getDataCopy()->update();
+		current_effect.get_data_copy()->update();
 	}
 }
 
-void signalPath::draw()
+void signal_path::draw()
 {
-	ownScreen->clear( colour( 10, 20, 125, 255 ) );
+	own_screen->clear( colour( 10, 20, 125, 255 ) );
 
-	listIterator< effect* > currentEffect( &effects );
-	for( currentEffect.toFirst(); !currentEffect.atEnd(); currentEffect++ )
+	list_iterator< effect* > current_effect( &effects );
+	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
 	{
-		currentEffect.getDataCopy()->draw();
+		current_effect.get_data_copy()->draw();
 	}
 	
-	for( currentEffect.toFirst(); !currentEffect.atEnd(); currentEffect++ )
+	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
 	{
-		currentEffect.getDataCopy()->drawConnections();
+		current_effect.get_data_copy()->draw_connections();
 	}
 }
 
-void signalPath::addEffect( effect* newEffect )
+void signal_path::add_effect( effect* new_effect )
 {
-	newEffect->setBoundaries( ownScreen->getFootprint() );
-	newEffect->setOwnScreen( ownScreen );
-	effects.appendCopy( newEffect );
+	new_effect->set_boundaries( own_screen->get_footprint() );
+	new_effect->set_own_screen( own_screen );
+	effects.append_copy( new_effect );
 }
 
-effect* signalPath::selectEffect( vector2I mousePointer )
+effect* signal_path::select_effect( vector2_i mouse_pointer )
 {
-	listIterator< effect* > currentEffect( &effects );
-	for( currentEffect.toFirst(); !currentEffect.atEnd(); currentEffect++ )
+	list_iterator< effect* > current_effect( &effects );
+	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
 	{
-		effect* selection = ( effect* )currentEffect.getDataCopy()->isSelected( mousePointer );
+		effect* selection = ( effect* )current_effect.get_data_copy()->is_selected( mouse_pointer );
 		if( selection != nullptr )
 		{
 			return selection;
@@ -55,12 +55,12 @@ effect* signalPath::selectEffect( vector2I mousePointer )
 	return nullptr;
 }
 
-graphicObject * signalPath::selectButton( vector2I mousePointer )
+graphic_object * signal_path::select_button( vector2_i mouse_pointer )
 {
-	listIterator< effect* > currentEffect( &effects );
-	for( currentEffect.toFirst(); !currentEffect.atEnd(); currentEffect++ )
+	list_iterator< effect* > current_effect( &effects );
+	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
 	{
-		graphicObject* selection = currentEffect.getDataCopy()->selectButton( mousePointer );
+		graphic_object* selection = current_effect.get_data_copy()->select_button( mouse_pointer );
 		if( selection != nullptr )
 		{
 			return selection;
@@ -70,13 +70,13 @@ graphicObject * signalPath::selectButton( vector2I mousePointer )
 	return nullptr;
 }
 
-output * signalPath::selectOutput( vector2I mousePointer )
+output * signal_path::select_output( vector2_i mouse_pointer )
 {
-	listIterator< effect* > currentEffect( &effects );
-	for( currentEffect.toFirst(); !currentEffect.atEnd(); currentEffect++ )
+	list_iterator< effect* > current_effect( &effects );
+	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
 	{
 		output* selection = nullptr;
-		selection = currentEffect.getDataCopy()->selectOutput( mousePointer );
+		selection = current_effect.get_data_copy()->select_output( mouse_pointer );
 		if( selection != nullptr )
 		{
 			return selection;
@@ -86,13 +86,13 @@ output * signalPath::selectOutput( vector2I mousePointer )
 	return nullptr;
 }
 
-input* signalPath::selectInput( vector2I mousePointer )
+input* signal_path::select_input( vector2_i mouse_pointer )
 {
-	listIterator< effect* > currentEffect( &effects );
-	for( currentEffect.toFirst(); !currentEffect.atEnd(); currentEffect++ )
+	list_iterator< effect* > current_effect( &effects );
+	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
 	{
 		input* selection = nullptr;
-		selection = currentEffect.getDataCopy()->selectInput( mousePointer );
+		selection = current_effect.get_data_copy()->select_input( mouse_pointer );
 		if( selection != nullptr )
 		{
 			return selection;

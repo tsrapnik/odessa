@@ -3,17 +3,17 @@
 #include "button.h"
 
 class output:
-	public graphicObject
+	public graphic_object
 {
 private:
 	double frame;
 	bool ready;
 public:
-	output( rectangle footprint, colour ownColour );
+	output( rectangle footprint, colour own_colour );
 	~output();
-	double getFrame();
-	void updateFrame( double frame );
-	void invalidateFrame();
-	bool frameReady();
-	void drawConnecting( vector2I mousePointer );
+	double get_frame();
+	void update_frame( double frame );
+	void invalidate_frame();
+	bool frame_ready();
+	void draw_connecting( vector2_i mouse_pointer );
 };

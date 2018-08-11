@@ -2,20 +2,20 @@
 
 #include "effect.h"
 
-class effectSource:
+class effect_source:
 	public effect
 {
 private:
 	///
-	///Points to the actual 32 bit value that is received from the audio intput, e.g. adc.
+	///points to the actual 32 bit value that is received from the audio intput, e.g. adc.
 	///
 	signed int* source;
 
-	output* monoOutput;
+	output* mono_output;
 
 	virtual void process();
 public:
-	effectSource( signed int* source, rectangle footprint, colour ownColour );
-	~effectSource
+	effect_source( signed int* source, rectangle footprint, colour own_colour );
+	~effect_source
 ();
 };

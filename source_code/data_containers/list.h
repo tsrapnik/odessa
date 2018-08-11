@@ -2,12 +2,12 @@
 
 #include "node.h"
 
-//Double linked list containing elemennts of type. The list has ownership over all its elements and will
+//double linked list containing elemennts of type. the list has ownership over all its elements and will
 //delete them when the list is deleted.
 template <typename type>
 class list
 {
-	template <typename otherType> friend class listIterator;
+	template <typename other_type> friend class list_iterator;
 private:
 	node<type>* first;
 	node<type>* last;
@@ -16,137 +16,137 @@ public:
 	list();
 	~list();
 
-	bool isEmpty();
+	bool is_empty();
 
 	template <typename... arguments>
-	void prependNew( arguments... initArguments );
-	void prependCopy( type newElement );
+	void prepend_new( arguments... init_arguments );
+	void prepend_copy( type new_element );
 	template <typename... arguments>
-	void appendNew( arguments... initArguments );
-	void appendCopy( type newElement );
+	void append_new( arguments... init_arguments );
+	void append_copy( type new_element );
 
-	void deleteFirst();
-	void deleteLast();
-	void deleteAll();
+	void delete_first();
+	void delete_last();
+	void delete_all();
 };
 
-//Create new list without any elements. At least one node should be added before using any other members, to avoid nullpointer references.
+//create new list without any elements. at least one node should be added before using any other members, to avoid nullpointer references.
 template<typename type>
 list<type>::list():
 	first( nullptr ),
 	last( nullptr )
 {}
 
-//Delete the list including all elements.
+//delete the list including all elements.
 template<typename type>
 list<type>::~list()
 {
-	deleteAll();
+	delete_all();
 }
 
-//Returns true when the list is empty.
+//returns true when the list is empty.
 template<typename type>
-bool list<type>::isEmpty()
+bool list<type>::is_empty()
 {
-	return first == nullptr; //When first and last are both nullpointers, the list is surely empty.
+	return first == nullptr; //when first and last are both nullpointers, the list is surely empty.
 }
 
-//Create element at the beginning of the list, initialized with passed initArguments.
-template<typename type>
-template <typename... arguments>
-void list<type>::prependNew( arguments... initArguments )
-{
-	if( first == nullptr ) //Check if the list is empty.
-	{
-		node<type>* newNode = new node<type>( nullptr, nullptr, initArguments... ); //Create the first element.
-
-		first = newNode; //This element is the first and the last.
-		last = newNode;
-	}
-	else
-	{
-		node<type>* newNode = new node<type>( nullptr, first, initArguments... ); //Create new element and put it before the first element.
-		first->previous = newNode;
-
-		first = newNode; //Set new element as first.
-	}
-}
-
-//Create copy of the passed element at the beginning of the list.
-template<typename type>
-void list<type>::prependCopy( type newElement )
-{
-	if( first == nullptr ) //Check if the list is empty.
-	{
-		node<type>* newNode = new node<type>( nullptr, nullptr, newElement ); //Create the first element.
-
-		first = newNode; //This element is the first and the last.
-		last = newNode;
-	}
-	else
-	{
-		node<type>* newNode = new node<type>( nullptr, first, newElement ); //Create new element and put it before the first element.
-		first->previous = newNode;
-
-		first = newNode; //Set new element as first.
-	}
-}
-
-//Create element at the end of the list, initialized with passed initArguments.
+//create element at the beginning of the list, initialized with passed init_arguments.
 template<typename type>
 template <typename... arguments>
-void list<type>::appendNew( arguments... initArguments )
+void list<type>::prepend_new( arguments... init_arguments )
 {
-	if( last == nullptr ) //Check if the list is empty.
+	if( first == nullptr ) //check if the list is empty.
 	{
-		node<type>* newNode = new node<type>( nullptr, nullptr, initArguments... ); //Create the first element.
+		node<type>* new_node = new node<type>( nullptr, nullptr, init_arguments... ); //create the first element.
 
-		first = newNode; //This element is the first and the last.
-		last = newNode;
+		first = new_node; //this element is the first and the last.
+		last = new_node;
 	}
 	else
 	{
-		node<type>* newNode = new node<type>( last, nullptr, initArguments... ); //Create new element and put it after the last element.
-		last->next = newNode;
+		node<type>* new_node = new node<type>( nullptr, first, init_arguments... ); //create new element and put it before the first element.
+		first->previous = new_node;
 
-		last = newNode; //Set new element as last.
+		first = new_node; //set new element as first.
 	}
 }
 
-//Create copy of the passed element at the end of the list.
+//create copy of the passed element at the beginning of the list.
 template<typename type>
-void list<type>::appendCopy( type newElement )
+void list<type>::prepend_copy( type new_element )
 {
-	if( last == nullptr ) //Check if the list is empty.
+	if( first == nullptr ) //check if the list is empty.
 	{
-		node<type>* newNode = new node<type>( nullptr, nullptr, newElement ); //Create the first element.
+		node<type>* new_node = new node<type>( nullptr, nullptr, new_element ); //create the first element.
 
-		first = newNode; //This element is the first and the last.
-		last = newNode;
+		first = new_node; //this element is the first and the last.
+		last = new_node;
 	}
 	else
 	{
-		node<type>* newNode = new node<type>( last, nullptr, newElement ); //Create new element and put it after the last element.
-		last->next = newNode;
+		node<type>* new_node = new node<type>( nullptr, first, new_element ); //create new element and put it before the first element.
+		first->previous = new_node;
 
-		last = newNode; //Set new element as last.
+		first = new_node; //set new element as first.
 	}
 }
 
-//Delete the first element of the list.
+//create element at the end of the list, initialized with passed init_arguments.
 template<typename type>
-void list<type>::deleteFirst()
+template <typename... arguments>
+void list<type>::append_new( arguments... init_arguments )
 {
-	node<type>* second = first->next; //Find the second element.
-
-	if( second != nullptr ) //Check if the first isn't the only element in the list.
+	if( last == nullptr ) //check if the list is empty.
 	{
-		second->previous = nullptr; //Make sure the second element points to no previous element.
-		node<type>* condemned = first; //Remember the element that should be deleted.
-		first = second; //Set second element as new first.
+		node<type>* new_node = new node<type>( nullptr, nullptr, init_arguments... ); //create the first element.
+
+		first = new_node; //this element is the first and the last.
+		last = new_node;
+	}
+	else
+	{
+		node<type>* new_node = new node<type>( last, nullptr, init_arguments... ); //create new element and put it after the last element.
+		last->next = new_node;
+
+		last = new_node; //set new element as last.
+	}
+}
+
+//create copy of the passed element at the end of the list.
+template<typename type>
+void list<type>::append_copy( type new_element )
+{
+	if( last == nullptr ) //check if the list is empty.
+	{
+		node<type>* new_node = new node<type>( nullptr, nullptr, new_element ); //create the first element.
+
+		first = new_node; //this element is the first and the last.
+		last = new_node;
+	}
+	else
+	{
+		node<type>* new_node = new node<type>( last, nullptr, new_element ); //create new element and put it after the last element.
+		last->next = new_node;
+
+		last = new_node; //set new element as last.
+	}
+}
+
+//delete the first element of the list.
+template<typename type>
+void list<type>::delete_first()
+{
+	node<type>* second = first->next; //find the second element.
+
+	if( second != nullptr ) //check if the first isn't the only element in the list.
+	{
+		second->previous = nullptr; //make sure the second element points to no previous element.
+		node<type>* condemned = first; //remember the element that should be deleted.
+		first = second; //set second element as new first.
 		delete condemned;
 	}
-	else //If it is the only element delete it and make first and last element nullpointers.
+	else //if it is the only element delete it and make first and last element nullpointers.
 	{
 		delete first;
 		first = last = nullptr;
@@ -154,32 +154,32 @@ void list<type>::deleteFirst()
 	
 }
 
-//Delete the last element of the list.
+//delete the last element of the list.
 template<typename type>
-void list<type>::deleteLast()
+void list<type>::delete_last()
 {
-	node<type>* secondLast = last->previous;
+	node<type>* second_last = last->previous;
 
-	if( secondLast != nullptr ) //Check if the last element isn't the only element in the list.
+	if( second_last != nullptr ) //check if the last element isn't the only element in the list.
 	{
-		last->previous->next = nullptr; //Make sure the second last element points to no next element.
-		node<type>* condemned = first; //Remember the element that should be deleted.
-		last = last->previous; //Set second last element as new last.
+		last->previous->next = nullptr; //make sure the second last element points to no next element.
+		node<type>* condemned = first; //remember the element that should be deleted.
+		last = last->previous; //set second last element as new last.
 		delete condemned;
 	}
-	else //If it is the only element delete it and make first and last element nullpointers.
+	else //if it is the only element delete it and make first and last element nullpointers.
 	{
 		delete last;
 		first = last = nullptr;
 	}
 }
 
-//Delete all elements in the list.
+//delete all elements in the list.
 template<typename type>
-void list<type>::deleteAll()
+void list<type>::delete_all()
 {
-	while( first != nullptr ) //Delete last element until there are no more elements.
+	while( first != nullptr ) //delete last element until there are no more elements.
 	{
-		deleteLast();
+		delete_last();
 	}
 }

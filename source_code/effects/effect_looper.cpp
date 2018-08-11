@@ -1,175 +1,175 @@
-#include "effectTsrapnikLooper.h"
+#include "effect_tsrapnik_looper.h"
 
-effectTsrapnikLooper::effectTsrapnikLooper( rectangle footprint, colour ownColour ):
-	effect::effect( footprint, ownColour ),
-	activeChannelPointer( listIterator<channel*>( &channels ) )
+effect_tsrapnik_looper::effect_tsrapnik_looper( rectangle footprint, colour own_colour ):
+	effect::effect( footprint, own_colour ),
+	active_channel_pointer( list_iterator<channel*>( &channels ) )
 {
-	monoInput = new input( rectangle( vector2I( 0, 120 ), vector2I( 30, 40 ) ),
+	mono_input = new input( rectangle( vector2_i( 0, 120 ), vector2_i( 30, 40 ) ),
 						   colour( 255, 0, 0, 255 ) );
-	monoOutput = new output( rectangle( vector2I( 170, 120 ), vector2I( 30, 40 ) ),
+	mono_output = new output( rectangle( vector2_i( 170, 120 ), vector2_i( 30, 40 ) ),
 							 colour( 0, 255, 0, 255 ) );
-	addInput( monoInput );
-	addOutput( monoOutput );
+	add_input( mono_input );
+	add_output( mono_output );
 }
 
-effectTsrapnikLooper::~effectTsrapnikLooper()
+effect_tsrapnik_looper::~effect_tsrapnik_looper()
 {}
 
-void effectTsrapnikLooper::process()
+void effect_tsrapnik_looper::process()
 {
 	float frame = 0.0;
-	channel* activeChannel = activeChannelPointer.getDataCopy();
+	channel* active_channel = active_channel_pointer.get_data_copy();
 
-	switch( currentState )
+	switch( current_state )
 	{
-		case looperState::stopped:
+		case looper_state::stopped:
 		{
 			break;
 		}
-		case looperState::recording:
+		case looper_state::recording:
 		{
-			//Clear all current tracks of the channel, restart channel and add a first track (and point activeTrackPointer to it) before activating this state.
-			activeChannel->record( monoInput->getFrame() );
+			//clear all current tracks of the channel, restart channel and add a first track (and point active_track_pointer to it) before activating this state.
+			active_channel->record( mono_input->get_frame() );
 			break;
 		}
-		case looperState::playing:
+		case looper_state::playing:
 		{
-			//If there are tracks they should not be empty.
-			frame += activeChannel->play();
+			//if there are tracks they should not be empty.
+			frame += active_channel->play();
 			break;
 		}
-		case looperState::overdubbing:
+		case looper_state::overdubbing:
 		{
-			//If there are tracks they should not be empty.
-			frame += activeChannel->play();
-			activeChannel->dub( monoInput->getFrame() );
+			//if there are tracks they should not be empty.
+			frame += active_channel->play();
+			active_channel->dub( mono_input->get_frame() );
 			break;
 		}
 	}
 }
 
-effectTsrapnikLooper::channel::channel():
-	activeTrackPointer( listIterator<track*>( &tracks ) )
+effect_tsrapnik_looper::channel::channel():
+	active_track_pointer( list_iterator<track*>( &tracks ) )
 {}
 
-//Play all unmuted tracks.
-float effectTsrapnikLooper::channel::play()
+//play all unmuted tracks.
+float effect_tsrapnik_looper::channel::play()
 {
 	float frame = 0.0f;
 
-	listIterator<track*> currentElement( &tracks );
-	for( currentElement.toFirst(); !currentElement.atEnd(); currentElement++ )
+	list_iterator<track*> current_element( &tracks );
+	for( current_element.to_first(); !current_element.at_end(); current_element++ )
 	{
-		channel::track* currentTrack = currentElement.getDataCopy();
-		currentTrack->toNextFrame();
-		if( !currentTrack->muted )
+		channel::track* current_track = current_element.get_data_copy();
+		current_track->to_next_frame();
+		if( !current_track->muted )
 		{
-			frame += currentTrack->getCurrentFrame();
+			frame += current_track->get_current_frame();
 		}
 	}
 
 	return frame;
 }
 
-//Record the input.
-void effectTsrapnikLooper::channel::record( float frame )
+//record the input.
+void effect_tsrapnik_looper::channel::record( float frame )
 {
-	channel::track* activeTrack = activeTrackPointer.getDataCopy();
-	activeTrack->recordNextFrame( frame, &length );
+	channel::track* active_track = active_track_pointer.get_data_copy();
+	active_track->record_next_frame( frame, &length );
 }
 
-//Dub active track with the input.
-void effectTsrapnikLooper::channel::dub( float frame )
+//dub active track with the input.
+void effect_tsrapnik_looper::channel::dub( float frame )
 {
-	channel::track* activeTrack = activeTrackPointer.getDataCopy();
-	activeTrack->updateCurrentFrame( frame );
+	channel::track* active_track = active_track_pointer.get_data_copy();
+	active_track->update_current_frame( frame );
 }
 
-//Sets all tracks to the first frame.
-void effectTsrapnikLooper::channel::restart()
+//sets all tracks to the first frame.
+void effect_tsrapnik_looper::channel::restart()
 {
-	listIterator<track*> currentElement( &tracks );
-	for( currentElement.toFirst(); !currentElement.atEnd(); currentElement++ )
+	list_iterator<track*> current_element( &tracks );
+	for( current_element.to_first(); !current_element.at_end(); current_element++ )
 	{
-		track* currentTrack = currentElement.getDataCopy();
-		currentTrack->restartTrack();
+		track* current_track = current_element.get_data_copy();
+		current_track->restart_track();
 	}
 }
 
-//Delete all tracks.
-void effectTsrapnikLooper::channel::clear()
+//delete all tracks.
+void effect_tsrapnik_looper::channel::clear()
 {
-	tracks.deleteAll();
-	activeTrackPointer.toFirst();
+	tracks.delete_all();
+	active_track_pointer.to_first();
 	length = 0;
 }
 
-//Add a new track on top of the active track and make this the new active track.
-void effectTsrapnikLooper::channel::layerOnActiveTrack()
+//add a new track on top of the active track and make this the new active track.
+void effect_tsrapnik_looper::channel::layer_on_active_track()
 {
-	track* newTrack = new track( length );
-	tracks.appendNew( newTrack );
+	track* new_track = new track( length );
+	tracks.append_new( new_track );
 }
 
-//Delete the active track and set the previous track as the active one.
-void effectTsrapnikLooper::channel::removeActiveTrack()
+//delete the active track and set the previous track as the active one.
+void effect_tsrapnik_looper::channel::remove_active_track()
 {
-	activeTrackPointer.deleteCurrent();
+	active_track_pointer.delete_current();
 }
 
-//Create empty track with "blockCount" blocks.
-effectTsrapnikLooper::channel::track::track( int blockCount ):
-	blockIterator( &blocks ),
-	blockIndex( 0 )
+//create empty track with "block_count" blocks.
+effect_tsrapnik_looper::channel::track::track( int block_count ):
+	block_iterator( &blocks ),
+	block_index( 0 )
 {
-	for( int i = 0; i < blockCount; i++ )
+	for( int i = 0; i < block_count; i++ )
 	{
-		blocks.appendNew();
+		blocks.append_new();
 	}
 }
 
-//Sets track to it's first frame.
-void effectTsrapnikLooper::channel::track::restartTrack()
+//sets track to it's first frame.
+void effect_tsrapnik_looper::channel::track::restart_track()
 {
-	blockIterator.toFirst();
-	blockIndex = 0;
+	block_iterator.to_first();
+	block_index = 0;
 }
 
-void effectTsrapnikLooper::channel::track::toNextFrame()
+void effect_tsrapnik_looper::channel::track::to_next_frame()
 {
-	blockIndex++;
-	if( blockIndex > 255 ) //Load next block when current block is finished.
+	block_index++;
+	if( block_index > 255 ) //load next block when current block is finished.
 	{
-		blockIndex = 0;
-		blockIterator++;
-		if( blockIterator.atEnd() ) //Go back to first block when all blocks are traversed.
-			blockIterator.toFirst();
+		block_index = 0;
+		block_iterator++;
+		if( block_iterator.at_end() ) //go back to first block when all blocks are traversed.
+			block_iterator.to_first();
 	}
 }
 
-float effectTsrapnikLooper::channel::track::getCurrentFrame()
+float effect_tsrapnik_looper::channel::track::get_current_frame()
 {
-	track::block* currentBlock = blockIterator.getDataCopy();
-	return currentBlock->frames[ blockIndex ];
+	track::block* current_block = block_iterator.get_data_copy();
+	return current_block->frames[ block_index ];
 }
 
-//Fills the next frame with the inputFrame-data, creates a new block if necessary.
-void effectTsrapnikLooper::channel::track::recordNextFrame( float inputFrame, int* length )
+//fills the next frame with the input_frame-data, creates a new block if necessary.
+void effect_tsrapnik_looper::channel::track::record_next_frame( float input_frame, int* length )
 {
-	blockIndex++;
-	if( blockIndex > 255 ) //Create new block when current block is finished.
+	block_index++;
+	if( block_index > 255 ) //create new block when current block is finished.
 	{
-		blockIndex = 0;
-		blocks.appendNew();
-		blockIterator++;
+		block_index = 0;
+		blocks.append_new();
+		block_iterator++;
 		length++;
 	}
-	track::block* currentBlock = blockIterator.getDataCopy(); //Fill the next track.
-	currentBlock->frames[ blockIndex ] = inputFrame;
+	track::block* current_block = block_iterator.get_data_copy(); //fill the next track.
+	current_block->frames[ block_index ] = input_frame;
 }
 
-void effectTsrapnikLooper::channel::track::updateCurrentFrame( float inputFrame )
+void effect_tsrapnik_looper::channel::track::update_current_frame( float input_frame )
 {
-	track::block* currentBlock = blockIterator.getDataCopy();
-	currentBlock->frames[ blockIndex ] = inputFrame;
+	track::block* current_block = block_iterator.get_data_copy();
+	current_block->frames[ block_index ] = input_frame;
 }

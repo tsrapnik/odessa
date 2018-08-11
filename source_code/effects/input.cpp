@@ -1,7 +1,7 @@
 #include "input.h"
 
-input::input( rectangle footprint, colour ownColour ):
-	graphicObject( footprint, ownColour ),
+input::input( rectangle footprint, colour own_colour ):
+	graphic_object( footprint, own_colour ),
 	source( nullptr )
 {}
 
@@ -9,33 +9,33 @@ input::~input()
 {
 }
 
-void input::connectOutput( output * source )
+void input::connect_output( output * source )
 {
 	this->source = source;
 }
 
-double input::getFrame()
+double input::get_frame()
 {
 	if( source )
-		return source->getFrame();
-	return 0.0f; //If there is no source connected return 0.0f.
+		return source->get_frame();
+	return 0.0f; //if there is no source connected return 0.0f.
 }
 
-bool input::frameReady()
+bool input::frame_ready()
 {
 	if( source )
-		return source->frameReady();
-	return true; //If there is no source connected the frame is always considered ready, the returned frame will always be 0.0f then.
+		return source->frame_ready();
+	return true; //if there is no source connected the frame is always considered ready, the returned frame will always be 0.0f then.
 }
 
-void input::drawConnection()
+void input::draw_connection()
 {
 	if( source != nullptr )
 	{
-		vector2I begin = vector2I( source->getFootprint().origin.x + source->getFootprint().size.x,
-										   source->getFootprint().origin.y + source->getFootprint().size.y / 2 );
-		vector2I end = vector2I( footprint.origin.x,
+		vector2_i begin = vector2_i( source->get_footprint().origin.x + source->get_footprint().size.x,
+										   source->get_footprint().origin.y + source->get_footprint().size.y / 2 );
+		vector2_i end = vector2_i( footprint.origin.x,
 										 footprint.origin.y + footprint.size.y / 2 );
-		ownScreen->drawLine( begin, end, source->getColour() );
+		own_screen->draw_line( begin, end, source->get_colour() );
 	}
 }

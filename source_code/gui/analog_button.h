@@ -2,14 +2,14 @@
 
 #include "button.h"
 
-class analogButton:
+class analog_button:
 	public button
 {
 private:
 	double value;
 public:
-	analogButton( rectangle footprint, colour ownColour );
-	~analogButton();
-	double getValue();
-	void setValue( double value );
+	analog_button( rectangle footprint, colour own_colour );
+	~analog_button();
+	double get_value();
+	void set_value( double value );
 };

@@ -1,21 +1,21 @@
-#include "bufferDelay.h"
+#include "buffer_delay.h"
 
-bufferDelay::bufferDelay( int maxLength ):
-	buffer( maxLength ),
-	currentPosition( 0 )
+buffer_delay::buffer_delay( int max_length ):
+	buffer( max_length ),
+	current_position( 0 )
 {}
 
-bufferDelay::~bufferDelay()
+buffer_delay::~buffer_delay()
 {}
 
-double bufferDelay::getPrevious( int position )
+double buffer_delay::get_previous( int position )
 {
-	return data[ ( currentPosition + position ) & maxLengthMask ];
+	return data[ ( current_position + position ) & max_length_mask ];
 }
 
-void bufferDelay::updateCurrent( double value )
+void buffer_delay::update_current( double value )
 {
-	data[ currentPosition ] = value;
-	currentPosition++;
-	currentPosition &= maxLengthMask;
+	data[ current_position ] = value;
+	current_position++;
+	current_position &= max_length_mask;
 }

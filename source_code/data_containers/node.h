@@ -8,15 +8,15 @@ struct node
 	node* next;
 
 	template <typename... arguments>
-	node( node* previous, node* next, arguments... dataInitializer ):
-		data( dataInitializer... ),
+	node( node* previous, node* next, arguments... data_initializer ):
+		data( data_initializer... ),
 		previous( previous ),
 		next( next )
 	{}
 
 	template <typename... arguments>
-	node( node* previous, node* next, type newData ):
-		data( newData ),
+	node( node* previous, node* next, type new_data ):
+		data( new_data ),
 		previous( previous ),
 		next( next )
 	{}

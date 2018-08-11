@@ -1,46 +1,46 @@
-#include "effectTsrapnikChorus.h"
+#include "effect_tsrapnik_chorus.h"
 
-void effectTsrapnikChorus::process()
+void effect_tsrapnik_chorus::process()
 {
-	double frame = monoInput->getFrame();
-	double feedback = feedbackButton->getValue();
-	double wet = wetButton->getValue();
+	double frame = mono_input->get_frame();
+	double feedback = feedback_button->get_value();
+	double wet = wet_button->get_value();
 
-	double delayOutput = delay.getPrevious( -12000 );
-	frame = ( 1.0f - wet ) * frame + wet * delayOutput;
+	double delay_output = delay.get_previous( -12000 );
+	frame = ( 1.0f - wet ) * frame + wet * delay_output;
 
-	double delayInput = ( 1.0f - feedback ) * frame + feedback * delayOutput;
-	delay.updateCurrent( delayInput );
+	double delay_input = ( 1.0f - feedback ) * frame + feedback * delay_output;
+	delay.update_current( delay_input );
 
-	monoOutput->updateFrame( frame );
+	mono_output->update_frame( frame );
 }
 
-effectTsrapnikChorus::effectTsrapnikChorus( rectangle footprint, colour ownColour ):
-	effect( footprint, ownColour ),
+effect_tsrapnik_chorus::effect_tsrapnik_chorus( rectangle footprint, colour own_colour ):
+	effect( footprint, own_colour ),
 	delay( 12000 )
 {
-	monoInput = new input( rectangle( vector2I( 0, 120 ), vector2I( 30, 40 ) ),
+	mono_input = new input( rectangle( vector2_i( 0, 120 ), vector2_i( 30, 40 ) ),
 						   colour( 255, 0, 0, 255 ) );
-	monoOutput = new output( rectangle( vector2I( 170, 120 ), vector2I( 30, 40 ) ),
+	mono_output = new output( rectangle( vector2_i( 170, 120 ), vector2_i( 30, 40 ) ),
 						   colour( 0, 255, 0, 255 ) );
-	feedbackButton = new analogButton( rectangle( vector2I( 80, 80 ), vector2I( 30, 40 ) ),
+	feedback_button = new analog_button( rectangle( vector2_i( 80, 80 ), vector2_i( 30, 40 ) ),
 							   colour( 0, 0, 255, 255 ) );
-	wetButton = new analogButton( rectangle( vector2I( 80, 130 ), vector2I( 30, 40 ) ),
+	wet_button = new analog_button( rectangle( vector2_i( 80, 130 ), vector2_i( 30, 40 ) ),
 								 colour( 0, 0, 255, 255 ) );
-	addInput( monoInput );
-	addOutput( monoOutput );
-	addButton( feedbackButton );
-	addButton( wetButton );
+	add_input( mono_input );
+	add_output( mono_output );
+	add_button( feedback_button );
+	add_button( wet_button );
 
-	feedbackButton->setValue( 0.9f );
-	wetButton->setValue( 0.7f );
+	feedback_button->set_value( 0.9f );
+	wet_button->set_value( 0.7f );
 }
 
 
-effectTsrapnikChorus::~effectTsrapnikChorus()
+effect_tsrapnik_chorus::~effect_tsrapnik_chorus()
 {
-	delete monoInput;
-	delete monoOutput;
-	delete feedbackButton;
-	delete wetButton;
+	delete mono_input;
+	delete mono_output;
+	delete feedback_button;
+	delete wet_button;
 }

@@ -1,20 +1,20 @@
 #pragma once
 
 #include "effect.h"
-#include "analogButton.h"
-#include "bufferDelay.h"
+#include "analog_button.h"
+#include "buffer_delay.h"
 
-class effectTsrapnikDelay: public effect
+class effect_tsrapnik_delay: public effect
 {
 private:
-	input* monoInput;
-	output* monoOutput;
-	analogButton* feedbackButton, * wetButton, * delayTimeButton;
+	input* mono_input;
+	output* mono_output;
+	analog_button* feedback_button, * wet_button, * delay_time_button;
 
-	bufferDelay delay;
+	buffer_delay delay;
 
 	void process();
 public:
-	effectTsrapnikDelay( rectangle footprint, colour ownColour );
-	~effectTsrapnikDelay();
+	effect_tsrapnik_delay( rectangle footprint, colour own_colour );
+	~effect_tsrapnik_delay();
 };

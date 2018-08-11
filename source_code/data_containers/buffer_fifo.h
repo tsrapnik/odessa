@@ -1,15 +1,15 @@
 #pragma once
 
 #include "buffer.h"
-class bufferFifo:
+class buffer_fifo:
 	public buffer
 {
 private:
-	int beginPosition, endPosition, queueLength;
+	int begin_position, end_position, queue_length;
 public:
-	bufferFifo( int maxLength );
-	~bufferFifo();
+	buffer_fifo( int max_length );
+	~buffer_fifo();
 	void push( double );
 	double pop();
-	int getQueueLength();
+	int get_queue_length();
 };

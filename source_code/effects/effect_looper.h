@@ -1,9 +1,9 @@
 #pragma once
 
 #include "effect.h"
-#include "listIterator.h"
+#include "list_iterator.h"
 
-enum class looperState
+enum class looper_state
 {
 	stopped,
 	playing,
@@ -11,7 +11,7 @@ enum class looperState
 	overdubbing
 };
 
-class effectTsrapnikLooper: public effect
+class effect_tsrapnik_looper: public effect
 {
 private:
 	class channel
@@ -26,25 +26,25 @@ private:
 			};
 
 			list< block* > blocks;
-			listIterator< block* > blockIterator;
-			int blockIndex;
+			list_iterator< block* > block_iterator;
+			int block_index;
 
 		public:
-			track( int blockCount );
+			track( int block_count );
 
 			bool muted;
 
-			void restartTrack();
+			void restart_track();
 
-			void toNextFrame();
-			float getCurrentFrame();
-			void recordNextFrame( float inputFrame, int* length );
-			void updateCurrentFrame( float inputFrame );
+			void to_next_frame();
+			float get_current_frame();
+			void record_next_frame( float input_frame, int* length );
+			void update_current_frame( float input_frame );
 		};
 
 		int length;
 		list< track* > tracks;
-		listIterator< track* > activeTrackPointer;
+		list_iterator< track* > active_track_pointer;
 
 	public:
 		channel();
@@ -55,20 +55,20 @@ private:
 
 		void restart();
 		void clear();
-		void layerOnActiveTrack();
-		void removeActiveTrack();
+		void layer_on_active_track();
+		void remove_active_track();
 	};
 
-	input* monoInput;
-	output* monoOutput;
+	input* mono_input;
+	output* mono_output;
 
 	list< channel* > channels;
-	listIterator< channel* > activeChannelPointer;
+	list_iterator< channel* > active_channel_pointer;
 
-	looperState currentState;
+	looper_state current_state;
 
 public:
-	effectTsrapnikLooper( rectangle footprint, colour ownColour );
-	~effectTsrapnikLooper();
+	effect_tsrapnik_looper( rectangle footprint, colour own_colour );
+	~effect_tsrapnik_looper();
 	virtual void process();
 };

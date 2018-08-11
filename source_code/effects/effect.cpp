@@ -1,57 +1,57 @@
 #include "effect.h"
 
-#include "analogButton.h"
+#include "analog_button.h"
 
-effect::effect( rectangle footprint, colour ownColour ) :
-	graphicObject( footprint, ownColour )
+effect::effect( rectangle footprint, colour own_colour ) :
+	graphic_object( footprint, own_colour )
 {}
 
 effect::~effect()
 {}
 
-void effect::setOwnScreen( screen* ownScreen )
+void effect::set_own_screen( screen* own_screen )
 {
-	graphicObject::setOwnScreen( ownScreen );
+	graphic_object::set_own_screen( own_screen );
 
-	listIterator< input* > inputsIterator( &inputs );
-	for( inputsIterator.toFirst(); !inputsIterator.atEnd(); inputsIterator++ )
-		inputsIterator.getDataCopy()->setOwnScreen( ownScreen );
+	list_iterator< input* > inputs_iterator( &inputs );
+	for( inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++ )
+		inputs_iterator.get_data_copy()->set_own_screen( own_screen );
 
-	listIterator< output* > outputsIterator( &outputs );
-	for( outputsIterator.toFirst(); !outputsIterator.atEnd(); outputsIterator++ )
-		outputsIterator.getDataCopy()->setOwnScreen( ownScreen );
+	list_iterator< output* > outputs_iterator( &outputs );
+	for( outputs_iterator.to_first(); !outputs_iterator.at_end(); outputs_iterator++ )
+		outputs_iterator.get_data_copy()->set_own_screen( own_screen );
 
-	listIterator< button* > buttonsIterator( &buttons );
-	for( buttonsIterator.toFirst(); !buttonsIterator.atEnd(); buttonsIterator++ )
-		buttonsIterator.getDataCopy()->setOwnScreen( ownScreen );
+	list_iterator< button* > buttons_iterator( &buttons );
+	for( buttons_iterator.to_first(); !buttons_iterator.at_end(); buttons_iterator++ )
+		buttons_iterator.get_data_copy()->set_own_screen( own_screen );
 }
 //commit1
-void effect::addButton( button* newButton )
+void effect::add_button( button* new_button )
 {
-	newButton->setBoundaries( &this->footprint );
-	buttons.appendCopy( newButton );
+	new_button->set_boundaries( &this->footprint );
+	buttons.append_copy( new_button );
 }
 
-void effect::addInput( input* newInput )
+void effect::add_input( input* new_input )
 {
-	newInput->setBoundaries( &this->footprint );
-	inputs.appendCopy( newInput );
+	new_input->set_boundaries( &this->footprint );
+	inputs.append_copy( new_input );
 }
 
-void effect::addOutput( output* newOutput )
+void effect::add_output( output* new_output )
 {
-	newOutput->setBoundaries( &this->footprint );
-	outputs.appendCopy( newOutput );
+	new_output->set_boundaries( &this->footprint );
+	outputs.append_copy( new_output );
 }
 
-//Calculates all outputs and marks them as ready. Returns false when the inputs weren't ready yet.
+//calculates all outputs and marks them as ready. returns false when the inputs weren't ready yet.
 bool effect::update()
 {
-	listIterator< input* > inputsIterator( &inputs );
-	for( inputsIterator.toFirst(); !inputsIterator.atEnd(); inputsIterator++ )
+	list_iterator< input* > inputs_iterator( &inputs );
+	for( inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++ )
 	{
-		if( !inputsIterator.getDataCopy()->frameReady() )
-			return false; //Return false when one of the inputs is not ready, so no processing is done.
+		if( !inputs_iterator.get_data_copy()->frame_ready() )
+			return false; //return false when one of the inputs is not ready, so no processing is done.
 	}
 
 	process();
@@ -61,69 +61,69 @@ bool effect::update()
 
 void effect::draw()
 {
-	graphicObject::draw();
+	graphic_object::draw();
 
-	listIterator< input* > inputsIterator( &inputs );
-	for( inputsIterator.toFirst(); !inputsIterator.atEnd(); inputsIterator++ )
-		inputsIterator.getDataCopy()->draw();
+	list_iterator< input* > inputs_iterator( &inputs );
+	for( inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++ )
+		inputs_iterator.get_data_copy()->draw();
 
-	listIterator< output* > outputsIterator( &outputs );
-	for( outputsIterator.toFirst(); !outputsIterator.atEnd(); outputsIterator++ )
-		outputsIterator.getDataCopy()->draw();
+	list_iterator< output* > outputs_iterator( &outputs );
+	for( outputs_iterator.to_first(); !outputs_iterator.at_end(); outputs_iterator++ )
+		outputs_iterator.get_data_copy()->draw();
 
-	listIterator< button* > buttonsIterator( &buttons );
-	for( buttonsIterator.toFirst(); !buttonsIterator.atEnd(); buttonsIterator++ )
-		buttonsIterator.getDataCopy()->draw();
+	list_iterator< button* > buttons_iterator( &buttons );
+	for( buttons_iterator.to_first(); !buttons_iterator.at_end(); buttons_iterator++ )
+		buttons_iterator.get_data_copy()->draw();
 }
 
-void effect::drawConnections()
+void effect::draw_connections()
 {
-	listIterator< input* > inputsIterator( &inputs );
-	for( inputsIterator.toFirst(); !inputsIterator.atEnd(); inputsIterator++ )
-		inputsIterator.getDataCopy()->drawConnection();
+	list_iterator< input* > inputs_iterator( &inputs );
+	for( inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++ )
+		inputs_iterator.get_data_copy()->draw_connection();
 }
 
-vector2I effect::move( vector2I displacement )
+vector2_i effect::move( vector2_i displacement )
 {
-	displacement = graphicObject::move( displacement );
+	displacement = graphic_object::move( displacement );
 
-	listIterator< input* > inputsIterator( &inputs );
-	for( inputsIterator.toFirst(); !inputsIterator.atEnd(); inputsIterator++ )
-		inputsIterator.getDataCopy()->move( displacement );
+	list_iterator< input* > inputs_iterator( &inputs );
+	for( inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++ )
+		inputs_iterator.get_data_copy()->move( displacement );
 
-	listIterator< output* > outputsIterator( &outputs );
-	for( outputsIterator.toFirst(); !outputsIterator.atEnd(); outputsIterator++ )
-		outputsIterator.getDataCopy()->move( displacement );
+	list_iterator< output* > outputs_iterator( &outputs );
+	for( outputs_iterator.to_first(); !outputs_iterator.at_end(); outputs_iterator++ )
+		outputs_iterator.get_data_copy()->move( displacement );
 
-	listIterator< button* > buttonsIterator( &buttons );
-	for( buttonsIterator.toFirst(); !buttonsIterator.atEnd(); buttonsIterator++ )
-		buttonsIterator.getDataCopy()->move( displacement );
+	list_iterator< button* > buttons_iterator( &buttons );
+	for( buttons_iterator.to_first(); !buttons_iterator.at_end(); buttons_iterator++ )
+		buttons_iterator.get_data_copy()->move( displacement );
 
 	return displacement;
 }
 
-graphicObject * effect::selectButton( vector2I mousePointer )
+graphic_object * effect::select_button( vector2_i mouse_pointer )
 {
-	listIterator< input* > inputsIterator( &inputs );
-	for( inputsIterator.toFirst(); !inputsIterator.atEnd(); inputsIterator++ )
+	list_iterator< input* > inputs_iterator( &inputs );
+	for( inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++ )
 	{
-		graphicObject* selection = inputsIterator.getDataCopy()->isSelected( mousePointer );
+		graphic_object* selection = inputs_iterator.get_data_copy()->is_selected( mouse_pointer );
 		if( selection != nullptr )
 			return selection;
 	}
 
-	listIterator< output* > outputsIterator( &outputs );
-	for( outputsIterator.toFirst(); !outputsIterator.atEnd(); outputsIterator++ )
+	list_iterator< output* > outputs_iterator( &outputs );
+	for( outputs_iterator.to_first(); !outputs_iterator.at_end(); outputs_iterator++ )
 	{
-		graphicObject* selection = outputsIterator.getDataCopy()->isSelected( mousePointer );
+		graphic_object* selection = outputs_iterator.get_data_copy()->is_selected( mouse_pointer );
 		if( selection != nullptr )
 			return selection;
 	}
 
-	listIterator< button* > buttonsIterator( &buttons );
-	for( buttonsIterator.toFirst(); !buttonsIterator.atEnd(); buttonsIterator++ )
+	list_iterator< button* > buttons_iterator( &buttons );
+	for( buttons_iterator.to_first(); !buttons_iterator.at_end(); buttons_iterator++ )
 	{
-		graphicObject* selection = buttonsIterator.getDataCopy()->isSelected( mousePointer );
+		graphic_object* selection = buttons_iterator.get_data_copy()->is_selected( mouse_pointer );
 		if( selection != nullptr )
 			return selection;
 	}
@@ -131,12 +131,12 @@ graphicObject * effect::selectButton( vector2I mousePointer )
 	return nullptr;
 }
 
-output* effect::selectOutput( vector2I mousePointer )
+output* effect::select_output( vector2_i mouse_pointer )
 {
-	listIterator< output* > outputsIterator( &outputs );
-	for( outputsIterator.toFirst(); !outputsIterator.atEnd(); outputsIterator++ )
+	list_iterator< output* > outputs_iterator( &outputs );
+	for( outputs_iterator.to_first(); !outputs_iterator.at_end(); outputs_iterator++ )
 	{
-		output* selection = ( output* )outputsIterator.getDataCopy()->isSelected( mousePointer );
+		output* selection = ( output* )outputs_iterator.get_data_copy()->is_selected( mouse_pointer );
 		if( selection != nullptr )
 			return selection;
 	}
@@ -144,12 +144,12 @@ output* effect::selectOutput( vector2I mousePointer )
 	return nullptr;
 }
 
-input* effect::selectInput( vector2I mousePointer )
+input* effect::select_input( vector2_i mouse_pointer )
 {
-	listIterator< input* > inputsIterator( &inputs );
-	for( inputsIterator.toFirst(); !inputsIterator.atEnd(); inputsIterator++ )
+	list_iterator< input* > inputs_iterator( &inputs );
+	for( inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++ )
 	{
-		input* selection = ( input* )inputsIterator.getDataCopy()->isSelected( mousePointer );
+		input* selection = ( input* )inputs_iterator.get_data_copy()->is_selected( mouse_pointer );
 		if( selection != nullptr )
 			return selection;
 	}

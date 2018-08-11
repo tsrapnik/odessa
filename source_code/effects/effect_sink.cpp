@@ -1,18 +1,18 @@
-#include "effectSink.h"
+#include "effect_sink.h"
 
-void effectSink::process()
+void effect_sink::process()
 {
-	*sink = ( signed int )monoInput->getFrame();
+	*sink = ( signed int )mono_input->get_frame();
 }
- effectSink::effectSink( signed int* sink, rectangle footprint, colour ownColour ):
-	effect( footprint, ownColour ),
+ effect_sink::effect_sink( signed int* sink, rectangle footprint, colour own_colour ):
+	effect( footprint, own_colour ),
 	sink( sink )
 {
-	monoInput = new input( rectangle( vector2I( 15, 20 ), vector2I( 30, 40 ) ),
+	mono_input = new input( rectangle( vector2_i( 15, 20 ), vector2_i( 30, 40 ) ),
 						   colour( 0, 0, 255, 255 ) );
-	addInput( monoInput );
+	add_input( mono_input );
 }
- effectSink::~effectSink()
+ effect_sink::~effect_sink()
 {
-	delete monoInput;
+	delete mono_input;
 }

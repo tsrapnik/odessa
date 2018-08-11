@@ -3,9 +3,9 @@
 class buffer
 {
 protected:
-	int maxLengthMask;
+	int max_length_mask;
 	double* data;
 public:
-	buffer( int maxLength );
+	buffer( int max_length );
 	virtual ~buffer() = 0;
 };

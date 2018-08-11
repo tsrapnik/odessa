@@ -2,19 +2,19 @@
 
 #include "effect.h"
 
-class effectSink:
+class effect_sink:
 	public effect
 {
 private:
 	///
-	///Points to the actual 32 bit value that is sent to the audio output, e.g. dac.
+	///points to the actual 32 bit value that is sent to the audio output, e.g. dac.
 	///
 	signed int* sink;
 
-	input* monoInput;
+	input* mono_input;
 
 	virtual void process();
 public:
-	effectSink( signed int* sink, rectangle footprint, colour ownColour );
-	~effectSink();
+	effect_sink( signed int* sink, rectangle footprint, colour own_colour );
+	~effect_sink();
 };

@@ -1,27 +1,27 @@
-#include "standardLibrary.h"
-#include "buddyHeap.h"
+#include "standard_library.h"
+#include "buddy_heap.h"
 
 void* operator new( long unsigned int size )
 {
-	return buddyHeap::allocate( size );
+	return buddy_heap::allocate( size );
 }
 void* operator new[]( long unsigned int size )
 {
-	return buddyHeap::allocate( size );
+	return buddy_heap::allocate( size );
 }
 void operator delete( void* pointer )
 {
-	buddyHeap::free( pointer );
+	buddy_heap::free( pointer );
 }
 void operator delete[]( void* pointer )
 {
-	buddyHeap::free( pointer );
+	buddy_heap::free( pointer );
 }
 void operator delete( void* pointer, long unsigned int size )
 {
-	buddyHeap::free( pointer );
+	buddy_heap::free( pointer );
 }
 void operator delete[]( void* pointer, long unsigned int size )
 {
-	buddyHeap::free( pointer );
+	buddy_heap::free( pointer );
 }

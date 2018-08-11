@@ -377,11 +377,11 @@ int boot (void)
 
 	//CleanDataCache ();
 	// clean L1 data cache
-	for (register unsigned nSet = 0; nSet < L1_DATA_CACHE_SETS; nSet++)
+	for (unsigned nSet = 0; nSet < L1_DATA_CACHE_SETS; nSet++)
 	{
-		for (register unsigned nWay = 0; nWay < L1_DATA_CACHE_WAYS; nWay++)
+		for (unsigned nWay = 0; nWay < L1_DATA_CACHE_WAYS; nWay++)
 		{
-			register u64 nSetWayLevel =   nWay << L1_SETWAY_WAY_SHIFT
+			u64 nSetWayLevel =   nWay << L1_SETWAY_WAY_SHIFT
 						    | nSet << L1_SETWAY_SET_SHIFT
 						    | 0 << SETWAY_LEVEL_SHIFT;
 
@@ -390,11 +390,11 @@ int boot (void)
 	}
 
 	// clean L2 unified cache
-	for (register unsigned nSet = 0; nSet < L2_CACHE_SETS; nSet++)
+	for (unsigned nSet = 0; nSet < L2_CACHE_SETS; nSet++)
 	{
-		for (register unsigned nWay = 0; nWay < L2_CACHE_WAYS; nWay++)
+		for (unsigned nWay = 0; nWay < L2_CACHE_WAYS; nWay++)
 		{
-			register u64 nSetWayLevel =   nWay << L2_SETWAY_WAY_SHIFT
+			u64 nSetWayLevel =   nWay << L2_SETWAY_WAY_SHIFT
 						    | nSet << L2_SETWAY_SET_SHIFT
 						    | 1 << SETWAY_LEVEL_SHIFT;
 
@@ -434,11 +434,11 @@ int boot (void)
 
 	//InvalidateDataCache ();
 	// invalidate L1 data cache
-	for (register unsigned nSet = 0; nSet < L1_DATA_CACHE_SETS; nSet++)
+	for (unsigned nSet = 0; nSet < L1_DATA_CACHE_SETS; nSet++)
 	{
-		for (register unsigned nWay = 0; nWay < L1_DATA_CACHE_WAYS; nWay++)
+		for (unsigned nWay = 0; nWay < L1_DATA_CACHE_WAYS; nWay++)
 		{
-			register u64 nSetWayLevel =   nWay << L1_SETWAY_WAY_SHIFT
+			u64 nSetWayLevel =   nWay << L1_SETWAY_WAY_SHIFT
 						    | nSet << L1_SETWAY_SET_SHIFT
 						    | 0 << SETWAY_LEVEL_SHIFT;
 
@@ -447,11 +447,11 @@ int boot (void)
 	}
 
 	// invalidate L2 unified cache
-	for (register unsigned nSet = 0; nSet < L2_CACHE_SETS; nSet++)
+	for (unsigned nSet = 0; nSet < L2_CACHE_SETS; nSet++)
 	{
-		for (register unsigned nWay = 0; nWay < L2_CACHE_WAYS; nWay++)
+		for (unsigned nWay = 0; nWay < L2_CACHE_WAYS; nWay++)
 		{
-			register u64 nSetWayLevel =   nWay << L2_SETWAY_WAY_SHIFT
+			u64 nSetWayLevel =   nWay << L2_SETWAY_WAY_SHIFT
 						    | nSet << L2_SETWAY_SET_SHIFT
 						    | 1 << SETWAY_LEVEL_SHIFT;
 

@@ -1,24 +1,24 @@
 #pragma once
 
 #include "list.h"
-#include "listIterator.h"
+#include "list_iterator.h"
 #include "effect.h"
 #include "screen.h"
 
-class signalPath
+class signal_path
 {
 private:
-	screen* ownScreen;
+	screen* own_screen;
 	list< effect* > effects;
 
 public:
-	signalPath( screen* ownScreen );
-	~signalPath();
+	signal_path( screen* own_screen );
+	~signal_path();
 	void update();
 	void draw();
-	void addEffect( effect* newEffect );
-	effect* selectEffect( vector2I mousePointer );
-	graphicObject* selectButton( vector2I mousePointer );
-	output* selectOutput( vector2I mousePointer );
-	input* selectInput( vector2I mousePointer );
+	void add_effect( effect* new_effect );
+	effect* select_effect( vector2_i mouse_pointer );
+	graphic_object* select_button( vector2_i mouse_pointer );
+	output* select_output( vector2_i mouse_pointer );
+	input* select_input( vector2_i mouse_pointer );
 };

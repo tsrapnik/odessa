@@ -1,6 +1,6 @@
 #pragma once
 
-//Including this header enables bitwise logic operations for all enum types.
+//including this header enables bitwise logic operations for all enum types.
 
 template< typename enum_type >   
 inline enum_type operator &( enum_type left_argument, enum_type right_argument )  

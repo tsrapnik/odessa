@@ -1,14 +1,14 @@
 #pragma once
 
 #include "button.h"
-class pushButton:
+class push_button:
 	public button
 {
 private:
 	bool pushed;
 public:
-	pushButton( rectangle footprint, colour ownColour );
-	~pushButton();
-	void setPushed();
-	bool checkPushed();
+	push_button( rectangle footprint, colour own_colour );
+	~push_button();
+	void set_pushed();
+	bool check_pushed();
 };

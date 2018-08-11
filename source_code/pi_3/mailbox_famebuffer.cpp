@@ -1,6 +1,6 @@
 #include "mailbox_framebuffer.h"
 
-//tmp( Move global code to seperate class. )
+//tmp( move global code to seperate class. )
 constexpr u32 l1_data_cache_sets = 128;
 constexpr u32 l1_data_cache_ways = 4;
 constexpr u32 l1_setway_set_shift = 6;
@@ -11,68 +11,68 @@ constexpr u32 l2_cache_ways = 16;
 constexpr u32 l2_setway_way_shift = 28;
 constexpr u32 l2_setway_set_shift = 6;
 
-void CleanDataCache( void )
+void clean_data_cache( void )
 {
-	// clean L1 data cache
-	for (unsigned nSet = 0; nSet < l1_data_cache_sets; nSet++)
+	// clean l1 data cache
+	for (unsigned n_set = 0; n_set < l1_data_cache_sets; n_set++)
 	{
-		for (unsigned nWay = 0; nWay < l1_data_cache_ways; nWay++)
+		for (unsigned n_way = 0; n_way < l1_data_cache_ways; n_way++)
 		{
-			u64 nSetWayLevel =   nWay << l1_setway_way_shift
-						    | nSet << l1_setway_set_shift
+			u64 n_set_way_level =   n_way << l1_setway_way_shift
+						    | n_set << l1_setway_set_shift
 						    | 0 << setway_level_shift;
 
-			asm volatile ("dc csw, %0" : : "r" (nSetWayLevel) : "memory");
+			asm volatile ("dc csw, %0" : : "r" (n_set_way_level) : "memory");
 		}
 	}
 
-	// clean L2 unified cache
-	for (unsigned nSet = 0; nSet < l2_cache_sets; nSet++)
+	// clean l2 unified cache
+	for (unsigned n_set = 0; n_set < l2_cache_sets; n_set++)
 	{
-		for (unsigned nWay = 0; nWay < l2_cache_ways; nWay++)
+		for (unsigned n_way = 0; n_way < l2_cache_ways; n_way++)
 		{
-			u64 nSetWayLevel =   nWay << l2_setway_way_shift
-						    | nSet << l2_setway_set_shift
+			u64 n_set_way_level =   n_way << l2_setway_way_shift
+						    | n_set << l2_setway_set_shift
 						    | 1 << setway_level_shift;
 
-			asm volatile ("dc csw, %0" : : "r" (nSetWayLevel) : "memory");
+			asm volatile ("dc csw, %0" : : "r" (n_set_way_level) : "memory");
 		}
 	}
 }
 
-void InvalidateDataCache( void )
+void invalidate_data_cache( void )
 {
-	// invalidate L1 data cache
-	for (unsigned nSet = 0; nSet < l1_data_cache_sets; nSet++)
+	// invalidate l1 data cache
+	for (unsigned n_set = 0; n_set < l1_data_cache_sets; n_set++)
 	{
-		for (unsigned nWay = 0; nWay < l1_data_cache_ways; nWay++)
+		for (unsigned n_way = 0; n_way < l1_data_cache_ways; n_way++)
 		{
-			u64 nSetWayLevel =   nWay << l1_setway_way_shift
-						    | nSet << l1_setway_set_shift
+			u64 n_set_way_level =   n_way << l1_setway_way_shift
+						    | n_set << l1_setway_set_shift
 						    | 0 << setway_level_shift;
 
-			asm volatile ("dc isw, %0" : : "r" (nSetWayLevel) : "memory");
+			asm volatile ("dc isw, %0" : : "r" (n_set_way_level) : "memory");
 		}
 	}
 
-	// invalidate L2 unified cache
-	for (unsigned nSet = 0; nSet < l2_cache_sets; nSet++)
+	// invalidate l2 unified cache
+	for (unsigned n_set = 0; n_set < l2_cache_sets; n_set++)
 	{
-		for (unsigned nWay = 0; nWay < l2_cache_ways; nWay++)
+		for (unsigned n_way = 0; n_way < l2_cache_ways; n_way++)
 		{
-			u64 nSetWayLevel =   nWay << l2_setway_way_shift
-						    | nSet << l2_setway_set_shift
+			u64 n_set_way_level =   n_way << l2_setway_way_shift
+						    | n_set << l2_setway_set_shift
 						    | 1 << setway_level_shift;
 
-			asm volatile ("dc isw, %0" : : "r" (nSetWayLevel) : "memory");
+			asm volatile ("dc isw, %0" : : "r" (n_set_way_level) : "memory");
 		}
 	}
 }
-void DataSyncBarrier()
+void data_sync_barrier()
 {
     asm volatile ("dsb sy" ::: "memory");
 }
-void DataMemBarrier()
+void data_mem_barrier()
 {
     asm volatile ("dmb sy" ::: "memory");
 }
@@ -92,14 +92,14 @@ mailbox_framebuffer::mailbox_framebuffer():
     this_mailbox_framebuffer_info->buffer_pointer = 0;
     this_mailbox_framebuffer_info->buffer_size = 0;
 
-    CleanDataCache ();
-    DataSyncBarrier ();
+    clean_data_cache ();
+    data_sync_barrier ();
 
     this_mailbox.write_read( (u32) (u64) this_mailbox_framebuffer_info, mailbox::channel::frame_buffer );
 
-    InvalidateDataCache ();
+    invalidate_data_cache ();
 
-    DataMemBarrier ();
+    data_mem_barrier ();
 }
 
 mailbox_framebuffer::~mailbox_framebuffer()

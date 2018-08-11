@@ -1,48 +1,48 @@
-#include "effectTsrapnikDelay.h"
+#include "effect_tsrapnik_delay.h"
 
-void effectTsrapnikDelay::process()
+void effect_tsrapnik_delay::process()
 {
-	double frame = monoInput->getFrame();
-    double feedback = feedbackButton->getValue();
-    double wet = wetButton->getValue();
-	double delayTime = delayTimeButton->getValue();
+	double frame = mono_input->get_frame();
+    double feedback = feedback_button->get_value();
+    double wet = wet_button->get_value();
+	double delay_time = delay_time_button->get_value();
 
-	double delayOutput = delay.getPrevious( -( int )delayTime );
-	frame = ( 1.0 - wet ) * frame + wet * delayOutput;
+	double delay_output = delay.get_previous( -( int )delay_time );
+	frame = ( 1.0 - wet ) * frame + wet * delay_output;
 
-	double delayInput = ( 1.0 - feedback ) * frame + feedback * delayOutput;
-	delay.updateCurrent( delayInput );
+	double delay_input = ( 1.0 - feedback ) * frame + feedback * delay_output;
+	delay.update_current( delay_input );
 
-	monoOutput->updateFrame( frame );
+	mono_output->update_frame( frame );
 }
 
-effectTsrapnikDelay::effectTsrapnikDelay( rectangle footprint, colour ownColour ):
-	effect( footprint, ownColour ),
+effect_tsrapnik_delay::effect_tsrapnik_delay( rectangle footprint, colour own_colour ):
+	effect( footprint, own_colour ),
 	delay( 12000 )
 {
-	monoInput = new input( rectangle( vector2I( 0, 120 ), vector2I( 30, 40 ) ),
+	mono_input = new input( rectangle( vector2_i( 0, 120 ), vector2_i( 30, 40 ) ),
 						   colour( 255, 0, 0, 255 ) );
-	monoOutput = new output( rectangle( vector2I( 170, 120 ), vector2I( 30, 40 ) ),
+	mono_output = new output( rectangle( vector2_i( 170, 120 ), vector2_i( 30, 40 ) ),
 						   colour( 0, 255, 0, 255 ) );
-	feedbackButton = new analogButton( rectangle( vector2I( 80, 80 ), vector2I( 30, 40 ) ),
+	feedback_button = new analog_button( rectangle( vector2_i( 80, 80 ), vector2_i( 30, 40 ) ),
 							   colour( 0, 0, 255, 255 ) );
-	delayTimeButton = new analogButton( rectangle( vector2I( 80, 130 ), vector2I( 30, 40 ) ),
+	delay_time_button = new analog_button( rectangle( vector2_i( 80, 130 ), vector2_i( 30, 40 ) ),
 								 colour( 0, 0, 255, 255 ) );
-	addInput( monoInput );
-	addOutput( monoOutput );
-	addButton( feedbackButton );
-	addButton( delayTimeButton );
+	add_input( mono_input );
+	add_output( mono_output );
+	add_button( feedback_button );
+	add_button( delay_time_button );
 
-    feedbackButton->setValue( 0.0 );
-    wetButton->setValue( 0.5 );
-    delayTimeButton->setValue( 1.0 );
+    feedback_button->set_value( 0.0 );
+    wet_button->set_value( 0.5 );
+    delay_time_button->set_value( 1.0 );
 }
 
 
-effectTsrapnikDelay::~effectTsrapnikDelay()
+effect_tsrapnik_delay::~effect_tsrapnik_delay()
 {
-	delete monoInput;
-	delete monoOutput;
-	delete feedbackButton;
-	delete delayTimeButton;
+	delete mono_input;
+	delete mono_output;
+	delete feedback_button;
+	delete delay_time_button;
 }

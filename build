@@ -1,5 +1,7 @@
 #/bin/bash!
 
+#include the compiler path to this shell session. compile the program with make. copy the compiled image
+#immediately to an sd card so it is ready for testing.
 export PATH=$PATH:$(pwd)/compiler/bin
 make $1
-cp compiledCode/kernel8.img /media/tsrapnik/ODESSSA
+cp compiled_code/kernel8.img /media/tsrapnik/ODESSSA

@@ -4,23 +4,23 @@
 #include "colour.h"
 #include "screen.h"
 
-class graphicObject
+class graphic_object
 {
 protected:
 	rectangle footprint;
 	rectangle* boundaries;
-	screen* ownScreen;
-	colour ownColour;
+	screen* own_screen;
+	colour own_colour;
 public:
-	//Ownscreen and boundaries should be set before using any other members.
-	graphicObject( rectangle footprint, colour ownColour );
-	void setBoundaries( rectangle* boundaries );
-	void setOwnScreen( screen* ownScreen );
-	rectangle getFootprint();
-	void setFootprint( rectangle newFootprint );
-	colour getColour();
-	virtual ~graphicObject() = 0;
+	//ownscreen and boundaries should be set before using any other members.
+	graphic_object( rectangle footprint, colour own_colour );
+	void set_boundaries( rectangle* boundaries );
+	void set_own_screen( screen* own_screen );
+	rectangle get_footprint();
+	void set_footprint( rectangle new_footprint );
+	colour get_colour();
+	virtual ~graphic_object() = 0;
 	void draw();
-	virtual vector2I move( vector2I displacement );
-	graphicObject* isSelected( vector2I mousePointer );
+	virtual vector2_i move( vector2_i displacement );
+	graphic_object* is_selected( vector2_i mouse_pointer );
 };

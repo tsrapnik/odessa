@@ -3,35 +3,35 @@
 #include "button.h"
 
 template <typename type>
-class discreteButton:
+class discrete_button:
 	public button
 {
 private:
 	type value;
 public:
-	discreteButton( rectangle footprint, colour ownColour );
-	~discreteButton();
-	type getValue();
-	void setValue( type value );
+	discrete_button( rectangle footprint, colour own_colour );
+	~discrete_button();
+	type get_value();
+	void set_value( type value );
 };
 
 template <typename type>
-discreteButton<type>::discreteButton( rectangle footprint, colour ownColour ):
-	button( footprint, ownColour )
+discrete_button<type>::discrete_button( rectangle footprint, colour own_colour ):
+	button( footprint, own_colour )
 {}
 
 template <typename type>
-discreteButton<type>::~discreteButton()
+discrete_button<type>::~discrete_button()
 {}
 
 template <typename type>
-type discreteButton<type>::getValue()
+type discrete_button<type>::get_value()
 {
 	return value;
 }
 
 template <typename type>
-void discreteButton<type>::setValue( type value )
+void discrete_button<type>::set_value( type value )
 {
 	this->value = value;
 }

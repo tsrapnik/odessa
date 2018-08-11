@@ -1,7 +1,7 @@
 #include "screen.h"
 
 screen::screen( u32 x_size, u32 y_size ):
-	footprint( vector2I( 0, 0 ), vector2I( x_size, y_size ) )
+	footprint( vector2_i( 0, 0 ), vector2_i( x_size, y_size ) )
 {
 
 }
@@ -9,24 +9,24 @@ screen::screen( u32 x_size, u32 y_size ):
 screen::~screen()
 {}
 
-char* screen::getBuffer()
+char* screen::get_buffer()
 {
 	return ( char* )buffer;
 }
 
-rectangle* screen::getFootprint()
+rectangle* screen::get_footprint()
 {
 	return &footprint;
 }
 
-void screen::clear( colour backGround )
+void screen::clear( colour back_ground )
 {
 	for( int x = 0; x < footprint.size.x; x++ )
 		for( int y = 0; y < footprint.size.y; y++ )
-			putOpaquePixel( vector2I( x, y ), backGround );
+			put_opaque_pixel( vector2_i( x, y ), back_ground );
 }
 
-//Functions used in drawLine
+//functions used in draw_line
 static inline int ipart( float x )
 {
 	return ( int )x;
@@ -56,16 +56,16 @@ static inline float rfpart( float x )
 	return 1.0f - fpart( x );
 }
 
-static inline int absI( int x )
+static inline int abs_i( int x )
 {
 	return ( x > 0 ) ? x : -x;
 }
 
-void screen::drawLine( vector2I begin, vector2I end, colour ownColour )
+void screen::draw_line( vector2_i begin, vector2_i end, colour own_colour )
 {
-	colour modifiedColour( ownColour );
+	colour modified_colour( own_colour );
 
-	bool steep = absI( end.y - begin.y ) > absI( end.x - begin.x );
+	bool steep = abs_i( end.y - begin.y ) > abs_i( end.x - begin.x );
 	if( steep )
 	{
 		float swap;
@@ -92,94 +92,94 @@ void screen::drawLine( vector2I begin, vector2I end, colour ownColour )
 		end.y = swap;
 	}
 
-	float dX = ( float )( end.x - begin.x );
-	float dY = ( float )( end.y - begin.y );
-	float gradient = dY / dX;
+	float d_x = ( float )( end.x - begin.x );
+	float d_y = ( float )( end.y - begin.y );
+	float gradient = d_y / d_x;
 
 	// handle first endpoint
-	float xEnd = rnd( ( float )begin.x );
-	float yEnd = begin.y + gradient * ( xEnd - begin.x );
+	float x_end = rnd( ( float )begin.x );
+	float y_end = begin.y + gradient * ( x_end - begin.x );
 	float xgap = rfpart( begin.x + 0.5f );
-	int xPxlBegin = xEnd; // this will be used in the main loop
-	int yPxlBegin = ipart( yEnd );
+	int x_pxl_begin = x_end; // this will be used in the main loop
+	int y_pxl_begin = ipart( y_end );
 	if( steep )
 	{
-		modifiedColour.alpha = ( int )( ownColour.alpha * rfpart( yEnd ) * xgap );
-		putTransparentPixel( vector2I( yPxlBegin, xPxlBegin ), modifiedColour );
-		modifiedColour.alpha = ( int )( ownColour.alpha * fpart( yEnd ) * xgap );
-		putTransparentPixel( vector2I( yPxlBegin + 1, xPxlBegin ), modifiedColour );
+		modified_colour.alpha = ( int )( own_colour.alpha * rfpart( y_end ) * xgap );
+		put_transparent_pixel( vector2_i( y_pxl_begin, x_pxl_begin ), modified_colour );
+		modified_colour.alpha = ( int )( own_colour.alpha * fpart( y_end ) * xgap );
+		put_transparent_pixel( vector2_i( y_pxl_begin + 1, x_pxl_begin ), modified_colour );
 	}
 	else
 	{
-		modifiedColour.alpha = ( int )( ownColour.alpha * rfpart( yEnd ) * xgap );
-		putTransparentPixel( vector2I( xPxlBegin, yPxlBegin ), modifiedColour );
-		modifiedColour.alpha = ( int )( ownColour.alpha * fpart( yEnd ) * xgap );
-		putTransparentPixel( vector2I( xPxlBegin + 1, yPxlBegin ), modifiedColour );
+		modified_colour.alpha = ( int )( own_colour.alpha * rfpart( y_end ) * xgap );
+		put_transparent_pixel( vector2_i( x_pxl_begin, y_pxl_begin ), modified_colour );
+		modified_colour.alpha = ( int )( own_colour.alpha * fpart( y_end ) * xgap );
+		put_transparent_pixel( vector2_i( x_pxl_begin + 1, y_pxl_begin ), modified_colour );
 	}
-	float interY = yEnd + gradient; // first y-intersection for the main loop
+	float inter_y = y_end + gradient; // first y-intersection for the main loop
 
 	// handle second endpoint
-	xEnd = rnd( ( float )end.x );
-	yEnd = end.y + gradient * ( xEnd - end.x );
+	x_end = rnd( ( float )end.x );
+	y_end = end.y + gradient * ( x_end - end.x );
 	xgap = fpart( end.x + 0.5f );
-	int xPxlEnd = ( int ) xEnd; //this will be used in the main loop
-	int yPxlEnd = ipart( yEnd );
+	int x_pxl_end = ( int ) x_end; //this will be used in the main loop
+	int y_pxl_end = ipart( y_end );
 	if( steep )
 	{
-		modifiedColour.alpha = ( int )( ownColour.alpha * rfpart( yEnd ) * xgap );
-		putTransparentPixel( vector2I( yPxlEnd, xPxlEnd ), modifiedColour );
-		modifiedColour.alpha = ( int )( ownColour.alpha * fpart( yEnd ) * xgap );
-		putTransparentPixel( vector2I( yPxlEnd + 1, xPxlEnd ), modifiedColour );
+		modified_colour.alpha = ( int )( own_colour.alpha * rfpart( y_end ) * xgap );
+		put_transparent_pixel( vector2_i( y_pxl_end, x_pxl_end ), modified_colour );
+		modified_colour.alpha = ( int )( own_colour.alpha * fpart( y_end ) * xgap );
+		put_transparent_pixel( vector2_i( y_pxl_end + 1, x_pxl_end ), modified_colour );
 	}
 	else
 	{
-		modifiedColour.alpha = ( int )( ownColour.alpha * rfpart( yEnd ) * xgap );
-		putTransparentPixel( vector2I( xPxlEnd, yPxlEnd ), modifiedColour );
-		modifiedColour.alpha = ( int )( ownColour.alpha * fpart( yEnd ) * xgap );
-		putTransparentPixel( vector2I( xPxlEnd + 1, yPxlEnd ), modifiedColour );
+		modified_colour.alpha = ( int )( own_colour.alpha * rfpart( y_end ) * xgap );
+		put_transparent_pixel( vector2_i( x_pxl_end, y_pxl_end ), modified_colour );
+		modified_colour.alpha = ( int )( own_colour.alpha * fpart( y_end ) * xgap );
+		put_transparent_pixel( vector2_i( x_pxl_end + 1, y_pxl_end ), modified_colour );
 	}
 
 	// main loop
 	if( steep )
 	{
-		for( int x = xPxlBegin + 1; x < xPxlEnd; x++ )
+		for( int x = x_pxl_begin + 1; x < x_pxl_end; x++ )
 		{
-			modifiedColour.alpha = ( int )( ownColour.alpha * rfpart( interY ) );
-			putTransparentPixel( vector2I( ipart( interY ), x ), modifiedColour );
-			modifiedColour.alpha = ( int )( ownColour.alpha * fpart( interY ) );
-			putTransparentPixel( vector2I( ipart( interY ) + 1, x ), modifiedColour );
-			interY += gradient;
+			modified_colour.alpha = ( int )( own_colour.alpha * rfpart( inter_y ) );
+			put_transparent_pixel( vector2_i( ipart( inter_y ), x ), modified_colour );
+			modified_colour.alpha = ( int )( own_colour.alpha * fpart( inter_y ) );
+			put_transparent_pixel( vector2_i( ipart( inter_y ) + 1, x ), modified_colour );
+			inter_y += gradient;
 		}
 	}
 	else
 	{
-		for( int x = xPxlBegin + 1; x < xPxlEnd; x++ )
+		for( int x = x_pxl_begin + 1; x < x_pxl_end; x++ )
 		{
-			modifiedColour.alpha = ( int )( ownColour.alpha * rfpart( interY ) );
-			putTransparentPixel( vector2I( x, ipart( interY ) ), modifiedColour );
-			modifiedColour.alpha = ( int )( ownColour.alpha * fpart( interY ) );
-			putTransparentPixel( vector2I( x, ipart( interY ) + 1 ), modifiedColour );
-			interY += gradient;
+			modified_colour.alpha = ( int )( own_colour.alpha * rfpart( inter_y ) );
+			put_transparent_pixel( vector2_i( x, ipart( inter_y ) ), modified_colour );
+			modified_colour.alpha = ( int )( own_colour.alpha * fpart( inter_y ) );
+			put_transparent_pixel( vector2_i( x, ipart( inter_y ) + 1 ), modified_colour );
+			inter_y += gradient;
 		}
 	}
 }
 
-void screen::drawText( const char* text, vector2I position )
+void screen::draw_text( const char* text, vector2_i position )
 {
-	int originalX = position.x;
-	const colour* font = ( const colour* )0x4B019000;
+	int original_x = position.x;
+	const colour* font = ( const colour* )0x4_b019000;
 	while( *text )
 	{
 		if( *text == '\n' || *text == '\r' )
 		{
-			position.x = originalX;
+			position.x = original_x;
 			position.y += 21;
 		}
 		else
 		{
 			for( int x = 0; x < 10; x++ )
 				for( int y = 0; y < 21; y++ )
-					putTransparentPixel( vector2I::add( position, vector2I( x, y ) ), font[ *text * 10 * 21 + x * 21 + y ] );
+					put_transparent_pixel( vector2_i::add( position, vector2_i( x, y ) ), font[ *text * 10 * 21 + x * 21 + y ] );
 			position.x += 10;
 		}
 		text++;

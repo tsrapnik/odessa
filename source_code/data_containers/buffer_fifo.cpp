@@ -1,40 +1,40 @@
-#include "bufferFifo.h"
+#include "buffer_fifo.h"
 
-bufferFifo::bufferFifo( int maxLength ):
-	buffer( maxLength ),
-	beginPosition( 0 ),
-	endPosition( 0 ),
-	queueLength( 0 )
+buffer_fifo::buffer_fifo( int max_length ):
+	buffer( max_length ),
+	begin_position( 0 ),
+	end_position( 0 ),
+	queue_length( 0 )
 {}
 
-bufferFifo::~bufferFifo()
+buffer_fifo::~buffer_fifo()
 {}
 
-void bufferFifo::push( double value )
+void buffer_fifo::push( double value )
 {
-	if( queueLength <= maxLengthMask )
+	if( queue_length <= max_length_mask )
 	{
-		data[ beginPosition ] = value;
-		beginPosition++;
-		beginPosition &= maxLengthMask;
-		queueLength++;
+		data[ begin_position ] = value;
+		begin_position++;
+		begin_position &= max_length_mask;
+		queue_length++;
 	}
 }
 
-double bufferFifo::pop()
+double buffer_fifo::pop()
 {
-	if( queueLength > 0 )
+	if( queue_length > 0 )
 	{
-		double value = data[ endPosition ];
-		endPosition++;
-		endPosition &= maxLengthMask;
-		queueLength--;
+		double value = data[ end_position ];
+		end_position++;
+		end_position &= max_length_mask;
+		queue_length--;
 		return value;
 	}
 	return 0.0f;
 }
 
-int bufferFifo::getQueueLength()
+int buffer_fifo::get_queue_length()
 {
-	return queueLength;
+	return queue_length;
 }

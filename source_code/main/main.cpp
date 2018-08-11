@@ -7,7 +7,7 @@ int main( void )
 	return 0;
 }
 
-//Dummy functions to avoid linker complaints.
+//dummy functions to avoid linker complaints.
 extern "C" void __cxa_pure_virtual()
 {
 	while( 1 );

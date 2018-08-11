@@ -1,12 +1,12 @@
 #pragma once
 
-#include "typeDefinitions.h"
+#include "type_definitions.h"
 
 class i2c
 {
 public:
     ///
-    ///Represent all available i2c devices.
+    ///represent all available i2c devices.
     ///
     enum class device
     {
@@ -17,148 +17,148 @@ public:
 
 private:
     ///
-    ///Available registers for each i2c device.
+    ///available registers for each i2c device.
     ///
     struct registers
     {        
         ///
-        ///Control register options.
+        ///control register options.
         ///
-        enum class controlOptions: u32
+        enum class control_options: u32
         {
-            i2cEnable = 1 << 15,
-            interruptOnRx = 1 << 10,
-            interruptOnTx = 1 << 9,
-            interruptOnDone = 1 << 8,
-            startTransfer = 1 << 7,
-            clearFifo = 1 << 4,
-            readTransfer = 1 << 0
+            i2c_enable = 1 << 15,
+            interrupt_on_rx = 1 << 10,
+            interrupt_on_tx = 1 << 9,
+            interrupt_on_done = 1 << 8,
+            start_transfer = 1 << 7,
+            clear_fifo = 1 << 4,
+            read_transfer = 1 << 0
         };
 
         ///
-        ///Status register options.
+        ///status register options.
         ///
-        enum class statusOptions: u32
+        enum class status_options: u32
         {
-            clockStretchTimeout = 1 << 9,
-            acknowledgeError = 1 << 8,
-            rxFifoFull = 1 << 7,
-            txFifoEmpty = 1 << 6,
-            rxFifoContainsData = 1 << 5,
-            txFifoCanAcceptData = 1 << 4,
-            rxFifoNeedsReading = 1 << 3,
-            txFifoNeedsWriting = 1 << 2,
-            transferDone = 1 << 1,
-            transferActive = 1 << 0
+            clock_stretch_timeout = 1 << 9,
+            acknowledge_error = 1 << 8,
+            rx_fifo_full = 1 << 7,
+            tx_fifo_empty = 1 << 6,
+            rx_fifo_contains_data = 1 << 5,
+            tx_fifo_can_accept_data = 1 << 4,
+            rx_fifo_needs_reading = 1 << 3,
+            tx_fifo_needs_writing = 1 << 2,
+            transfer_done = 1 << 1,
+            transfer_active = 1 << 0
         };
         
         ///
-        ///DataLength register options.
+        ///data_length register options.
         ///
-        enum class dataLengthOptions: u32
+        enum class data_length_options: u32
         {
-            dataLengthMask = 0xffff,
-            dataLengthOffset = 0
+            data_length_mask = 0xffff,
+            data_length_offset = 0
         };
 
         ///
-        ///SlaveAddress register options.
+        ///slave_address register options.
         ///
-        enum class slaveAddressOptions: u32
+        enum class slave_address_options: u32
         {
-            slaveAddressMask = 0x7f,
-            slaveAddressOffset = 0
+            slave_address_mask = 0x7f,
+            slave_address_offset = 0
         };
 
         ///
-        ///DataFifo register options.
+        ///data_fifo register options.
         ///
-        enum class dataFifoOptions: u32
+        enum class data_fifo_options: u32
         {
-            dataMask = 0xff,
-            dataOffset = 0
+            data_mask = 0xff,
+            data_offset = 0
         };
 
         ///
-        ///ClockDivider register options.
+        ///clock_divider register options.
         ///
-        enum class clockDividerOptions: u32
+        enum class clock_divider_options: u32
         {
-            clockDividerMask = 0xffff,
-            clockDividerOffset = 0
+            clock_divider_mask = 0xffff,
+            clock_divider_offset = 0
         };
 
         ///
-        ///DataDelay register options.
+        ///data_delay register options.
         ///
-        enum class dataDelayOptions: u32
+        enum class data_delay_options: u32
         {
-            fallingEdgeDelayMask = 0xffff0000,
-            fallingEdgeDelayOffset = 16,
-            risingEdgeDelayMask = 0x0000ffff,
-            risingEdgeDelayOffset = 0
+            falling_edge_delay_mask = 0xffff0000,
+            falling_edge_delay_offset = 16,
+            rising_edge_delay_mask = 0x0000ffff,
+            rising_edge_delay_offset = 0
         };
 
         ///
-        ///ClockStretchTimeout register options.
+        ///clock_stretch_timeout register options.
         ///
-        enum class clockStretchTimeoutOptions: u32
+        enum class clock_stretch_timeout_options: u32
         {
-            clockStretchTimeoutValueMask = 0xffff,
-            clockStretchTimeoutValueOffset = 0
+            clock_stretch_timeout_value_mask = 0xffff,
+            clock_stretch_timeout_value_offset = 0
         };
-        volatile controlOptions control; //0x00
-        volatile statusOptions status; //0x04
-        volatile dataLengthOptions dataLength; //0x08
-        volatile slaveAddressOptions slaveAddress; //0x0c
-        volatile dataFifoOptions dataFifo; //0x10
-        volatile clockDividerOptions clockDivider; //0x14
-        volatile dataDelayOptions dataDelay; //0x18
-        volatile clockStretchTimeoutOptions clockStretchTimeout; //0x1c
+        volatile control_options control; //0x00
+        volatile status_options status; //0x04
+        volatile data_length_options data_length; //0x08
+        volatile slave_address_options slave_address; //0x0c
+        volatile data_fifo_options data_fifo; //0x10
+        volatile clock_divider_options clock_divider; //0x14
+        volatile data_delay_options data_delay; //0x18
+        volatile clock_stretch_timeout_options clock_stretch_timeout; //0x1c
     };
     
     ///
-    ///Keeps track of which devices are already used, so only
+    ///keeps track of which devices are already used, so only
     ///one instance of each can be created.
     ///
-    static bool deviceUsed[ 3 ];
+    static bool device_used[ 3 ];
 
     ///
-    ///Base addresses of the different i2c device registers.
+    ///base addresses of the different i2c device registers.
     ///
-    static constexpr registers* registersBaseAddress[ 3 ] = {   reinterpret_cast< registers* >( 0x7e205000 ),
+    static constexpr registers* registers_base_address[ 3 ] = {   reinterpret_cast< registers* >( 0x7e205000 ),
                                                                 reinterpret_cast< registers* >( 0x7e804000 ),
                                                                 reinterpret_cast< registers* >( 0x7e805000 ) };
 
 private:
     ///
-    ///Remembers which i2c device this is.
+    ///remembers which i2c device this is.
     ///
-    device deviceId;
+    device device_id;
 
     ///
-    ///Pointer to the actual registers of this device.
+    ///pointer to the actual registers of this device.
     ///
     registers* this_registers;
 
     ///
-    ///Constructor is private, all objects should be created with
+    ///constructor is private, all objects should be created with
     ///the create function, to avoid making multiple instances of
     ///the same i2c device.
     ///
-    i2c( device deviceId );
+    i2c( device device_id );
 
 public:
     ///
-    ///Destructor.
+    ///destructor.
     ///
     ~i2c();
 
     ///
-    ///Returns a pointer to a new device and initialises it. The
+    ///returns a pointer to a new device and initialises it. the
     ///user should specify which device it should be, by passing 
-    ///the correct device enum class. If the device is already in use
+    ///the correct device enum class. if the device is already in use
     ///a nullptr will be returned.
     ///
-    i2c* create( device deviceId );
+    i2c* create( device device_id );
 };

@@ -1,21 +1,21 @@
 #include "buffer.h"
 
-buffer::buffer( int maxLength )
+buffer::buffer( int max_length )
 {
-	if( maxLength <= 0 ) //Make size at least 1.
+	if( max_length <= 0 ) //make size at least 1.
 	{
-		maxLengthMask = 1;
+		max_length_mask = 1;
 		data = new double[ 1 ];
 	}
-	else //Increase the maxLength to a power of 2 for faster calculation.
+	else //increase the max_length to a power of 2 for faster calculation.
 	{
-		maxLengthMask = 1;
-		while( maxLengthMask < maxLength )
+		max_length_mask = 1;
+		while( max_length_mask < max_length )
 		{
-			maxLengthMask <<= 1;
+			max_length_mask <<= 1;
 		}
-		data = new double[ maxLengthMask ];
-		maxLengthMask--;
+		data = new double[ max_length_mask ];
+		max_length_mask--;
 	}
 }
 
