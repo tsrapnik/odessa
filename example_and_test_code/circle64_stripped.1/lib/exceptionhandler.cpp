@@ -22,7 +22,7 @@
 #include <circle/debug.h>
 #include <circle/sysconfig.h>
 #include <circle/string.h>
-#include <assert.h>
+//#include <assert.h>
 
 static const char FromExcept[] = "except";
 
@@ -79,7 +79,7 @@ void CExceptionHandler::Throw (u64 nException, TAbortFrame *pFrame)
 
 CExceptionHandler *CExceptionHandler::Get (void)
 {
-	assert (s_pThis != 0);
+	//assert (s_pThis != 0);
 	return s_pThis;
 }
 

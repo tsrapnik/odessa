@@ -79,8 +79,8 @@ boolean CInterruptSystem::Initialize (void)
 
 void CInterruptSystem::ConnectIRQ (unsigned nIRQ, TIRQHandler *pHandler, void *pParam)
 {
-	assert (nIRQ < IRQ_LINES);
-	assert (m_apIRQHandler[nIRQ] == 0);
+	//assert (nIRQ < IRQ_LINES);
+	//assert (m_apIRQHandler[nIRQ] == 0);
 
 	m_apIRQHandler[nIRQ] = pHandler;
 	m_pParam[nIRQ] = pParam;
@@ -90,8 +90,8 @@ void CInterruptSystem::ConnectIRQ (unsigned nIRQ, TIRQHandler *pHandler, void *p
 
 void CInterruptSystem::DisconnectIRQ (unsigned nIRQ)
 {
-	assert (nIRQ < IRQ_LINES);
-	assert (m_apIRQHandler[nIRQ] != 0);
+	//assert (nIRQ < IRQ_LINES);
+	//assert (m_apIRQHandler[nIRQ] != 0);
 
 	DisableIRQ (nIRQ);
 
@@ -103,7 +103,7 @@ void CInterruptSystem::EnableIRQ (unsigned nIRQ)
 {
 	DataMemBarrier ();
 
-	assert (nIRQ < IRQ_LINES);
+	//assert (nIRQ < IRQ_LINES);
 
 	write32 (ARM_IC_IRQS_ENABLE (nIRQ), ARM_IRQ_MASK (nIRQ));
 
@@ -114,7 +114,7 @@ void CInterruptSystem::DisableIRQ (unsigned nIRQ)
 {
 	DataMemBarrier ();
 
-	assert (nIRQ < IRQ_LINES);
+	//assert (nIRQ < IRQ_LINES);
 
 	write32 (ARM_IC_IRQS_DISABLE (nIRQ), ARM_IRQ_MASK (nIRQ));
 
@@ -123,13 +123,13 @@ void CInterruptSystem::DisableIRQ (unsigned nIRQ)
 
 CInterruptSystem *CInterruptSystem::Get (void)
 {
-	assert (s_pThis != 0);
+	//assert (s_pThis != 0);
 	return s_pThis;
 }
 
 boolean CInterruptSystem::CallIRQHandler (unsigned nIRQ)
 {
-	assert (nIRQ < IRQ_LINES);
+	//assert (nIRQ < IRQ_LINES);
 	TIRQHandler *pHandler = m_apIRQHandler[nIRQ];
 
 	if (pHandler != 0)
@@ -148,7 +148,7 @@ boolean CInterruptSystem::CallIRQHandler (unsigned nIRQ)
 
 void CInterruptSystem::InterruptHandler (void)
 {
-	assert (s_pThis != 0);
+	//assert (s_pThis != 0);
 
 #ifdef ARM_ALLOW_MULTI_CORE
 	if (CMultiCoreSupport::LocalInterruptHandler ())
