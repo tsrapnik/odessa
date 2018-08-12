@@ -3,7 +3,7 @@
 
 int main( void )
 {
-	boot();
+	boot();;
 	return 0;
 }
 
