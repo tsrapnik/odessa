@@ -38,7 +38,7 @@ CExceptionHandler *CExceptionHandler::s_pThis = 0;
 
 CExceptionHandler::CExceptionHandler (void)
 {
-	assert (s_pThis == 0);
+	//assert (s_pThis == 0);
 	s_pThis = this;
 }
 
@@ -49,7 +49,7 @@ CExceptionHandler::~CExceptionHandler (void)
 
 void CExceptionHandler::Throw (u64 nException, TAbortFrame *pFrame)
 {
-	assert (pFrame != 0);
+	//assert (pFrame != 0);
 
 	u64 sp = pFrame->sp_el0;
 	if ((pFrame->spsr_el1 & 0x0F) == 0x05)		// EL1h mode?
@@ -68,13 +68,13 @@ void CExceptionHandler::Throw (u64 nException, TAbortFrame *pFrame)
 	}
 
 #ifndef NDEBUG
-	debug_stacktrace ((u64 *) sp, FromExcept);
+	//debug_stacktrace ((u64 *) sp, FromExcept);
 #endif
 
-	CLogger::Get()->Write (FromExcept, LogPanic,
-		"%s (PC 0x%lX, EC 0x%lX, ISS 0x%lX, FAR 0x%lX, SP 0x%lX, LR 0x%lX, SPSR 0x%lX)",
-		s_pExceptionName[nException],
-		pFrame->elr_el1, nEC, nISS, nFAR, sp, pFrame->x30, pFrame->spsr_el1);
+	//CLogger::Get()->Write (FromExcept, LogPanic,
+	//	"%s (PC 0x%lX, EC 0x%lX, ISS 0x%lX, FAR 0x%lX, SP 0x%lX, LR 0x%lX, SPSR 0x%lX)",
+	//	s_pExceptionName[nException],
+	//	pFrame->elr_el1, nEC, nISS, nFAR, sp, pFrame->x30, pFrame->spsr_el1);
 }
 
 CExceptionHandler *CExceptionHandler::Get (void)

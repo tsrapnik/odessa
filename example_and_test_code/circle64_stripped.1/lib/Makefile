@@ -18,11 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-OBJS	= actled.o alloc.o assert.o bcmframebuffer.o bcmmailbox.o bcmpropertytags.o chargenerator.o \
-	  debug.o delayloop.o device.o devicenameservice.o exceptionstub.o exceptionhandler.o \
-	  gpiomanager.o gpiopin.o interrupt.o koptions.o logger.o memory.o multicore.o new.o ptrarray.o \
-	  ptrlist.o purecall.o screen.o serial.o spinlock.o string.o synchronize.o sysinit.o timer.o util.o \
-	  virtualgpiopin.o translationtable.o util_fast.o
+OBJS	= exceptionstub.o exceptionhandler.o sysinit.o
 
 all: startup.o libcircle.a
 
