@@ -1,6 +1,6 @@
-#include "effect_tsrapnik_chorus.h"
+#include "effect_chorus.h"
 
-void effect_tsrapnik_chorus::process()
+void effect_chorus::process()
 {
 	double frame = mono_input->get_frame();
 	double feedback = feedback_button->get_value();
@@ -15,17 +15,17 @@ void effect_tsrapnik_chorus::process()
 	mono_output->update_frame( frame );
 }
 
-effect_tsrapnik_chorus::effect_tsrapnik_chorus( rectangle footprint, colour own_colour ):
+effect_chorus::effect_chorus( rectangle footprint, colour own_colour ):
 	effect( footprint, own_colour ),
 	delay( 12000 )
 {
-	mono_input = new input( rectangle( vector2_i( 0, 120 ), vector2_i( 30, 40 ) ),
+	mono_input = new input( rectangle( vector_2_int( 0, 120 ), vector_2_int( 30, 40 ) ),
 						   colour( 255, 0, 0, 255 ) );
-	mono_output = new output( rectangle( vector2_i( 170, 120 ), vector2_i( 30, 40 ) ),
+	mono_output = new output( rectangle( vector_2_int( 170, 120 ), vector_2_int( 30, 40 ) ),
 						   colour( 0, 255, 0, 255 ) );
-	feedback_button = new analog_button( rectangle( vector2_i( 80, 80 ), vector2_i( 30, 40 ) ),
+	feedback_button = new analog_button( rectangle( vector_2_int( 80, 80 ), vector_2_int( 30, 40 ) ),
 							   colour( 0, 0, 255, 255 ) );
-	wet_button = new analog_button( rectangle( vector2_i( 80, 130 ), vector2_i( 30, 40 ) ),
+	wet_button = new analog_button( rectangle( vector_2_int( 80, 130 ), vector_2_int( 30, 40 ) ),
 								 colour( 0, 0, 255, 255 ) );
 	add_input( mono_input );
 	add_output( mono_output );
@@ -37,7 +37,7 @@ effect_tsrapnik_chorus::effect_tsrapnik_chorus( rectangle footprint, colour own_
 }
 
 
-effect_tsrapnik_chorus::~effect_tsrapnik_chorus()
+effect_chorus::~effect_chorus()
 {
 	delete mono_input;
 	delete mono_output;

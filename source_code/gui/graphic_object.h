@@ -21,6 +21,6 @@ public:
 	colour get_colour();
 	virtual ~graphic_object() = 0;
 	void draw();
-	virtual vector2_i move( vector2_i displacement );
-	graphic_object* is_selected( vector2_i mouse_pointer );
+	virtual vector_2_int move( vector_2_int displacement );
+	graphic_object* is_selected( vector_2_int mouse_pointer );
 };

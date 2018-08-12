@@ -3,10 +3,6 @@
 rootDirectory=$(dirname $(dirname $PWD))
 export PATH=$PATH:$rootDirectory/compiler/bin
 
-cd lib
-make $1 $2 || exit
-cd ..
-
 cd sample/test
 ./build $1 $2 || exit
 cd ..

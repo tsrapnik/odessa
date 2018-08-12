@@ -42,7 +42,7 @@ object_directories = $(patsubst $(source_directory)%,$(object_directory)%,$(sour
 include_directories = $(patsubst %,-I%,$(source_directories))
 
 #find all paths of the source files and use them to generate equivalent paths for the object and dependency files.
-sources = $(shell find $(source_directory) -name "*.cpp")
+sources = $(shell find $(source_directory) -name "*.cpp") $(shell find $(source_directory) -name "*.S")
 objects = $(patsubst %.cpp,%.o,$(sources))
 objects := $(patsubst %.S,%.o,$(objects))
 objects := $(patsubst $(source_directory)%,$(object_directory)%,$(objects))
@@ -63,7 +63,7 @@ $(object_directory)/directories_exist:
 #cluttering the object directory.
 $(object_directory)/$(image_name).img: $(source_directory)/$(linker_description).ld $(objects)
 	$(info link all objects and generate the image file: $(image_name).img.)
-	$(hide)$(linker) -o $(object_directory)/$(image_name).elf -T $(source_directory)/$(linker_description).ld $(objects) $(source_directory)/boot/startup.o
+	$(hide)$(linker) -o $(object_directory)/$(image_name).elf -T $(source_directory)/$(linker_description).ld $(objects)
 	$(hide)$(object_copier) $(object_directory)/$(image_name).elf -O binary $(object_directory)/$(image_name).img
 	$(hide)rm $(object_directory)/$(image_name).elf
 

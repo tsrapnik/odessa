@@ -1,23 +1,23 @@
-#include "vector2_i.h"
+#include "vector_2_int.h"
 
-vector2_i::vector2_i()
+vector_2_int::vector_2_int()
 {}
 
-vector2_i::vector2_i( int x, int y )
+vector_2_int::vector_2_int( int x, int y )
 {
 	this->x = x;
 	this->y = y;
 }
 
-vector2_i::~vector2_i()
+vector_2_int::~vector_2_int()
 {}
 
-vector2_i vector2_i::add( const vector2_i& first, const vector2_i & second )
+vector_2_int vector_2_int::add( const vector_2_int& first, const vector_2_int & second )
 {
-	return vector2_i( first.x + second.x, first.y + second.y );
+	return vector_2_int( first.x + second.x, first.y + second.y );
 }
 
-vector2_i vector2_i::subtract( const vector2_i& first, const vector2_i & second )
+vector_2_int vector_2_int::subtract( const vector_2_int& first, const vector_2_int & second )
 {
-	return vector2_i( first.x - second.x, first.y - second.y );
+	return vector_2_int( first.x - second.x, first.y - second.y );
 }

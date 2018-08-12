@@ -4,7 +4,7 @@
 #include "analog_button.h"
 #include "buffer_delay.h"
 
-class effect_tsrapnik_delay: public effect
+class effect_delay: public effect
 {
 private:
 	input* mono_input;
@@ -15,6 +15,6 @@ private:
 
 	void process();
 public:
-	effect_tsrapnik_delay( rectangle footprint, colour own_colour );
-	~effect_tsrapnik_delay();
+	effect_delay( rectangle footprint, colour own_colour );
+	~effect_delay();
 };

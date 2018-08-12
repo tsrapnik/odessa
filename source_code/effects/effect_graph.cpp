@@ -1,14 +1,14 @@
-#include "signal_path.h"
+#include "effect_graph.h"
 
-signal_path::signal_path( screen* own_screen )
+effect_graph::effect_graph( screen* own_screen )
 {
 	this->own_screen = own_screen;
 }
 
-signal_path::~signal_path()
+effect_graph::~effect_graph()
 {}
 
-void signal_path::update()
+void effect_graph::update()
 {
 	list_iterator< effect* > current_effect( &effects );
 	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
@@ -17,7 +17,7 @@ void signal_path::update()
 	}
 }
 
-void signal_path::draw()
+void effect_graph::draw()
 {
 	own_screen->clear( colour( 10, 20, 125, 255 ) );
 
@@ -33,14 +33,14 @@ void signal_path::draw()
 	}
 }
 
-void signal_path::add_effect( effect* new_effect )
+void effect_graph::add_effect( effect* new_effect )
 {
 	new_effect->set_boundaries( own_screen->get_footprint() );
 	new_effect->set_own_screen( own_screen );
 	effects.append_copy( new_effect );
 }
 
-effect* signal_path::select_effect( vector2_i mouse_pointer )
+effect* effect_graph::select_effect( vector_2_int mouse_pointer )
 {
 	list_iterator< effect* > current_effect( &effects );
 	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
@@ -55,7 +55,7 @@ effect* signal_path::select_effect( vector2_i mouse_pointer )
 	return nullptr;
 }
 
-graphic_object * signal_path::select_button( vector2_i mouse_pointer )
+graphic_object * effect_graph::select_button( vector_2_int mouse_pointer )
 {
 	list_iterator< effect* > current_effect( &effects );
 	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
@@ -70,7 +70,7 @@ graphic_object * signal_path::select_button( vector2_i mouse_pointer )
 	return nullptr;
 }
 
-output * signal_path::select_output( vector2_i mouse_pointer )
+output * effect_graph::select_output( vector_2_int mouse_pointer )
 {
 	list_iterator< effect* > current_effect( &effects );
 	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
@@ -86,7 +86,7 @@ output * signal_path::select_output( vector2_i mouse_pointer )
 	return nullptr;
 }
 
-input* signal_path::select_input( vector2_i mouse_pointer )
+input* effect_graph::select_input( vector_2_int mouse_pointer )
 {
 	list_iterator< effect* > current_effect( &effects );
 	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )

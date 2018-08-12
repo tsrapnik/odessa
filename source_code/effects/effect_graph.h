@@ -5,20 +5,20 @@
 #include "effect.h"
 #include "screen.h"
 
-class signal_path
+class effect_graph
 {
 private:
 	screen* own_screen;
 	list< effect* > effects;
 
 public:
-	signal_path( screen* own_screen );
-	~signal_path();
+	effect_graph( screen* own_screen );
+	~effect_graph();
 	void update();
 	void draw();
 	void add_effect( effect* new_effect );
-	effect* select_effect( vector2_i mouse_pointer );
-	graphic_object* select_button( vector2_i mouse_pointer );
-	output* select_output( vector2_i mouse_pointer );
-	input* select_input( vector2_i mouse_pointer );
+	effect* select_effect( vector_2_int mouse_pointer );
+	graphic_object* select_button( vector_2_int mouse_pointer );
+	output* select_output( vector_2_int mouse_pointer );
+	input* select_input( vector_2_int mouse_pointer );
 };

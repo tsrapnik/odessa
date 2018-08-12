@@ -9,7 +9,7 @@ effect_source::effect_source( signed int* source, rectangle footprint, colour ow
 	effect( footprint, own_colour ),
 	source( source )
 {
-	mono_output = new output( rectangle( vector2_i( 15, 20 ), vector2_i( 30, 40 ) ),
+	mono_output = new output( rectangle( vector_2_int( 15, 20 ), vector_2_int( 30, 40 ) ),
 							 colour( 0, 255, 0, 255 ) );
 	add_output( mono_output );
 }

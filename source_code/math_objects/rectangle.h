@@ -1,12 +1,12 @@
 #pragma once
 
-#include "vector2_i.h"
+#include "vector_2_int.h"
 
 class rectangle
 {
 public:
-	vector2_i origin, size;
-	rectangle( vector2_i origin, vector2_i size );
+	vector_2_int origin, size;
+	rectangle( vector_2_int origin, vector_2_int size );
 	rectangle();
 	~rectangle();
 };

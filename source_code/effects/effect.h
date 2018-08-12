@@ -26,8 +26,8 @@ public:
 	bool update();
 	void draw();
 	void draw_connections();
-	vector2_i move( vector2_i displacement );
-	graphic_object* select_button( vector2_i mouse_pointer );
-	output* select_output( vector2_i mouse_pointer );
-	input* select_input( vector2_i mouse_pointer );
+	vector_2_int move( vector_2_int displacement );
+	graphic_object* select_button( vector_2_int mouse_pointer );
+	output* select_output( vector_2_int mouse_pointer );
+	input* select_input( vector_2_int mouse_pointer );
 };

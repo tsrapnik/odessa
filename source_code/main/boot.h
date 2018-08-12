@@ -1,6 +1,4 @@
-//#include <circle/alloc.h>
-//#include <circle/translationtable.h>
-//#include <circle/armv8mmu.h>
+#pragma once
 
 typedef unsigned int		u32;
 typedef unsigned long		u64;

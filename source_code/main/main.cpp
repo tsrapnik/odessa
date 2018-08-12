@@ -1,5 +1,5 @@
 #include "mailbox_framebuffer.h"
-#include "boot.cpp"
+#include "boot.h"
 
 int main( void )
 {

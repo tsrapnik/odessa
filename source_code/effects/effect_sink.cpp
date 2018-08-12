@@ -8,7 +8,7 @@ void effect_sink::process()
 	effect( footprint, own_colour ),
 	sink( sink )
 {
-	mono_input = new input( rectangle( vector2_i( 15, 20 ), vector2_i( 30, 40 ) ),
+	mono_input = new input( rectangle( vector_2_int( 15, 20 ), vector_2_int( 30, 40 ) ),
 						   colour( 0, 0, 255, 255 ) );
 	add_input( mono_input );
 }

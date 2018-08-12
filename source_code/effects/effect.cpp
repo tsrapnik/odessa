@@ -83,7 +83,7 @@ void effect::draw_connections()
 		inputs_iterator.get_data_copy()->draw_connection();
 }
 
-vector2_i effect::move( vector2_i displacement )
+vector_2_int effect::move( vector_2_int displacement )
 {
 	displacement = graphic_object::move( displacement );
 
@@ -102,7 +102,7 @@ vector2_i effect::move( vector2_i displacement )
 	return displacement;
 }
 
-graphic_object * effect::select_button( vector2_i mouse_pointer )
+graphic_object * effect::select_button( vector_2_int mouse_pointer )
 {
 	list_iterator< input* > inputs_iterator( &inputs );
 	for( inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++ )
@@ -131,7 +131,7 @@ graphic_object * effect::select_button( vector2_i mouse_pointer )
 	return nullptr;
 }
 
-output* effect::select_output( vector2_i mouse_pointer )
+output* effect::select_output( vector_2_int mouse_pointer )
 {
 	list_iterator< output* > outputs_iterator( &outputs );
 	for( outputs_iterator.to_first(); !outputs_iterator.at_end(); outputs_iterator++ )
@@ -144,7 +144,7 @@ output* effect::select_output( vector2_i mouse_pointer )
 	return nullptr;
 }
 
-input* effect::select_input( vector2_i mouse_pointer )
+input* effect::select_input( vector_2_int mouse_pointer )
 {
 	list_iterator< input* > inputs_iterator( &inputs );
 	for( inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++ )

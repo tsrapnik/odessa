@@ -11,7 +11,7 @@ enum class looper_state
 	overdubbing
 };
 
-class effect_tsrapnik_looper: public effect
+class effect_looper: public effect
 {
 private:
 	class channel
@@ -68,7 +68,7 @@ private:
 	looper_state current_state;
 
 public:
-	effect_tsrapnik_looper( rectangle footprint, colour own_colour );
-	~effect_tsrapnik_looper();
+	effect_looper( rectangle footprint, colour own_colour );
+	~effect_looper();
 	virtual void process();
 };

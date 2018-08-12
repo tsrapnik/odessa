@@ -19,7 +19,7 @@ void graphic_object::set_boundaries( rectangle* boundaries )
 	if( footprint.origin.y + footprint.size.y > boundaries->size.y )
 		footprint.size.y = boundaries->size.y - footprint.origin.y;
 
-	footprint.origin = vector2_i::add( footprint.origin, boundaries->origin );
+	footprint.origin = vector_2_int::add( footprint.origin, boundaries->origin );
 	this->boundaries = boundaries;
 }
 
@@ -50,10 +50,10 @@ void graphic_object::draw()
 {
 	for( int x = footprint.origin.x; x < footprint.origin.x + footprint.size.x; x++ )
 		for( int y = footprint.origin.y; y < footprint.origin.y + footprint.size.y; y++ )
-			own_screen->put_transparent_pixel( vector2_i( x, y ), own_colour );
+			own_screen->put_transparent_pixel( vector_2_int( x, y ), own_colour );
 }
 
-vector2_i graphic_object::move( vector2_i displacement )
+vector_2_int graphic_object::move( vector_2_int displacement )
 {
 	if( footprint.origin.x + displacement.x < boundaries->origin.x )
 		displacement.x = boundaries->origin.x - footprint.origin.x;
@@ -64,12 +64,12 @@ vector2_i graphic_object::move( vector2_i displacement )
 	if( footprint.origin.y + footprint.size.y + displacement.y > boundaries->origin.y + boundaries->size.y )
 		displacement.y = boundaries->origin.y + boundaries->size.y - footprint.origin.y - footprint.size.y;
 
-	footprint.origin = vector2_i::add( footprint.origin, displacement );
+	footprint.origin = vector_2_int::add( footprint.origin, displacement );
 
 	return displacement;
 }
 
-graphic_object * graphic_object::is_selected( vector2_i mouse_pointer )
+graphic_object * graphic_object::is_selected( vector_2_int mouse_pointer )
 {
 	if( mouse_pointer.x >= footprint.origin.x &&
 		mouse_pointer.x < footprint.origin.x + footprint.size.x &&

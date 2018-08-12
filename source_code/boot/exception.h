@@ -3,7 +3,7 @@
 //
 // Circle - A C++ bare metal environment for Raspberry Pi
 // Copyright (C) 2014-2016  R. Stange <rsta2@o2online.de>
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -20,8 +20,8 @@
 #ifndef _circle_exception_h
 #define _circle_exception_h
 
-#define EXCEPTION_UNEXPECTED		0
-#define EXCEPTION_SYNCHRONOUS		1
-#define EXCEPTION_SYSTEM_ERROR		2
+#define EXCEPTION_UNEXPECTED 0
+#define EXCEPTION_SYNCHRONOUS 1
+#define EXCEPTION_SYSTEM_ERROR 2
 
 #endif

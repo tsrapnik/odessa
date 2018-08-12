@@ -32,9 +32,9 @@ void input::draw_connection()
 {
 	if( source != nullptr )
 	{
-		vector2_i begin = vector2_i( source->get_footprint().origin.x + source->get_footprint().size.x,
+		vector_2_int begin = vector_2_int( source->get_footprint().origin.x + source->get_footprint().size.x,
 										   source->get_footprint().origin.y + source->get_footprint().size.y / 2 );
-		vector2_i end = vector2_i( footprint.origin.x,
+		vector_2_int end = vector_2_int( footprint.origin.x,
 										 footprint.origin.y + footprint.size.y / 2 );
 		own_screen->draw_line( begin, end, source->get_colour() );
 	}
