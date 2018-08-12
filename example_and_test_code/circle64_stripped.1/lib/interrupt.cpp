@@ -25,7 +25,7 @@
 #include <circle/exceptionstub.h>
 #include <circle/sysconfig.h>
 #include <circle/types.h>
-#include <assert.h>
+//#include <assert.h>
 
 #define ARM_IC_IRQ_REGS		3
 

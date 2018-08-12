@@ -18,10 +18,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include <circle/exceptionhandler.h>
-#include <circle/logger.h>
-#include <circle/debug.h>
+//#include <circle/logger.h>
+//#include <circle/debug.h>
 #include <circle/sysconfig.h>
-#include <circle/string.h>
+//#include <circle/string.h>
 //#include <assert.h>
 
 static const char FromExcept[] = "except";
