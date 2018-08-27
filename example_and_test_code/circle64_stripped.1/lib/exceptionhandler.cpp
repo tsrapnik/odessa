@@ -87,3 +87,7 @@ void ExceptionHandler (u64 nException, TAbortFrame *pFrame)
 {
 	CExceptionHandler::Get ()->Throw (nException, pFrame);
 }
+
+void InterruptHandler (void)
+{
+}
