@@ -63,7 +63,7 @@ $(object_directory)/directories_exist:
 #cluttering the object directory.
 $(object_directory)/$(image_name).img: $(source_directory)/$(linker_description).ld $(objects)
 	$(info link all objects and generate the image file: $(image_name).img.)
-	$(hide)$(linker) -o $(object_directory)/$(image_name).elf -T $(source_directory)/$(linker_description).ld $(objects) $(source_directory)/boot/startup.o
+	$(hide)$(linker) -o $(object_directory)/$(image_name).elf -T $(source_directory)/$(linker_description).ld $(objects) $(source_directory)/boot/startup.o $(source_directory)/boot/exceptionstub.o $(source_directory)/boot/delay_loop.o
 	$(hide)$(object_copier) $(object_directory)/$(image_name).elf -O binary $(object_directory)/$(image_name).img
 	$(hide)rm $(object_directory)/$(image_name).elf
 

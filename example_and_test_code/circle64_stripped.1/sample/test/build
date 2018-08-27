@@ -1,4 +1,5 @@
 #/bin/bash!
 
+export PATH=$PATH:$(dirname $(dirname $(dirname $(dirname $(pwd)))))/compiler/bin
 make $1
 cp kernel8.img /media/tsrapnik/ODESSSA
