@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-OBJS	= exceptionstub.o exceptionhandler.o sysinit.o
+OBJS	= exceptionstub.o sysinit.o
 
 all: startup.o libcircle.a
 

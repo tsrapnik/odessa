@@ -2,8 +2,6 @@ Archive member included because of file (symbol)
 
 ../../lib/libcircle.a(exceptionstub.o)
                               ../../lib/startup.o (VectorTable)
-../../lib/libcircle.a(exceptionhandler.o)
-                              ../../lib/libcircle.a(exceptionstub.o) (ExceptionHandler)
 ../../lib/libcircle.a(sysinit.o)
                               ../../lib/startup.o (sysinit)
 
@@ -16,7 +14,7 @@ Linker script and memory map
 
                 0x0000000000080000                . = 0x80000
 
-.text           0x0000000000080000     0x18fc
+.text           0x0000000000080000     0x2090
  *(.text*)
  .text          0x0000000000080000       0xa0 ../../lib/startup.o
                 0x0000000000080000                _start
@@ -30,69 +28,54 @@ Linker script and memory map
  .text.startup  0x00000000000804d0      0x208 main.o
                 0x00000000000804d0                main
  *fill*         0x00000000000806d8      0x128 
- .text          0x0000000000080800     0x1000 ../../lib/libcircle.a(exceptionstub.o)
-                0x0000000000080800                VectorTable
-                0x0000000000080f84                UnexpectedStub
-                0x0000000000080fbc                SynchronousStub
-                0x0000000000080ff4                SErrorStub
-                0x000000000008102c                IRQStub
- .text          0x0000000000081800       0x30 ../../lib/libcircle.a(exceptionhandler.o)
-                0x0000000000081800                CExceptionHandler::CExceptionHandler()
-                0x0000000000081800                CExceptionHandler::CExceptionHandler()
-                0x000000000008180c                CExceptionHandler::~CExceptionHandler()
-                0x000000000008180c                CExceptionHandler::~CExceptionHandler()
-                0x0000000000081818                CExceptionHandler::Throw(unsigned long, TAbortFrame*)
-                0x000000000008181c                CExceptionHandler::Get()
-                0x0000000000081828                ExceptionHandler
-                0x000000000008182c                InterruptHandler
- .text          0x0000000000081830       0xcc ../../lib/libcircle.a(sysinit.o)
-                0x0000000000081830                __cxa_atexit
-                0x0000000000081834                halt
-                0x0000000000081848                reboot
-                0x0000000000081874                sysinit
-                0x00000000000818fc                _etext = .
+ .text          0x0000000000080800     0x1800 ../../lib/libcircle.a(exceptionstub.o)
+                0x0000000000080800                ExceptionHandler
+                0x0000000000080804                InterruptHandler
+                0x0000000000081000                VectorTable
+                0x0000000000081784                UnexpectedStub
+                0x00000000000817bc                SynchronousStub
+                0x00000000000817f4                SErrorStub
+                0x000000000008182c                IRQStub
+ .text          0x0000000000082000       0x90 ../../lib/libcircle.a(sysinit.o)
+                0x0000000000082000                __cxa_atexit
+                0x0000000000082004                sysinit
+                0x0000000000082090                _etext = .
 
-.iplt           0x00000000000818fc        0x0
+.iplt           0x0000000000082090        0x0
  .iplt          0x0000000000000000        0x0 ../../lib/startup.o
 
-.rodata         0x0000000000081900       0x40
- *(.rodata*)
- .rodata.str1.8
-                0x0000000000081900       0x40 ../../lib/libcircle.a(exceptionhandler.o)
-                0x0000000000081940                __init_start = .
-
-.rela.dyn       0x0000000000081940        0x0
+.rela.dyn       0x0000000000082090        0x0
  .rela.iplt     0x0000000000000000        0x0 ../../lib/startup.o
+
+.rodata
+ *(.rodata*)
+                0x0000000000082090                __init_start = .
 
 .init_array
  *(.init_array*)
-                0x0000000000081940                __init_end = .
+                0x0000000000082090                __init_end = .
 
-.data           0x0000000000081940       0x20
+.data           0x0000000000082090        0x8
  *(.data*)
- .data          0x0000000000081940        0x0 ../../lib/startup.o
- .data          0x0000000000081940        0x8 main.o
- .data          0x0000000000081948        0x0 ../../lib/libcircle.a(exceptionstub.o)
- .data          0x0000000000081948       0x18 ../../lib/libcircle.a(exceptionhandler.o)
-                0x0000000000081948                CExceptionHandler::s_pExceptionName
- .data          0x0000000000081960        0x0 ../../lib/libcircle.a(sysinit.o)
-                0x0000000000081960                __bss_start = .
+ .data          0x0000000000082090        0x0 ../../lib/startup.o
+ .data          0x0000000000082090        0x8 main.o
+ .data          0x0000000000082098        0x0 ../../lib/libcircle.a(exceptionstub.o)
+ .data          0x0000000000082098        0x0 ../../lib/libcircle.a(sysinit.o)
+                0x0000000000082098                __bss_start = .
 
-.igot.plt       0x0000000000081960        0x0
+.igot.plt       0x0000000000082098        0x0
  .igot.plt      0x0000000000000000        0x0 ../../lib/startup.o
 
-.bss            0x0000000000081960       0x20
+.bss            0x0000000000082098       0x18
  *(.bss*)
- .bss           0x0000000000081960        0x0 ../../lib/startup.o
- .bss           0x0000000000081960       0x10 main.o
-                0x0000000000081960                m_pTable
-                0x0000000000081968                m_nMemSize
- .bss           0x0000000000081970        0x0 ../../lib/libcircle.a(exceptionstub.o)
- .bss           0x0000000000081970        0x8 ../../lib/libcircle.a(exceptionhandler.o)
-                0x0000000000081970                CExceptionHandler::s_pThis
- .bss           0x0000000000081978        0x8 ../../lib/libcircle.a(sysinit.o)
-                0x0000000000081978                __dso_handle
-                0x0000000000081980                _end = .
+ .bss           0x0000000000082098        0x0 ../../lib/startup.o
+ .bss           0x0000000000082098       0x10 main.o
+                0x0000000000082098                m_pTable
+                0x00000000000820a0                m_nMemSize
+ .bss           0x00000000000820a8        0x0 ../../lib/libcircle.a(exceptionstub.o)
+ .bss           0x00000000000820a8        0x8 ../../lib/libcircle.a(sysinit.o)
+                0x00000000000820a8                __dso_handle
+                0x00000000000820b0                _end = .
 LOAD ../../lib/startup.o
 LOAD main.o
 LOAD ../../lib/libcircle.a
@@ -101,14 +84,11 @@ OUTPUT(kernel8.elf elf64-littleaarch64)
 .comment        0x0000000000000000       0x3a
  .comment       0x0000000000000000       0x3a main.o
                                          0x3b (size before relaxing)
- .comment       0x0000000000000000       0x3b ../../lib/libcircle.a(exceptionhandler.o)
  .comment       0x0000000000000000       0x3b ../../lib/libcircle.a(sysinit.o)
 
 .note.GNU-stack
                 0x0000000000000000        0x0
  .note.GNU-stack
                 0x0000000000000000        0x0 main.o
- .note.GNU-stack
-                0x0000000000000000        0x0 ../../lib/libcircle.a(exceptionhandler.o)
  .note.GNU-stack
                 0x0000000000000000        0x0 ../../lib/libcircle.a(sysinit.o)
