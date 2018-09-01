@@ -1,9 +1,7 @@
 Archive member included because of file (symbol)
 
-../../lib/libcircle.a(exceptionstub.o)
-                              ../../lib/startup.o (VectorTable)
-../../lib/libcircle.a(sysinit.o)
-                              ../../lib/startup.o (sysinit)
+libcircle.a(exceptionstub.o)  startup.o (VectorTable)
+libcircle.a(sysinit.o)        startup.o (sysinit)
 
 Memory Configuration
 
@@ -16,7 +14,7 @@ Linker script and memory map
 
 .text           0x0000000000080000     0x2090
  *(.text*)
- .text          0x0000000000080000       0xa0 ../../lib/startup.o
+ .text          0x0000000000080000       0xa0 startup.o
                 0x0000000000080000                _start
  .text          0x00000000000800a0      0x430 main.o
                 0x00000000000800a0                enable_mmu()
@@ -28,7 +26,7 @@ Linker script and memory map
  .text.startup  0x00000000000804d0      0x208 main.o
                 0x00000000000804d0                main
  *fill*         0x00000000000806d8      0x128 
- .text          0x0000000000080800     0x1800 ../../lib/libcircle.a(exceptionstub.o)
+ .text          0x0000000000080800     0x1800 libcircle.a(exceptionstub.o)
                 0x0000000000080800                ExceptionHandler
                 0x0000000000080804                InterruptHandler
                 0x0000000000081000                VectorTable
@@ -36,16 +34,16 @@ Linker script and memory map
                 0x00000000000817bc                SynchronousStub
                 0x00000000000817f4                SErrorStub
                 0x000000000008182c                IRQStub
- .text          0x0000000000082000       0x90 ../../lib/libcircle.a(sysinit.o)
+ .text          0x0000000000082000       0x90 libcircle.a(sysinit.o)
                 0x0000000000082000                __cxa_atexit
                 0x0000000000082004                sysinit
                 0x0000000000082090                _etext = .
 
 .iplt           0x0000000000082090        0x0
- .iplt          0x0000000000000000        0x0 ../../lib/startup.o
+ .iplt          0x0000000000000000        0x0 startup.o
 
 .rela.dyn       0x0000000000082090        0x0
- .rela.iplt     0x0000000000000000        0x0 ../../lib/startup.o
+ .rela.iplt     0x0000000000000000        0x0 startup.o
 
 .rodata
  *(.rodata*)
@@ -57,38 +55,38 @@ Linker script and memory map
 
 .data           0x0000000000082090        0x8
  *(.data*)
- .data          0x0000000000082090        0x0 ../../lib/startup.o
+ .data          0x0000000000082090        0x0 startup.o
  .data          0x0000000000082090        0x8 main.o
- .data          0x0000000000082098        0x0 ../../lib/libcircle.a(exceptionstub.o)
- .data          0x0000000000082098        0x0 ../../lib/libcircle.a(sysinit.o)
+ .data          0x0000000000082098        0x0 libcircle.a(exceptionstub.o)
+ .data          0x0000000000082098        0x0 libcircle.a(sysinit.o)
                 0x0000000000082098                __bss_start = .
 
 .igot.plt       0x0000000000082098        0x0
- .igot.plt      0x0000000000000000        0x0 ../../lib/startup.o
+ .igot.plt      0x0000000000000000        0x0 startup.o
 
 .bss            0x0000000000082098       0x18
  *(.bss*)
- .bss           0x0000000000082098        0x0 ../../lib/startup.o
+ .bss           0x0000000000082098        0x0 startup.o
  .bss           0x0000000000082098       0x10 main.o
                 0x0000000000082098                m_pTable
                 0x00000000000820a0                m_nMemSize
- .bss           0x00000000000820a8        0x0 ../../lib/libcircle.a(exceptionstub.o)
- .bss           0x00000000000820a8        0x8 ../../lib/libcircle.a(sysinit.o)
+ .bss           0x00000000000820a8        0x0 libcircle.a(exceptionstub.o)
+ .bss           0x00000000000820a8        0x8 libcircle.a(sysinit.o)
                 0x00000000000820a8                __dso_handle
                 0x00000000000820b0                _end = .
-LOAD ../../lib/startup.o
+LOAD startup.o
 LOAD main.o
-LOAD ../../lib/libcircle.a
+LOAD libcircle.a
 OUTPUT(kernel8.elf elf64-littleaarch64)
 
 .comment        0x0000000000000000       0x3a
  .comment       0x0000000000000000       0x3a main.o
                                          0x3b (size before relaxing)
- .comment       0x0000000000000000       0x3b ../../lib/libcircle.a(sysinit.o)
+ .comment       0x0000000000000000       0x3b libcircle.a(sysinit.o)
 
 .note.GNU-stack
                 0x0000000000000000        0x0
  .note.GNU-stack
                 0x0000000000000000        0x0 main.o
  .note.GNU-stack
-                0x0000000000000000        0x0 ../../lib/libcircle.a(sysinit.o)
+                0x0000000000000000        0x0 libcircle.a(sysinit.o)

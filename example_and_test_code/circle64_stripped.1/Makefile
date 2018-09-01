@@ -1,22 +1,14 @@
-CIRCLEHOME = ../..
+all: kernel8.img
 
-OBJS	= main.o
-
-LIBS	= $(CIRCLEHOME)/lib/libcircle.a
-
-ifeq ($(strip $(CIRCLEHOME)),)
-CIRCLEHOME = ../..
-endif
-
-kernel8.img: $(CIRCLEHOME)/circle.ld $(CIRCLEHOME)/lib/startup.o $(OBJS) $(LIBS)
-	$(LD) -o kernel8.elf -Map kernel8.map -T $(CIRCLEHOME)/circle.ld $(CIRCLEHOME)/lib/startup.o $(OBJS) $(LIBS)
+kernel8.img: circle.ld startup.o main.o libcircle.a
+	$(LD) -o kernel8.elf -Map kernel8.map -T circle.ld startup.o main.o libcircle.a
 	$(PREFIX)objdump -d kernel8.elf | $(PREFIX)c++filt > kernel8.lst
 	$(PREFIX)objcopy kernel8.elf -O binary kernel8.img
 	wc -c kernel8.img
 
-ifeq ($(strip $(CIRCLEHOME)),)
-CIRCLEHOME = ..
-endif
+libcircle.a: exceptionstub.o sysinit.o
+	rm -f libcircle.a
+	$(AR) cr libcircle.a exceptionstub.o sysinit.o
 
 PREFIX	?= aarch64-linux-gnu-
 
