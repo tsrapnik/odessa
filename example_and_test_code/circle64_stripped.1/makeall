@@ -3,6 +3,4 @@
 rootDirectory=$(dirname $(dirname $PWD))
 export PATH=$PATH:$rootDirectory/compiler/bin
 
-cd lib
-make $1 $2 || exit
-cd ..
+make $1

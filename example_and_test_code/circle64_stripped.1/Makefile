@@ -1,14 +1,10 @@
 all: kernel8.img
 
-kernel8.img: circle.ld startup.o main.o libcircle.a
-	$(LD) -o kernel8.elf -Map kernel8.map -T circle.ld startup.o main.o libcircle.a
+kernel8.img: circle.ld startup.o main.o exceptionstub.o sysinit.o
+	$(LD) -o kernel8.elf -Map kernel8.map -T circle.ld startup.o main.o exceptionstub.o sysinit.o
 	$(PREFIX)objdump -d kernel8.elf | $(PREFIX)c++filt > kernel8.lst
 	$(PREFIX)objcopy kernel8.elf -O binary kernel8.img
 	wc -c kernel8.img
-
-libcircle.a: exceptionstub.o sysinit.o
-	rm -f libcircle.a
-	$(AR) cr libcircle.a exceptionstub.o sysinit.o
 
 PREFIX	?= aarch64-linux-gnu-
 
