@@ -1,4 +1,8 @@
-#pragma once
+//#include <circle/alloc.h>
+//#include <circle/translationtable.h>
+//#include <circle/armv8mmu.h>
+
+int main();
 
 typedef unsigned int		u32;
 typedef unsigned long		u64;
@@ -10,7 +14,7 @@ typedef unsigned int		u32;
 typedef unsigned long		u64;
 
 #define ARMV8MMU_TABLE_ENTRIES		8192
-
+//
 struct TARMV8MMU_LEVEL2_TABLE_DESCRIPTOR
 {
 	u64	Value11		: 2,		// set to 3
@@ -356,8 +360,24 @@ __attribute__ ((packed));
 
 #define DATA_CACHE_LINE_LENGTH_MIN	64		// min(L1_DATA_CACHE_LINE_LENGTH, L2_CACHE_LINE_LENGTH)
 
-int boot (void)
+extern "C" void initialize (void)
 {
+	//clear bss.
+	extern unsigned char __bss_start;
+	extern unsigned char _end;
+	for (unsigned char *pBSS = &__bss_start; pBSS < &_end; pBSS++)
+	{
+		*pBSS = 0;
+	}
+
+	//call construtors of static objects.
+	extern void (*__init_start) (void);
+	extern void (*__init_end) (void);
+	for (void (**pFunc) (void) = &__init_start; pFunc < &__init_end; pFunc++)
+	{
+		(**pFunc) ();
+	}
+	
 	initialize_memory();
 
 	//CBcmMailBox m_MailBox(MAILBOX_CHANNEL_FB);
@@ -459,7 +479,7 @@ int boot (void)
 
 	//DataMemBarrier ();
 	asm volatile ("dmb sy" ::: "memory");
-
+	
 	u32* buffer = (u32 *) (u64)( m_pInfo->BufferPtr & 0x3FFFFFFF );
 	
 	int color = 0x00ff0000;
@@ -469,43 +489,7 @@ int boot (void)
 			for( u32 y = 0; y < 480; y ++ )
 				buffer[ 800 * y + x ] = color;
 		color++;
-		/*u64 address_0 = 0x1111111111111111;
-		u64 address_1 = (u64) m_pTable;
-		for( u64 digit = 0; digit < 63; digit++ )
-		{
-			if( ( address_0 & ( ( u64 )1 << digit ) ) == 0 )
-			{
-				for( u32 x = ( digit * 800 ) / 64; x < ( ( digit + 1 ) * 800 ) / 64; x++ )
-					for( u32 y = 0; y < 240; y++ )
-						buffer[ 800 * y + x ] = 0;
-				for( u32 y = 0; y < 240; y++ )
-						buffer[ 800 * y + ( ( digit + 1 ) * 800 ) / 64 - 1 ] = 0xff0000ff;
-			}
-			else
-			{
-				for( u32 x = ( digit * 800 ) / 64; x < ( ( digit + 1 ) * 800 ) / 64; x++ )
-					for( u32 y = 0; y < 240; y++ )
-						buffer[ 800 * y + x ] = 0xffffffff;
-				for( u32 y = 0; y < 240; y++ )
-						buffer[ 800 * y + ( ( digit + 1 ) * 800 ) / 64 - 1 ] = 0xff0000ff;
-			}
-
-			if( ( address_1 & ( ( u64 )1 << digit ) ) == 0 )
-			{
-				for( u32 x = ( digit * 800 ) / 64; x < ( ( digit + 1 ) * 800 ) / 64; x++ )
-					for( u32 y = 240; y < 480; y++ )
-						buffer[ 800 * y + x ] = 0;
-				for( u32 y = 240; y < 480; y++ )
-						buffer[ 800 * y + ( ( digit + 1 ) * 800 ) / 64 - 1 ] = 0xff0000ff;
-			}
-			else
-			{
-				for( u32 x = ( digit * 800 ) / 64; x < ( ( digit + 1 ) * 800 ) / 64; x++ )
-					for( u32 y = 240; y < 480; y++ )
-						buffer[ 800 * y + x ] = 0xffffffff;
-				for( u32 y = 240; y < 480; y++ )
-						buffer[ 800 * y + ( ( digit + 1 ) * 800 ) / 64 - 1 ] = 0xff0000ff;
-			}
-		}*/
 	}
+
+	main();
 }

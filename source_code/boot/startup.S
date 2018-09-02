@@ -1,29 +1,11 @@
-/*
- * startup.S
- *
- * Circle - A C++ bare metal environment for Raspberry Pi
- * Copyright (C) 2014-2016  R. Stange <rsta2@o2online.de>
- *
- * This file contains (sligthly modified) code taken from U-Boot:
- *	armv8_switch_to_el1_m macro
- *	defined in arch/arm/include/asm/macro.h
- *	Copyright (C) 2009 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
- *	Licensed under GPL-2.0+
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-#include "sysconfig.h"
+#define MEGABYTE		0x100000
+#define KERNEL_MAX_SIZE		(2 * MEGABYTE)
+#define MEM_KERNEL_START	0x80000
+#define EXCEPTION_STACK_SIZE	0x8000
+#define KERNEL_STACK_SIZE	0x20000
+#define MEM_KERNEL_END		(MEM_KERNEL_START + KERNEL_MAX_SIZE)
+#define MEM_KERNEL_STACK	(MEM_KERNEL_END + KERNEL_STACK_SIZE)
+#define MEM_EXCEPTION_STACK	(MEM_KERNEL_STACK + EXCEPTION_STACK_SIZE)
 
 	.macro armv8_switch_to_el1_m, xreg1, xreg2
 
@@ -91,39 +73,43 @@ _start:					/* normally entered from armstub8 in EL2 after boot */
 	ldr	x0, =VectorTable	/* init exception vector table */
 	msr	vbar_el1, x0
 
-	b	sysinit
+	b	initialize
 
-#ifdef ARM_ALLOW_MULTI_CORE
+	.text
 
-	.globl	_start_secondary
-_start_secondary:			/* normally entered from armstub8 in EL2 after boot */
+	.align	11
 
-	mrs	x2, mpidr_el1		/* read affinity */
-	and	x2, x2, #CORES-1	/* get CPU ID */
+	.globl	VectorTable
+VectorTable:
 
-	mrs	x0, CurrentEL		/* check if already in EL1t mode? */
-	cmp	x0, #4
-	beq	1f
+	/* from current EL with sp_el0 */
+	b	exception_handler
+	b	interrupt_handler
+	b	exception_handler			/* FIQ */
+	b	exception_handler
 
-	mov	x1, #EXCEPTION_STACK_SIZE /* calculate exception stack offset for core */
-	mul	x1, x1, x2
-	ldr	x0, =MEM_EXCEPTION_STACK /* IRQ and exception handler run in EL1h */
-	add	x0, x0, x1
-	msr	sp_el1, x0		/* init their stack */
+	/* from current EL with sp_elx, x != 0 */
+	b	exception_handler
+	b	exception_handler
+	b	exception_handler
+	b	exception_handler
+	
+	/* from lower EL, target EL minus 1 is AArch64 */
+	b	exception_handler
+	b	exception_handler
+	b	exception_handler
+	b	exception_handler
 
-	armv8_switch_to_el1_m x0, x1
+	/* from lower EL, target EL minus 1 is AArch32 */
+	b	exception_handler
+	b	exception_handler
+	b	exception_handler
+	b	exception_handler
 
-1:	mov	x1, #KERNEL_STACK_SIZE	/* calculate kernel stack offset for core */
-	mul	x1, x1, x2
-	ldr	x0, =MEM_KERNEL_STACK	/* main thread runs in EL1t and uses sp_el0 */
-	add	x0, x0, x1
-	mov	sp, x0			/* init its stack */
-
-	ldr	x0, =VectorTable	/* init exception vector table */
-	msr	vbar_el1, x0
-
-	b	sysinit_secondary
-
-#endif
-
-/* End */
+	.globl exception_handler
+	exception_handler:
+	b exception_handler
+	
+	.globl interrupt_handler
+	interrupt_handler:
+	b	interrupt_handler

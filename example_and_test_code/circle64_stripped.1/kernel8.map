@@ -8,82 +8,63 @@ Linker script and memory map
 
                 0x0000000000080000                . = 0x80000
 
-.text           0x0000000000080000     0x2090
+.text           0x0000000000080000     0x16ac
  *(.text*)
- .text          0x0000000000080000       0xa0 startup.o
+ .text          0x0000000000080000     0x1000 startup.o
                 0x0000000000080000                _start
- .text          0x00000000000800a0      0x430 main.o
-                0x00000000000800a0                enable_mmu()
-                0x00000000000800f8                memset(void*, int, unsigned long)
-                0x0000000000080118                palloc()
-                0x000000000008012c                CreateLevel3Table(unsigned long)
-                0x000000000008033c                createLevel2Table()
-                0x000000000008046c                initialize_memory()
- .text.startup  0x00000000000804d0      0x208 main.o
-                0x00000000000804d0                main
- *fill*         0x00000000000806d8      0x128 
- .text          0x0000000000080800     0x1800 exceptionstub.o
-                0x0000000000080800                ExceptionHandler
-                0x0000000000080804                InterruptHandler
-                0x0000000000081000                VectorTable
-                0x0000000000081784                UnexpectedStub
-                0x00000000000817bc                SynchronousStub
-                0x00000000000817f4                SErrorStub
-                0x000000000008182c                IRQStub
- .text          0x0000000000082000       0x90 sysinit.o
-                0x0000000000082000                __cxa_atexit
-                0x0000000000082004                sysinit
-                0x0000000000082090                _etext = .
+                0x0000000000080800                VectorTable
+                0x0000000000080840                exception_handler
+                0x0000000000080844                interrupt_handler
+ .text          0x0000000000081000      0x430 main.o
+                0x0000000000081000                enable_mmu()
+                0x0000000000081058                memset(void*, int, unsigned long)
+                0x0000000000081078                palloc()
+                0x000000000008108c                CreateLevel3Table(unsigned long)
+                0x000000000008129c                createLevel2Table()
+                0x00000000000813cc                initialize_memory()
+ .text.startup  0x0000000000081430      0x27c main.o
+                0x0000000000081430                main
+                0x00000000000816ac                _etext = .
 
-.iplt           0x0000000000082090        0x0
+.iplt           0x00000000000816ac        0x0
  .iplt          0x0000000000000000        0x0 startup.o
 
-.rela.dyn       0x0000000000082090        0x0
+.rela.dyn       0x00000000000816b0        0x0
  .rela.iplt     0x0000000000000000        0x0 startup.o
 
 .rodata
  *(.rodata*)
-                0x0000000000082090                __init_start = .
+                0x00000000000816b0                __init_start = .
 
 .init_array
  *(.init_array*)
-                0x0000000000082090                __init_end = .
+                0x00000000000816b0                __init_end = .
 
-.data           0x0000000000082090        0x8
+.data           0x00000000000816b0        0x8
  *(.data*)
- .data          0x0000000000082090        0x0 startup.o
- .data          0x0000000000082090        0x8 main.o
- .data          0x0000000000082098        0x0 exceptionstub.o
- .data          0x0000000000082098        0x0 sysinit.o
-                0x0000000000082098                __bss_start = .
+ .data          0x00000000000816b0        0x0 startup.o
+ .data          0x00000000000816b0        0x8 main.o
+                0x00000000000816b8                __bss_start = .
 
-.igot.plt       0x0000000000082098        0x0
+.igot.plt       0x00000000000816b8        0x0
  .igot.plt      0x0000000000000000        0x0 startup.o
 
-.bss            0x0000000000082098       0x18
+.bss            0x00000000000816b8       0x10
  *(.bss*)
- .bss           0x0000000000082098        0x0 startup.o
- .bss           0x0000000000082098       0x10 main.o
-                0x0000000000082098                m_pTable
-                0x00000000000820a0                m_nMemSize
- .bss           0x00000000000820a8        0x0 exceptionstub.o
- .bss           0x00000000000820a8        0x8 sysinit.o
-                0x00000000000820a8                __dso_handle
-                0x00000000000820b0                _end = .
+ .bss           0x00000000000816b8        0x0 startup.o
+ .bss           0x00000000000816b8       0x10 main.o
+                0x00000000000816b8                m_pTable
+                0x00000000000816c0                m_nMemSize
+                0x00000000000816c8                _end = .
 LOAD startup.o
 LOAD main.o
-LOAD exceptionstub.o
-LOAD sysinit.o
 OUTPUT(kernel8.elf elf64-littleaarch64)
 
 .comment        0x0000000000000000       0x3a
  .comment       0x0000000000000000       0x3a main.o
                                          0x3b (size before relaxing)
- .comment       0x0000000000000000       0x3b sysinit.o
 
 .note.GNU-stack
                 0x0000000000000000        0x0
  .note.GNU-stack
                 0x0000000000000000        0x0 main.o
- .note.GNU-stack
-                0x0000000000000000        0x0 sysinit.o

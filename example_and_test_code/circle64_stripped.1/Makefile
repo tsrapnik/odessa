@@ -1,7 +1,7 @@
 all: kernel8.img
 
-kernel8.img: circle.ld startup.o main.o exceptionstub.o sysinit.o
-	$(LD) -o kernel8.elf -Map kernel8.map -T circle.ld startup.o main.o exceptionstub.o sysinit.o
+kernel8.img: circle.ld startup.o main.o
+	$(LD) -o kernel8.elf -Map kernel8.map -T circle.ld startup.o main.o
 	$(PREFIX)objdump -d kernel8.elf | $(PREFIX)c++filt > kernel8.lst
 	$(PREFIX)objcopy kernel8.elf -O binary kernel8.img
 	wc -c kernel8.img

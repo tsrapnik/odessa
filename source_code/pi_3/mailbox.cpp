@@ -2,7 +2,7 @@
 #include "enum_flags.h"
 #include "mutex.h"
 
-extern "C" void delay_loop(int);
+//extern "C" void delay_loop(int);
 
 constexpr mailbox::mail_box_registers* mailbox::mail_box_interface[2];
 
@@ -37,7 +37,7 @@ void mailbox::flush()
     while(!(static_cast<bool>(mail_box_interface[0]->status & status_options::empty)))
     {
         mail_box_interface[0]->read_write;
-        delay_loop(350000 * 20);
+        //delay_loop(350000 * 20);
     }
 }
 

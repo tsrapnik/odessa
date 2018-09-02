@@ -1,9 +1,7 @@
 #include "mailbox_framebuffer.h"
-#include "boot.h"
 
 int main( void )
 {
-	boot();;
 	return 0;
 }
 
