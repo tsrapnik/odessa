@@ -18,6 +18,7 @@ assembler = $(prefix)gcc
 compiler = $(prefix)g++
 linker = $(prefix)ld
 object_copier = $(prefix)objcopy
+object_dumper = $(prefix)objdump
 
 architecture = -march=armv8-a -mtune=cortex-a53 -mlittle-endian -mcmodel=small
 assembler_flags = $(architecture)
@@ -52,6 +53,7 @@ boot_object = $(boot_object_directory)/$(boot_source_name).o
 linker_description = $(boot_source_directory)/$(linker_description_name).ld
 image = $(object_directory)/$(image_name).img
 image_elf = $(object_directory)/$(image_name).elf
+image_dump = $(object_directory)/$(image_name).txt
 object_directory_tree = $(object_directory)/directories_exist
 
 #build image file and all its dependencies.
@@ -71,6 +73,7 @@ $(image): $(linker_description) $(boot_object) $(objects)
 	$(info link all objects and generate the image file: $(image).)
 	$(hide)$(linker) -o $(image_elf) -T $(linker_description) $(boot_object) $(objects)
 	$(hide)$(object_copier) $(image_elf) -O binary $(image)
+	$(hide)$(object_dumper) -d $(image_elf) > $(image_dump)
 	$(hide)rm $(image_elf)
 
 #include all generated dependency files, which include rules for recompiling a source file when one of its included

@@ -1,6 +1,4 @@
-//#include <circle/alloc.h>
-//#include <circle/translationtable.h>
-//#include <circle/armv8mmu.h>
+#include "delay_loop.h"
 
 int main();
 
@@ -482,14 +480,14 @@ extern "C" void initialize (void)
 	
 	u32* buffer = (u32 *) (u64)( m_pInfo->BufferPtr & 0x3FFFFFFF );
 	
-	int color = 0x00ff0000;
+	u32 color = 0x00ff0000;
 	while( true )
 	{
 		for( u32 x = 0; x < 800; x++ )
 			for( u32 y = 0; y < 480; y ++ )
 				buffer[ 800 * y + x ] = color;
 		color++;
+		delay_loop(10);
 	}
-
 	main();
 }
