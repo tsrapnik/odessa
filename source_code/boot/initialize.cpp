@@ -296,6 +296,75 @@ void initialize_memory()
 	enable_mmu();
 }
 
+char a_string[20];
+char* to_string(u64 number)
+{
+	for(u32 i = 0; i < 20; i++)
+		a_string[i] = (u8)0;
+	a_string[0] = '0';
+	a_string[1] = 'x';
+	u64 mask = 0x000000000000000f;
+	
+	for(i32 i = 15; i >= 0; i--)
+	{
+		u64 digit = (number >> (4*i)) & mask;
+		switch(digit)
+		{
+			case 0x0:
+				a_string[2+15-i] = '0';
+				break;
+			case 0x1:
+				a_string[2+15-i] = '1';
+				break;
+			case 0x2:
+				a_string[2+15-i] = '2';
+				break;
+			case 0x3:
+				a_string[2+15-i] = '3';
+				break;
+			case 0x4:
+				a_string[2+15-i] = '4';
+				break;
+			case 0x5:
+				a_string[2+15-i] = '5';
+				break;
+			case 0x6:
+				a_string[2+15-i] = '6';
+				break;
+			case 0x7:
+				a_string[2+15-i] = '7';
+				break;
+			case 0x8:
+				a_string[2+15-i] = '8';
+				break;
+			case 0x9:
+				a_string[2+15-i] = '9';
+				break;
+			case 0xa:
+				a_string[2+15-i] = 'a';
+				break;
+			case 0xb:
+				a_string[2+15-i] = 'b';
+				break;
+			case 0xc:
+				a_string[2+15-i] = 'c';
+				break;
+			case 0xd:
+				a_string[2+15-i] = 'd';
+				break;
+			case 0xe:
+				a_string[2+15-i] = 'e';
+				break;
+			case 0xf:
+				a_string[2+15-i] = 'f';
+				break;
+			default:
+				break;
+		}
+	}
+	return a_string;
+}
+
 extern "C" void initialize (void)
 {
 	//clear bss.
@@ -315,22 +384,14 @@ extern "C" void initialize (void)
 	}
 	
 	initialize_memory();
-
 	buddy_heap::initialize();
-	
 	mailbox_framebuffer a_mailbox_framebuffer;
-
 	screen a_screen(vector_2_int(800,480), reinterpret_cast<colour*>(a_mailbox_framebuffer.get_framebuffer()));
-
-	u32* buffer = reinterpret_cast<u32*>(a_mailbox_framebuffer.get_framebuffer());
-	
-	u32 color = 0x00ff0000;
-	for( u32 x = 0; x < 800; x++ )
-		for( u32 y = 0; y < 480; y ++ )
-			buffer[ 800 * y + x ] = color;
-	a_screen.draw_text("hello world.", vector_2_int(0,0));
 	a_screen.clear(colour(0,255,0,255));
-	a_screen.draw_text("hello world.", vector_2_int(0,0));
+
+	u32* test = new u32();
+	a_screen.draw_text(to_string((u64)test), vector_2_int(0,21));
+	a_screen.draw_text("test", vector_2_int(0,42));
 	while( true )
 	{
 	}
