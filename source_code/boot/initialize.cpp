@@ -1,15 +1,9 @@
-#include "delay_loop.h"
+#include "type_definitions.h"
+#include "mailbox_framebuffer.h"
+#include "screen.h"
+#include "buddy_heap.h"
 
 int main();
-
-typedef unsigned int		u32;
-typedef unsigned long		u64;
-typedef unsigned long	size_t;
-
-typedef unsigned char		u8;
-typedef unsigned short		u16;
-typedef unsigned int		u32;
-typedef unsigned long		u64;
 
 #define ARMV8MMU_TABLE_ENTRIES		8192
 //
@@ -196,7 +190,7 @@ void enable_mmu()
 	asm volatile ("msr sctlr_el1, %0" : : "r" (nSCTLR_EL1) : "memory");
 }
 
-void *memset (void *pBuffer, int nValue, size_t nLength)
+void *memset (void *pBuffer, int nValue, u64 nLength)
 {
 	char *p = (char *) pBuffer;
 
@@ -297,66 +291,10 @@ TARMV8MMU_LEVEL2_DESCRIPTOR* __attribute__ ((optimize (0))) createLevel2Table()
 
 void initialize_memory()
 {
-	//mem_init ( 0, ( 512 - 64 ) * 0x100000 );
-
-	//m_pTranslationTable = new CTranslationTable (m_nMemSize); //( CTranslationTable* )0x00500010;
 	m_pTable = createLevel2Table();
 
 	enable_mmu();
 }
-
-struct Bcm2835FrameBufferInfo
-{
-	u32 Width;		// Physical width of display in pixel
-	u32 Height;		// Physical height of display in pixel
-	u32 VirtWidth;		// always as physical width so far
-	u32 VirtHeight;		// always as physical height so far
-	u32 Pitch;		// Should be init with 0
-	u32 Depth;		// Number of bits per pixel
-	u32 OffsetX;		// Normally zero
-	u32 OffsetY;		// Normally zero
-	u32 BufferPtr;		// Address of frame buffer (init with 0, set by GPU)
-	u32 BufferSize;		// Size of frame buffer (init with 0, set by GPU)
-
-	u16 Palette[0];		// with Depth <= 8 only (256 entries)
-#define PALETTE_ENTRIES		256
-}
-__attribute__ ((packed));
-
-#define GPU_MEM_BASE	0xC0000000
-#define ARM_IO_BASE		0x3F000000
-
-#define ARM_SYSTIMER_BASE	(ARM_IO_BASE + 0x3000)
-#define ARM_SYSTIMER_CLO	(ARM_SYSTIMER_BASE + 0x04)
-
-#define MAILBOX_BASE		(ARM_IO_BASE + 0xB880)
-
-#define MAILBOX0_READ  		(MAILBOX_BASE + 0x00)
-#define MAILBOX0_STATUS 	(MAILBOX_BASE + 0x18)
-	#define MAILBOX_STATUS_EMPTY	0x40000000
-#define MAILBOX1_WRITE		(MAILBOX_BASE + 0x20)
-#define MAILBOX1_STATUS 	(MAILBOX_BASE + 0x38)
-	#define MAILBOX_STATUS_FULL	0x80000000
-
-#define MAILBOX_CHANNEL_PM	0			// power management
-#define MAILBOX_CHANNEL_FB 	1			// frame buffer
-#define BCM_MAILBOX_PROP_OUT	8			// property tags (ARM to VC)
-
-#define SETWAY_LEVEL_SHIFT		1
-
-#define L1_DATA_CACHE_SETS		128
-#define L1_DATA_CACHE_WAYS		4
-	#define L1_SETWAY_WAY_SHIFT		30	// 32-Log2(L1_DATA_CACHE_WAYS)
-#define L1_DATA_CACHE_LINE_LENGTH	64
-	#define L1_SETWAY_SET_SHIFT		6	// Log2(L1_DATA_CACHE_LINE_LENGTH)
-
-#define L2_CACHE_SETS			512
-#define L2_CACHE_WAYS			16
-	#define L2_SETWAY_WAY_SHIFT		28	// 32-Log2(L2_CACHE_WAYS)
-#define L2_CACHE_LINE_LENGTH		64
-	#define L2_SETWAY_SET_SHIFT		6	// Log2(L2_CACHE_LINE_LENGTH)
-
-#define DATA_CACHE_LINE_LENGTH_MIN	64		// min(L1_DATA_CACHE_LINE_LENGTH, L2_CACHE_LINE_LENGTH)
 
 extern "C" void initialize (void)
 {
@@ -378,116 +316,23 @@ extern "C" void initialize (void)
 	
 	initialize_memory();
 
-	//CBcmMailBox m_MailBox(MAILBOX_CHANNEL_FB);
-	volatile Bcm2835FrameBufferInfo* m_pInfo = ( Bcm2835FrameBufferInfo* )0x00500060; //new Bcm2835FrameBufferInfo;
-	m_pInfo->Width      = 800;
-	m_pInfo->Height     = 480;
-	m_pInfo->VirtWidth  = 800;
-	m_pInfo->VirtHeight = 480;
-	m_pInfo->Pitch      = 0;
-	m_pInfo->Depth      = 32;
-	m_pInfo->OffsetX    = 0;
-	m_pInfo->OffsetY    = 0;
-	m_pInfo->BufferPtr  = 0;
-	m_pInfo->BufferSize = 0;
-
-	//CleanDataCache ();
-	// clean L1 data cache
-	for (unsigned nSet = 0; nSet < L1_DATA_CACHE_SETS; nSet++)
-	{
-		for (unsigned nWay = 0; nWay < L1_DATA_CACHE_WAYS; nWay++)
-		{
-			u64 nSetWayLevel =   nWay << L1_SETWAY_WAY_SHIFT
-						    | nSet << L1_SETWAY_SET_SHIFT
-						    | 0 << SETWAY_LEVEL_SHIFT;
-
-			asm volatile ("dc csw, %0" : : "r" (nSetWayLevel) : "memory");
-		}
-	}
-
-	// clean L2 unified cache
-	for (unsigned nSet = 0; nSet < L2_CACHE_SETS; nSet++)
-	{
-		for (unsigned nWay = 0; nWay < L2_CACHE_WAYS; nWay++)
-		{
-			u64 nSetWayLevel =   nWay << L2_SETWAY_WAY_SHIFT
-						    | nSet << L2_SETWAY_SET_SHIFT
-						    | 1 << SETWAY_LEVEL_SHIFT;
-
-			asm volatile ("dc csw, %0" : : "r" (nSetWayLevel) : "memory");
-		}
-	}
-
-	//DataSyncBarrier ();
-	asm volatile ("dsb sy" ::: "memory");
-
-	//u32 nResult = m_MailBox.WriteRead (0xC0000000 + (u32) (u64) m_pInfo);
-	//Flush ();
-	while (!(*(u32 volatile *)(MAILBOX0_STATUS) & MAILBOX_STATUS_EMPTY))
-	{
-		*(u32 volatile *)(MAILBOX0_READ);
-
-		//CTimer::SimpleMsDelay (20);
-		#define CLOCKHZ	1000000
-		u32 nTicks = 20 * 1000 * (CLOCKHZ / 1000000);
-		u32 nStartTicks = *(u32 volatile *) (ARM_SYSTIMER_CLO);
-		while(*(u32 volatile *)(ARM_SYSTIMER_CLO) - nStartTicks < nTicks);
-	}
-
-	//Write (0xC0000000 + (u32) (u64) m_pInfo);
-	while (*(u32 volatile *) (MAILBOX1_STATUS) & MAILBOX_STATUS_FULL);
-	*(u32 volatile *) (MAILBOX1_WRITE)= MAILBOX_CHANNEL_FB | (GPU_MEM_BASE + (u32) (u64) m_pInfo);	// channel number is in the lower 4 bits
-
-	//u32 nResult = Read ();
-	u32 nResult;
-	do
-	{
-		while (*(u32 volatile *) (MAILBOX0_STATUS) & MAILBOX_STATUS_EMPTY);
-		nResult = *(u32 volatile *) (MAILBOX0_READ);
-	}
-	while ((nResult & 0xF) != MAILBOX_CHANNEL_FB);		// channel number is in the lower 4 bits
-	nResult = nResult & ~0xF;
-
-	//InvalidateDataCache ();
-	// invalidate L1 data cache
-	for (unsigned nSet = 0; nSet < L1_DATA_CACHE_SETS; nSet++)
-	{
-		for (unsigned nWay = 0; nWay < L1_DATA_CACHE_WAYS; nWay++)
-		{
-			u64 nSetWayLevel =   nWay << L1_SETWAY_WAY_SHIFT
-						    | nSet << L1_SETWAY_SET_SHIFT
-						    | 0 << SETWAY_LEVEL_SHIFT;
-
-			asm volatile ("dc isw, %0" : : "r" (nSetWayLevel) : "memory");
-		}
-	}
-
-	// invalidate L2 unified cache
-	for (unsigned nSet = 0; nSet < L2_CACHE_SETS; nSet++)
-	{
-		for (unsigned nWay = 0; nWay < L2_CACHE_WAYS; nWay++)
-		{
-			u64 nSetWayLevel =   nWay << L2_SETWAY_WAY_SHIFT
-						    | nSet << L2_SETWAY_SET_SHIFT
-						    | 1 << SETWAY_LEVEL_SHIFT;
-
-			asm volatile ("dc isw, %0" : : "r" (nSetWayLevel) : "memory");
-		}
-	}
-
-	//DataMemBarrier ();
-	asm volatile ("dmb sy" ::: "memory");
+	buddy_heap::initialize();
 	
-	u32* buffer = (u32 *) (u64)( m_pInfo->BufferPtr & 0x3FFFFFFF );
+	mailbox_framebuffer a_mailbox_framebuffer;
+
+	screen a_screen(vector_2_int(800,480), reinterpret_cast<colour*>(a_mailbox_framebuffer.get_framebuffer()));
+
+	u32* buffer = reinterpret_cast<u32*>(a_mailbox_framebuffer.get_framebuffer());
 	
 	u32 color = 0x00ff0000;
+	for( u32 x = 0; x < 800; x++ )
+		for( u32 y = 0; y < 480; y ++ )
+			buffer[ 800 * y + x ] = color;
+	a_screen.draw_text("hello world.", vector_2_int(0,0));
+	a_screen.clear(colour(0,255,0,255));
+	a_screen.draw_text("hello world.", vector_2_int(0,0));
 	while( true )
 	{
-		for( u32 x = 0; x < 800; x++ )
-			for( u32 y = 0; y < 480; y ++ )
-				buffer[ 800 * y + x ] = color;
-		color++;
-		delay_loop(10);
 	}
 	main();
 }

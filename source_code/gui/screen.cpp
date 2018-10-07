@@ -1,7 +1,9 @@
 #include "screen.h"
+#include "font.h"
 
-screen::screen(u32 x_size, u32 y_size) :
-    footprint(vector_2_int(0, 0), vector_2_int(x_size, y_size))
+screen::screen(vector_2_int size, colour* buffer) :
+    footprint(vector_2_int(0, 0), size),
+    buffer(buffer)
 {
 }
 
@@ -166,21 +168,23 @@ void screen::draw_line(vector_2_int begin, vector_2_int end, colour own_colour)
 
 void screen::draw_text(const char* text, vector_2_int position)
 {
-    int original_x = position.x;
-    const colour* font = (const colour*)0x4b019000;
+    u32 original_x = position.x;
     while(*text)
     {
         if(*text == '\n' || *text == '\r')
         {
             position.x = original_x;
-            position.y += 21;
+            position.y += font::letter_height + 1;
         }
         else
         {
-            for(int x = 0; x < 10; x++)
-                for(int y = 0; y < 21; y++)
-                    put_transparent_pixel(vector_2_int::add(position, vector_2_int(x, y)), font[*text * 10 * 21 + x * 21 + y]);
-            position.x += 10;
+            for(u32 x = 0; x < font::letter_width; x++)
+                for(u32 y = 0; y < font::letter_height; y++)
+                {
+                    u8 greyscale = font::monospace[static_cast<u32>(*text)][y][x];
+                    put_transparent_pixel(vector_2_int::add(position, vector_2_int(x, y)), colour(0,0,0,greyscale));
+                }
+            position.x += font::letter_width + 1;
         }
         text++;
     }

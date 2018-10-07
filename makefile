@@ -91,7 +91,9 @@ $(boot_object): $(boot_source)
 #file from the source file. the third rule generates a dependecy file that is later used for checking changes in
 #header files that are included by the source file. the last four rules are to modify the dependency file. the
 #target in this file is generated in the form "object.o", which wont work cause we need the full path, so it is
-#converted to the form "subdirectory/subdirectory/object.o".
+#converted to the form "subdirectory/subdirectory/object.o". Also each dependency is appended as a seperate target.
+#not clear what the use of this is, but it was done in the source where the dependency file issue was addressed and
+#thus left in the final result.
 $(object_directory)/%.o: $(source_directory)/%.cpp
 	$(info compile source file: $<.)
 	$(hide)$(compiler) $(cpp_flags) $(include_directories) -c -o $@ $<

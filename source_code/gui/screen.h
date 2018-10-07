@@ -7,30 +7,11 @@
 class screen
 {
     private:
-    //tmp
-    //only 32 bit colours supported.
-    //this struct is shared between g_p_u and a_r_m side
-    // must be 16 byte aligned in memory
-    struct bcm2835_frame_buffer_info
-    {
-        u32 width; // physical width of display in pixel
-        u32 height; // physical height of display in pixel
-        u32 virt_width; // always as physical width so far
-        u32 virt_height; // always as physical height so far
-        u32 pitch; // should be init with 0
-        u32 depth; // number of bits per pixel
-        u32 offset_x; // normally zero
-        u32 offset_y; // normally zero
-        u32 buffer_ptr; // address of frame buffer (init with 0, set by g_p_u)
-        u32 buffer_size; // size of frame buffer (init with 0, set by g_p_u)
-    }
-    __attribute__((packed));
-
     rectangle footprint;
     colour* buffer;
 
     public:
-    screen(u32 x_size, u32 y_size);
+    screen(vector_2_int size, colour* buffer);
     ~screen();
     char* get_buffer();
     rectangle* get_footprint();

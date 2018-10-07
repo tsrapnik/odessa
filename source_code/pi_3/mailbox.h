@@ -5,9 +5,6 @@
 
 class mailbox
 {
-    private:
-        mutex this_mutex;
-        static mailbox& handle;
     public:
         enum class channel: u32
         {
@@ -54,12 +51,14 @@ class mailbox
         };
 
         ///
-        ///pointer to array of mailbox interfaces. only two are available, mail box 0 is for information
-        ///from the vc to the arm and should only be read. mail box 1 is for information from the arm to
+        ///mail box 0 is for information from the vc to the arm and should only be read. mail box 1 is for information from the arm to
         ///the vc and should only be written.
         ///
-        static constexpr mail_box_registers* mail_box_interface[ 2 ] = {    reinterpret_cast< mail_box_registers* >( 0x83f000b880 ),
-                                                                            reinterpret_cast< mail_box_registers* >( 0x83f000b8a0 ) };
+        static constexpr mail_box_registers* mail_box_0_interface = reinterpret_cast< mail_box_registers* >( 0x3f00b880 );
+        static constexpr mail_box_registers* mail_box_1_interface = reinterpret_cast< mail_box_registers* >( 0x3f00b8a0 );
+
+    private:
+        mutex a_mutex;
 
     private:
         ///
@@ -79,10 +78,10 @@ class mailbox
         static mailbox& get_handle();
 
     public:
-        u32 write_read( u32 data, channel this_channel );
+        u32 write_read( u32 data, channel a_channel );
 
     private:
         void flush();
-        u32 read( channel this_channel );
-        void write( u32 data, channel this_channel );
+        u32 read( channel a_channel );
+        void write( u32 data, channel a_channel );
 };
