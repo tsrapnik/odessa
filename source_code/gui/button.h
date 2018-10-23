@@ -6,6 +6,6 @@ class button:
 	public graphic_object
 {
 public:
-	button( rectangle footprint, colour own_colour );
+	button( rectangle footprint, color own_color );
 	~button();
 };

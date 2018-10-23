@@ -196,7 +196,7 @@ void enable_mmu()
 	asm volatile ("msr sctlr_el1, %0" : : "r" (nSCTLR_EL1) : "memory");
 }
 
-void *memset (void *pBuffer, int nValue, size_t nLength)
+void *memset (void *pBuffer, u32 nValue, size_t nLength)
 {
 	char *p = (char *) pBuffer;
 
@@ -210,7 +210,7 @@ void *memset (void *pBuffer, int nValue, size_t nLength)
 
 void *palloc (void)
 {
-	static unsigned char* s_pNextPage = ( unsigned char* )0x1b010000;
+	static u8* s_pNextPage = ( u8* )0x1b010000;
 	void* pFreePage = (void*) s_pNextPage;
 	s_pNextPage += 0x10000;
 	return pFreePage;
@@ -358,7 +358,7 @@ __attribute__ ((packed));
 
 #define DATA_CACHE_LINE_LENGTH_MIN	64		// min(L1_DATA_CACHE_LINE_LENGTH, L2_CACHE_LINE_LENGTH)
 
-int main (void)
+u32 main (void)
 {
 	initialize_memory();
 
@@ -464,7 +464,7 @@ int main (void)
 
 	u32* buffer = (u32 *) (u64)( m_pInfo->BufferPtr & 0x3FFFFFFF );
 	
-	int color = 0x00ff0000;
+	u32 color = 0x00ff0000;
 	while( true )
 	{
 		for( u32 x = 0; x < 800; x++ )

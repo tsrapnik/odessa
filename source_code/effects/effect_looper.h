@@ -5,70 +5,70 @@
 
 enum class looper_state
 {
-	stopped,
-	playing,
-	recording,
-	overdubbing
+    stopped,
+    playing,
+    recording,
+    overdubbing
 };
 
-class effect_looper: public effect
+class effect_looper : public effect
 {
-private:
-	class channel
-	{
-	private:
-		class track
-		{
-		private:
-			struct block
-			{
-				float frames[ 256 ];
-			};
+    private:
+    class channel
+    {
+        private:
+        class track
+        {
+            private:
+            struct block
+            {
+                f32 frames[256];
+            };
 
-			list< block* > blocks;
-			list_iterator< block* > block_iterator;
-			int block_index;
+            list<block*> blocks;
+            list_iterator<block*> block_iterator;
+            u32 block_index;
 
-		public:
-			track( int block_count );
+            public:
+            track(u32 block_count);
 
-			bool muted;
+            bool muted;
 
-			void restart_track();
+            void restart_track();
 
-			void to_next_frame();
-			float get_current_frame();
-			void record_next_frame( float input_frame, int* length );
-			void update_current_frame( float input_frame );
-		};
+            void to_next_frame();
+            f32 get_current_frame();
+            void record_next_frame(f32 input_frame, u32* length);
+            void update_current_frame(f32 input_frame);
+        };
 
-		int length;
-		list< track* > tracks;
-		list_iterator< track* > active_track_pointer;
+        u32 length;
+        list<track*> tracks;
+        list_iterator<track*> active_track_pointer;
 
-	public:
-		channel();
+        public:
+        channel();
 
-		float play();
-		void record( float frame );
-		void dub( float frame );
+        f32 play();
+        void record(f32 frame);
+        void dub(f32 frame);
 
-		void restart();
-		void clear();
-		void layer_on_active_track();
-		void remove_active_track();
-	};
+        void restart();
+        void clear();
+        void layer_on_active_track();
+        void remove_active_track();
+    };
 
-	input* mono_input;
-	output* mono_output;
+    input* mono_input;
+    output* mono_output;
 
-	list< channel* > channels;
-	list_iterator< channel* > active_channel_pointer;
+    list<channel*> channels;
+    list_iterator<channel*> active_channel_pointer;
 
-	looper_state current_state;
+    looper_state current_state;
 
-public:
-	effect_looper( rectangle footprint, colour own_colour );
-	~effect_looper();
-	virtual void process();
+    public:
+    effect_looper(rectangle footprint, color own_color);
+    ~effect_looper();
+    virtual void process();
 };

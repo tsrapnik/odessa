@@ -1,11 +1,11 @@
 #include "buffer.h"
 
-buffer::buffer(int max_length)
+buffer::buffer(u32 max_length)
 {
     if(max_length <= 0) //make size at least 1.
     {
         max_length_mask = 1;
-        data = new double[1];
+        data = new f64[1];
     }
     else //increase the max_length to a power of 2 for faster calculation.
     {
@@ -14,7 +14,7 @@ buffer::buffer(int max_length)
         {
             max_length_mask <<= 1;
         }
-        data = new double[max_length_mask];
+        data = new f64[max_length_mask];
         max_length_mask--;
     }
 }

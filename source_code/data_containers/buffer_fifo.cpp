@@ -1,6 +1,6 @@
 #include "buffer_fifo.h"
 
-buffer_fifo::buffer_fifo(int max_length) : buffer(max_length),
+buffer_fifo::buffer_fifo(u32 max_length) : buffer(max_length),
 										   begin_position(0),
 										   end_position(0),
 										   queue_length(0)
@@ -11,7 +11,7 @@ buffer_fifo::~buffer_fifo()
 {
 }
 
-void buffer_fifo::push(double value)
+void buffer_fifo::push(f64 value)
 {
 	if (queue_length <= max_length_mask)
 	{
@@ -22,11 +22,11 @@ void buffer_fifo::push(double value)
 	}
 }
 
-double buffer_fifo::pop()
+f64 buffer_fifo::pop()
 {
 	if (queue_length > 0)
 	{
-		double value = data[end_position];
+		f64 value = data[end_position];
 		end_position++;
 		end_position &= max_length_mask;
 		queue_length--;
@@ -35,7 +35,7 @@ double buffer_fifo::pop()
 	return 0.0f;
 }
 
-int buffer_fifo::get_queue_length()
+u32 buffer_fifo::get_queue_length()
 {
 	return queue_length;
 }

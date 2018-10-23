@@ -9,12 +9,12 @@ private:
 	///
 	///points to the actual 32 bit value that is sent to the audio output, e.g. dac.
 	///
-	signed int* sink;
+	i32* sink;
 
 	input* mono_input;
 
 	virtual void process();
 public:
-	effect_sink( signed int* sink, rectangle footprint, colour own_colour );
+	effect_sink( i32* sink, rectangle footprint, color own_color );
 	~effect_sink();
 };

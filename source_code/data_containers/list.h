@@ -2,7 +2,7 @@
 
 #include "node.h"
 
-//double linked list containing elemennts of type. the list has ownership over all its elements and will
+//f64 linked list containing elemennts of type. the list has ownership over all its elements and will
 //delete them when the list is deleted.
 template <typename type>
 class list

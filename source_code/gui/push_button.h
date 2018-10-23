@@ -7,7 +7,7 @@ class push_button : public button
     bool pushed;
 
     public:
-    push_button(rectangle footprint, colour own_colour);
+    push_button(rectangle footprint, color own_color);
     ~push_button();
     void set_pushed();
     bool check_pushed();

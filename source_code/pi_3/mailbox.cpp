@@ -1,5 +1,4 @@
 #include "mailbox.h"
-#include "delay_loop.h"
 #include "enum_flags.h"
 #include "mutex.h"
 
@@ -34,30 +33,27 @@ u32 mailbox::write_read(u32 data, channel a_channel)
 
 void mailbox::flush()
 {
-    while(!(static_cast<bool>(mail_box_0_interface->status & status_options::empty)))
+    while(!mail_box_0_interface->status_empty)
     {
         mail_box_0_interface->read_write;
-        delay_loop(350000 * 20);
     }
 }
 
 u32 mailbox::read(channel a_channel)
 {
-    read_write_options result;
+    u32 read_write;
     do
     {
-        while(static_cast<bool>(mail_box_0_interface->status & status_options::empty))
+        while(mail_box_0_interface->status_empty)
             ;
-        result = mail_box_0_interface->read_write;
-    } while(static_cast<channel>(result & read_write_options::channel_mask) != a_channel);
-    return static_cast<u32>(result & ~read_write_options::channel_mask);
+        read_write = mail_box_0_interface->read_write;
+    } while(static_cast<channel>(read_write & 0xf) != a_channel); //first 4 bits are occupied by the channel.
+    return read_write & 0xfffffff0; //last 28 bits contain the data.
 }
 
 void mailbox::write(u32 data, channel a_channel)
 {
-    while(static_cast<bool>(mail_box_1_interface->status & status_options::full))
+    while(mail_box_1_interface->status_full)
         ;
-    mail_box_1_interface->read_write = (static_cast<read_write_options>(0xc0000000 + data) &
-                                        ~read_write_options::channel_mask) |
-                                       static_cast<read_write_options>(a_channel);
+    mail_box_1_interface->read_write = static_cast<u32>(a_channel) | ((0xc0000000 + data) & 0xfffffff0); //first 4 bits are occupied by the channel,last 28 bits contain the data.
 }

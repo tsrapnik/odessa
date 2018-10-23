@@ -59,7 +59,7 @@ buddy_heap::~buddy_heap()
 //initialize memory pool for the block_pointers and make one block_pointer which refers to the full heap.
 void buddy_heap::initialize()
 {
-	buddy_heap::heap_base = heap_base;
+	buddy_heap::heap_base = my_heap_base;
 	for( usize i = 0; i < 1 << ( order_count - 2 ); i++ ) //assign each block_pointer to an available_block_pointer.
 	{
 		available_block_pointers[ i ] = &block_pointers[ i ];

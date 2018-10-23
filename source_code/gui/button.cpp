@@ -1,7 +1,7 @@
 #include "button.h"
 
-button::button( rectangle footprint, colour own_colour ):
-	graphic_object( footprint, own_colour )
+button::button( rectangle footprint, color own_color ):
+	graphic_object( footprint, own_color )
 {}
 
 button::~button()

@@ -20,14 +20,14 @@ protected:
 	void add_input( input* new_input );
 	void add_output( output* new_output );
 public:
-	effect( rectangle footprint, colour own_colour );
+	effect( rectangle footprint, color own_color );
 	~effect();
 	void set_own_screen( screen* own_screen );
 	bool update();
 	void draw();
 	void draw_connections();
-	vector_2_int move( vector_2_int displacement );
-	graphic_object* select_button( vector_2_int mouse_pointer );
-	output* select_output( vector_2_int mouse_pointer );
-	input* select_input( vector_2_int mouse_pointer );
+	vector_2_u32 move( vector_2_u32 displacement );
+	graphic_object* select_button( vector_2_u32 mouse_pointer );
+	output* select_output( vector_2_u32 mouse_pointer );
+	input* select_input( vector_2_u32 mouse_pointer );
 };

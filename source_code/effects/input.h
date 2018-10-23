@@ -8,10 +8,10 @@ class input:
 private:
 	output* source;
 public:
-	input( rectangle footprint, colour own_colour );
+	input( rectangle footprint, color own_color );
 	~input();
 	void connect_output( output* source );
-	double get_frame();
+	f64 get_frame();
 	bool frame_ready();
 	void draw_connection();
 };

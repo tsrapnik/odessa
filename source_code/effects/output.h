@@ -6,14 +6,14 @@ class output:
 	public graphic_object
 {
 private:
-	double frame;
+	f64 frame;
 	bool ready;
 public:
-	output( rectangle footprint, colour own_colour );
+	output( rectangle footprint, color own_color );
 	~output();
-	double get_frame();
-	void update_frame( double frame );
+	f64 get_frame();
+	void update_frame( f64 frame );
 	void invalidate_frame();
 	bool frame_ready();
-	void draw_connecting( vector_2_int mouse_pointer );
+	void draw_connecting( vector_2_u32 mouse_pointer );
 };

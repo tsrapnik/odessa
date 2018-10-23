@@ -1,6 +1,6 @@
 #include "buffer_delay.h"
 
-buffer_delay::buffer_delay(int max_length) :
+buffer_delay::buffer_delay(u32 max_length) :
     buffer(max_length),
     current_position(0)
 {
@@ -13,12 +13,12 @@ buffer_delay::~buffer_delay()
 
 
 
-double buffer_delay::get_previous(int position)
+f64 buffer_delay::get_previous(u32 position)
 {
     return data[(current_position + position) & max_length_mask];
 }
 
-void buffer_delay::update_current(double value)
+void buffer_delay::update_current(f64 value)
 {
     data[current_position] = value;
     current_position++;

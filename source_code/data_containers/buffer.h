@@ -1,12 +1,14 @@
 #pragma once
 
+#include "type_definitions.h"
+
 class buffer
 {
   protected:
-	int max_length_mask;
-	double *data;
+	u32 max_length_mask;
+	f64 *data;
 
   public:
-	buffer(int max_length);
+	buffer(u32 max_length);
 	virtual ~buffer() = 0;
 };
