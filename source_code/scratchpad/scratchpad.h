@@ -5,6 +5,4 @@
 //class containing all stuff that has no permanent destination jet.
 class scratchpad
 {
-};
-
-///
+};***
