@@ -1,13 +1,13 @@
 #include "effect_looper.h"
 
-effect_looper::effect_looper(rectangle footprint, colour own_colour) :
-    effect::effect(footprint, own_colour),
+effect_looper::effect_looper(rectangle footprint, color own_color) :
+    effect::effect(footprint, own_color),
     active_channel_pointer(list_iterator<channel*>(&channels))
 {
-    mono_input = new input(rectangle(vector_2_int(0, 120), vector_2_int(30, 40)),
-                           colour(255, 0, 0, 255));
-    mono_output = new output(rectangle(vector_2_int(170, 120), vector_2_int(30, 40)),
-                             colour(0, 255, 0, 255));
+    mono_input = new input(rectangle(vector_2_u32(0, 120), vector_2_u32(30, 40)),
+                           color(255, 0, 0, 255));
+    mono_output = new output(rectangle(vector_2_u32(170, 120), vector_2_u32(30, 40)),
+                             color(0, 255, 0, 255));
     add_input(mono_input);
     add_output(mono_output);
 }
@@ -18,7 +18,7 @@ effect_looper::~effect_looper()
 
 void effect_looper::process()
 {
-    float frame = 0.0;
+    f32 frame = 0.0;
     channel* active_channel = active_channel_pointer.get_data_copy();
 
     switch(current_state)
@@ -55,9 +55,9 @@ effect_looper::channel::channel() :
 }
 
 //play all unmuted tracks.
-float effect_looper::channel::play()
+f32 effect_looper::channel::play()
 {
-    float frame = 0.0f;
+    f32 frame = 0.0f;
 
     list_iterator<track*> current_element(&tracks);
     for(current_element.to_first(); !current_element.at_end(); current_element++)
@@ -74,14 +74,14 @@ float effect_looper::channel::play()
 }
 
 //record the input.
-void effect_looper::channel::record(float frame)
+void effect_looper::channel::record(f32 frame)
 {
     channel::track* active_track = active_track_pointer.get_data_copy();
     active_track->record_next_frame(frame, &length);
 }
 
 //dub active track with the input.
-void effect_looper::channel::dub(float frame)
+void effect_looper::channel::dub(f32 frame)
 {
     channel::track* active_track = active_track_pointer.get_data_copy();
     active_track->update_current_frame(frame);
@@ -120,11 +120,11 @@ void effect_looper::channel::remove_active_track()
 }
 
 //create empty track with "block_count" blocks.
-effect_looper::channel::track::track(int block_count) :
+effect_looper::channel::track::track(u32 block_count) :
     block_iterator(&blocks),
     block_index(0)
 {
-    for(int i = 0; i < block_count; i++)
+    for(u32 i = 0; i < block_count; i++)
     {
         blocks.append_new();
     }
@@ -149,14 +149,14 @@ void effect_looper::channel::track::to_next_frame()
     }
 }
 
-float effect_looper::channel::track::get_current_frame()
+f32 effect_looper::channel::track::get_current_frame()
 {
     track::block* current_block = block_iterator.get_data_copy();
     return current_block->frames[block_index];
 }
 
 //fills the next frame with the input_frame-data, creates a new block if necessary.
-void effect_looper::channel::track::record_next_frame(float input_frame, int* length)
+void effect_looper::channel::track::record_next_frame(f32 input_frame, u32* length)
 {
     block_index++;
     if(block_index > 255) //create new block when current block is finished.
@@ -170,7 +170,7 @@ void effect_looper::channel::track::record_next_frame(float input_frame, int* le
     current_block->frames[block_index] = input_frame;
 }
 
-void effect_looper::channel::track::update_current_frame(float input_frame)
+void effect_looper::channel::track::update_current_frame(f32 input_frame)
 {
     track::block* current_block = block_iterator.get_data_copy();
     current_block->frames[block_index] = input_frame;

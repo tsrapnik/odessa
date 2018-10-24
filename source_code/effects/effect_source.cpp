@@ -2,15 +2,15 @@
 
 void effect_source::process()
 {
-	mono_output->update_frame( ( double )*source );
+	mono_output->update_frame( ( f64 )*source );
 }
 
-effect_source::effect_source( signed int* source, rectangle footprint, colour own_colour ):
-	effect( footprint, own_colour ),
+effect_source::effect_source( i32* source, rectangle footprint, color own_color ):
+	effect( footprint, own_color ),
 	source( source )
 {
-	mono_output = new output( rectangle( vector_2_int( 15, 20 ), vector_2_int( 30, 40 ) ),
-							 colour( 0, 255, 0, 255 ) );
+	mono_output = new output( rectangle( vector_2_u32( 15, 20 ), vector_2_u32( 30, 40 ) ),
+							 color( 0, 255, 0, 255 ) );
 	add_output( mono_output );
 }
 

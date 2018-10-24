@@ -6,10 +6,10 @@ class analog_button:
 	public button
 {
 private:
-	double value;
+	f64 value;
 public:
-	analog_button( rectangle footprint, colour own_colour );
+	analog_button( rectangle footprint, color own_color );
 	~analog_button();
-	double get_value();
-	void set_value( double value );
+	f64 get_value();
+	void set_value( f64 value );
 };

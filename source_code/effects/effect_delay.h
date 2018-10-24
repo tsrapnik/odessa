@@ -15,6 +15,6 @@ private:
 
 	void process();
 public:
-	effect_delay( rectangle footprint, colour own_colour );
+	effect_delay( rectangle footprint, color own_color );
 	~effect_delay();
 };

@@ -19,7 +19,7 @@ void effect_graph::update()
 
 void effect_graph::draw()
 {
-	own_screen->clear( colour( 10, 20, 125, 255 ) );
+	own_screen->clear( color( 10, 20, 125, 255 ) );
 
 	list_iterator< effect* > current_effect( &effects );
 	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
@@ -40,7 +40,7 @@ void effect_graph::add_effect( effect* new_effect )
 	effects.append_copy( new_effect );
 }
 
-effect* effect_graph::select_effect( vector_2_int mouse_pointer )
+effect* effect_graph::select_effect( vector_2_u32 mouse_pointer )
 {
 	list_iterator< effect* > current_effect( &effects );
 	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
@@ -55,7 +55,7 @@ effect* effect_graph::select_effect( vector_2_int mouse_pointer )
 	return nullptr;
 }
 
-graphic_object * effect_graph::select_button( vector_2_int mouse_pointer )
+graphic_object * effect_graph::select_button( vector_2_u32 mouse_pointer )
 {
 	list_iterator< effect* > current_effect( &effects );
 	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
@@ -70,7 +70,7 @@ graphic_object * effect_graph::select_button( vector_2_int mouse_pointer )
 	return nullptr;
 }
 
-output * effect_graph::select_output( vector_2_int mouse_pointer )
+output * effect_graph::select_output( vector_2_u32 mouse_pointer )
 {
 	list_iterator< effect* > current_effect( &effects );
 	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )
@@ -86,7 +86,7 @@ output * effect_graph::select_output( vector_2_int mouse_pointer )
 	return nullptr;
 }
 
-input* effect_graph::select_input( vector_2_int mouse_pointer )
+input* effect_graph::select_input( vector_2_u32 mouse_pointer )
 {
 	list_iterator< effect* > current_effect( &effects );
 	for( current_effect.to_first(); !current_effect.at_end(); current_effect++ )

@@ -4,4 +4,8 @@
 #immediately to an sd card so it is ready for testing.
 export PATH=$PATH:$(pwd)/compiler/bin
 make $1
-cp compiled_code/kernel8.img /media/tsrapnik/ODESSSA
+cp compiled_code/kernel8.img /media/tsrapnik/ODESSA
+if [ $? -eq 0 ]
+then
+    echo "copy image to sd card."
+fi

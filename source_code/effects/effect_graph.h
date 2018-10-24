@@ -17,8 +17,8 @@ public:
 	void update();
 	void draw();
 	void add_effect( effect* new_effect );
-	effect* select_effect( vector_2_int mouse_pointer );
-	graphic_object* select_button( vector_2_int mouse_pointer );
-	output* select_output( vector_2_int mouse_pointer );
-	input* select_input( vector_2_int mouse_pointer );
+	effect* select_effect( vector_2_u32 mouse_pointer );
+	graphic_object* select_button( vector_2_u32 mouse_pointer );
+	output* select_output( vector_2_u32 mouse_pointer );
+	input* select_input( vector_2_u32 mouse_pointer );
 };

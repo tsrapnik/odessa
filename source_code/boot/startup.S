@@ -1,11 +1,10 @@
-#define MEGABYTE		0x100000
-#define KERNEL_MAX_SIZE		(2 * MEGABYTE)
-#define MEM_KERNEL_START	0x80000
-#define EXCEPTION_STACK_SIZE	0x8000
-#define KERNEL_STACK_SIZE	0x20000
-#define MEM_KERNEL_END		(MEM_KERNEL_START + KERNEL_MAX_SIZE)
-#define MEM_KERNEL_STACK	(MEM_KERNEL_END + KERNEL_STACK_SIZE)
-#define MEM_EXCEPTION_STACK	(MEM_KERNEL_STACK + EXCEPTION_STACK_SIZE)
+#define kernel_maximum_size 0x200000
+#define memory_kernel_start	0x80000
+#define exception_stack_size 0x8000
+#define kernel_stack_size 0x20000
+#define memory_kernel_end (memory_kernel_start + kernel_maximum_size)
+#define memory_kernel_stack (memory_kernel_end + kernel_stack_size)
+#define memory_exception_stack (memory_kernel_stack + exception_stack_size)
 
 	.macro armv8_switch_to_el1_m, xreg1, xreg2
 
@@ -62,25 +61,25 @@ _start:					/* normally entered from armstub8 in EL2 after boot */
 	cmp	x0, #4
 	beq	1f
 
-	ldr	x0, =MEM_EXCEPTION_STACK /* IRQ and exception handler run in EL1h */
+	ldr	x0, =memory_exception_stack /* IRQ and exception handler run in EL1h */
 	msr	sp_el1, x0		/* init their stack */
 
 	armv8_switch_to_el1_m x0, x1
 
-1:	ldr	x0, =MEM_KERNEL_STACK	/* main thread runs in EL1t and uses sp_el0 */
+1:	ldr	x0, =memory_kernel_stack	/* main thread runs in EL1t and uses sp_el0 */
 	mov	sp, x0			/* init its stack */
 
-	ldr	x0, =VectorTable	/* init exception vector table */
+	ldr	x0, =vector_table	/* init exception vector table */
 	msr	vbar_el1, x0
 
-	b	initialize
+	b	main
 
 	.text
 
 	.align	11
 
-	.globl	VectorTable
-VectorTable:
+	.globl	vector_table
+vector_table:
 
 	/* from current EL with sp_el0 */
 	b	exception_handler

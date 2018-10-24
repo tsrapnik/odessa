@@ -1,19 +1,19 @@
 #include "output.h"
 
-output::output( rectangle footprint, colour own_colour ):
-	graphic_object( footprint, own_colour )
+output::output( rectangle footprint, color own_color ):
+	graphic_object( footprint, own_color )
 {}
 
 output::~output()
 {
 }
 
-double output::get_frame()
+f64 output::get_frame()
 {
 	return frame;
 }
 
-void output::update_frame( double frame )
+void output::update_frame( f64 frame )
 {
 	this->frame = frame;
 	this->ready = true;
@@ -29,9 +29,9 @@ bool output::frame_ready()
 	return ready;
 }
 
-void output::draw_connecting( vector_2_int mouse_pointer )
+void output::draw_connecting( vector_2_u32 mouse_pointer )
 {
-	vector_2_int begin = vector_2_int( get_footprint().origin.x + get_footprint().size.x,
-									   get_footprint().origin.y + get_footprint().size.y / 2 );
-	own_screen->draw_line( begin, mouse_pointer, own_colour );
+	vector_2_u32 begin = vector_2_u32( get_footprint().origin.coordinate[0] + get_footprint().size.coordinate[0],
+									   get_footprint().origin.coordinate[1] + get_footprint().size.coordinate[1] / 2 );
+	own_screen->draw_line( begin, mouse_pointer, own_color );
 }

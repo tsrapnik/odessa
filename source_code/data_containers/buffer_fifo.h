@@ -4,12 +4,12 @@
 class buffer_fifo : public buffer
 {
   private:
-	int begin_position, end_position, queue_length;
+	u32 begin_position, end_position, queue_length;
 
   public:
-	buffer_fifo(int max_length);
+	buffer_fifo(u32 max_length);
 	~buffer_fifo();
-	void push(double);
-	double pop();
-	int get_queue_length();
+	void push(f64);
+	f64 pop();
+	u32 get_queue_length();
 };

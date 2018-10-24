@@ -9,15 +9,15 @@ class discrete_button:
 private:
 	type value;
 public:
-	discrete_button( rectangle footprint, colour own_colour );
+	discrete_button( rectangle footprint, color own_color );
 	~discrete_button();
 	type get_value();
 	void set_value( type value );
 };
 
 template <typename type>
-discrete_button<type>::discrete_button( rectangle footprint, colour own_colour ):
-	button( footprint, own_colour )
+discrete_button<type>::discrete_button( rectangle footprint, color own_color ):
+	button( footprint, own_color )
 {}
 
 template <typename type>

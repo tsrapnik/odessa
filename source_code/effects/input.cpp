@@ -1,7 +1,7 @@
 #include "input.h"
 
-input::input( rectangle footprint, colour own_colour ):
-	graphic_object( footprint, own_colour ),
+input::input( rectangle footprint, color own_color ):
+	graphic_object( footprint, own_color ),
 	source( nullptr )
 {}
 
@@ -14,7 +14,7 @@ void input::connect_output( output * source )
 	this->source = source;
 }
 
-double input::get_frame()
+f64 input::get_frame()
 {
 	if( source )
 		return source->get_frame();
@@ -32,10 +32,10 @@ void input::draw_connection()
 {
 	if( source != nullptr )
 	{
-		vector_2_int begin = vector_2_int( source->get_footprint().origin.x + source->get_footprint().size.x,
-										   source->get_footprint().origin.y + source->get_footprint().size.y / 2 );
-		vector_2_int end = vector_2_int( footprint.origin.x,
-										 footprint.origin.y + footprint.size.y / 2 );
-		own_screen->draw_line( begin, end, source->get_colour() );
+		vector_2_u32 begin = vector_2_u32( source->get_footprint().origin.coordinate[0] + source->get_footprint().size.coordinate[0],
+										   source->get_footprint().origin.coordinate[1] + source->get_footprint().size.coordinate[1] / 2 );
+		vector_2_u32 end = vector_2_u32( footprint.origin.coordinate[0],
+										 footprint.origin.coordinate[1] + footprint.size.coordinate[1] / 2 );
+		own_screen->draw_line( begin, end, source->get_color() );
 	}
 }

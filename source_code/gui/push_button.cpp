@@ -1,7 +1,7 @@
 #include "push_button.h"
 
-push_button::push_button( rectangle footprint, colour own_colour ):
-	button( footprint, own_colour )
+push_button::push_button(rectangle footprint, color own_color) :
+    button(footprint, own_color)
 {
 }
 
@@ -13,12 +13,10 @@ void push_button::set_pushed()
 {
 }
 
-///<summary>
-///check if a positive edge was triggered, reset after read.
-///</summary>
+//check if a positive edge was triggered, reset after read.
 bool push_button::check_pushed()
 {
-	bool temp = pushed;
-	pushed = false;
-	return temp;
+    bool temp = pushed;
+    pushed = false;
+    return temp;
 }

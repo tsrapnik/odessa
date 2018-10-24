@@ -16,6 +16,6 @@ class effect_chorus : public effect
 	void process();
 
   public:
-	effect_chorus(rectangle footprint, colour own_colour);
+	effect_chorus(rectangle footprint, color own_color);
 	~effect_chorus();
 };

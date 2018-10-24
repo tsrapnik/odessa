@@ -3,13 +3,13 @@
 #include "buffer.h"
 class buffer_delay: public buffer {
     private:
-    int current_position;
+    u32 current_position;
 
     public:
-    buffer_delay(int max_length);
+    buffer_delay(u32 max_length);
 
     ~buffer_delay();
 
-    double get_previous(int position);
-    void update_current(double value );
+    f64 get_previous(u32 position);
+    void update_current(f64 value );
 };
