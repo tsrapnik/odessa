@@ -2,8 +2,8 @@
 #include "enum_flags.h"
 #include "mutex.h"
 
-constexpr mailbox::mail_box_registers* mailbox::mail_box_0_interface;
-constexpr mailbox::mail_box_registers* mailbox::mail_box_1_interface;
+mailbox::mail_box_registers* const mailbox::mail_box_0_interface = reinterpret_cast<mail_box_registers*>(0x3f00b880);
+mailbox::mail_box_registers* const mailbox::mail_box_1_interface = reinterpret_cast<mail_box_registers*>(0x3f00b8a0);
 
 mailbox::mailbox()
 {
@@ -19,16 +19,26 @@ mailbox& mailbox::get_handle()
     return handle;
 }
 
+u32 mailbox::translate_arm_to_vc(void* arm_address)
+{
+    return static_cast<u32>(reinterpret_cast<u64>(arm_address)) + 0xc0000000;
+}
+
+void* mailbox::translate_vc_to_arm(u32 vc_address)
+{
+    return reinterpret_cast<void*>(static_cast<u64>(vc_address - 0xc0000000));
+}
+
 u32 mailbox::write_read(u32 data, channel a_channel)
 {
     a_mutex.lock();
 
     flush();
     write(data, a_channel);
-    u32 result = read(a_channel);
+    data = read(a_channel);
 
     a_mutex.unlock();
-    return result;
+    return data;
 }
 
 void mailbox::flush()
@@ -41,19 +51,19 @@ void mailbox::flush()
 
 u32 mailbox::read(channel a_channel)
 {
-    u32 read_write;
+    u32 data;
     do
     {
         while(mail_box_0_interface->status_empty)
             ;
-        read_write = mail_box_0_interface->read_write;
-    } while(static_cast<channel>(read_write & 0xf) != a_channel); //first 4 bits are occupied by the channel.
-    return read_write & 0xfffffff0; //last 28 bits contain the data.
+        data = mail_box_0_interface->read_write;
+    } while(static_cast<channel>(data & 0xf) != a_channel); //first 4 bits are occupied by the channel.
+    return data & 0xfffffff0; //last 28 bits contain the data.
 }
 
 void mailbox::write(u32 data, channel a_channel)
 {
     while(mail_box_1_interface->status_full)
         ;
-    mail_box_1_interface->read_write = static_cast<u32>(a_channel) | ((0xc0000000 + data) & 0xfffffff0); //first 4 bits are occupied by the channel,last 28 bits contain the data.
+    mail_box_1_interface->read_write = static_cast<u32>(a_channel) | (data & 0xfffffff0); //first 4 bits are occupied by the channel,last 28 bits contain the data.
 }

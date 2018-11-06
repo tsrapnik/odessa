@@ -180,7 +180,7 @@ memory::level_3_descriptor* __attribute__((optimize(0))) memory::create_level_3_
         descriptor->uxn = 1;
         descriptor->ignored = 0;
 
-        extern u8 _etext;
+        u8 _etext;
         if(base_address >= reinterpret_cast<u64>(&_etext))
         {
             descriptor->pxn = 1;

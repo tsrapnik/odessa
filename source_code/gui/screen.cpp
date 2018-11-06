@@ -16,18 +16,6 @@ rectangle* screen::get_footprint()
     return &footprint;
 }
 
-void screen::refresh()
-{
-    u64* source = reinterpret_cast<u64*>(backbuffer);
-    u64* destination = reinterpret_cast<u64*>(displaybuffer);
-    for(u32 i = 0; i < 800 * 480 / 2; i++)
-    {
-        *destination = *source;
-        source++;
-        destination++;
-    }
-}
-
 void screen::clear(color background)
 {
     for(u32 x = 0; x < footprint.size.coordinate[0]; x++)

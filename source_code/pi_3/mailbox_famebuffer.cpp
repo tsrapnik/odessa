@@ -19,7 +19,8 @@ mailbox_framebuffer::mailbox_framebuffer() :
     memory::clean_data_cache();
     memory::data_sync_barrier();
 
-    a_mailbox.write_read(static_cast<u32>(reinterpret_cast<u64>(&a_mailbox_framebuffer_info)), mailbox::channel::frame_buffer);
+    a_mailbox.write_read(mailbox::translate_arm_to_vc(&a_mailbox_framebuffer_info),
+                         mailbox::channel::frame_buffer);
 
     memory::invalidate_data_cache();
     memory::data_memory_barrier();
@@ -31,7 +32,7 @@ mailbox_framebuffer::~mailbox_framebuffer()
 
 color* mailbox_framebuffer::get_framebuffer()
 {
-    return (color*)(u32*)(u64)(a_mailbox_framebuffer_info.buffer_pointer & 0x3fffffff);
+    return reinterpret_cast<color*>(static_cast<usize>(a_mailbox_framebuffer_info.buffer_pointer & 0x3fffffff));
 }
 
 u32 mailbox_framebuffer::get_framebuffer_width()
@@ -42,9 +43,4 @@ u32 mailbox_framebuffer::get_framebuffer_width()
 u32 mailbox_framebuffer::get_framebuffer_height()
 {
     return a_mailbox_framebuffer_info.height;
-}
-
-u64 mailbox_framebuffer::get_info_address()
-{
-    return reinterpret_cast<u64>(&a_mailbox_framebuffer_info);
 }

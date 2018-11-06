@@ -37,8 +37,8 @@ class mailbox
     ///mail box 0 is for information from the vc to the arm and should only be read. mail box 1 is for information from the arm to
     ///the vc and should only be written.
     ///
-    static constexpr mail_box_registers* mail_box_0_interface = reinterpret_cast<mail_box_registers*>(0x3f00b880);
-    static constexpr mail_box_registers* mail_box_1_interface = reinterpret_cast<mail_box_registers*>(0x3f00b8a0);
+    static mail_box_registers* const mail_box_0_interface;
+    static mail_box_registers* const mail_box_1_interface;
 
     private:
     mutex a_mutex;
@@ -61,6 +61,8 @@ class mailbox
     static mailbox& get_handle();
 
     public:
+    static u32 translate_arm_to_vc(void* arm_address);
+    static void* translate_vc_to_arm(u32 vc_address);
     u32 write_read(u32 data, channel a_channel);
 
     private:

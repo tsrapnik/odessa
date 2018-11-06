@@ -2,10 +2,13 @@
 
 #include the compiler path to this shell session. compile the program with make. copy the compiled image
 #immediately to an sd card so it is ready for testing.
-export PATH=$PATH:$(pwd)/compiler/bin
+export PATH=$PATH:$(dirname $(dirname $PWD))/compilers/gcc-linaro-7.1.1-2017.08-x86_64_aarch64-linux-gnu/bin
 make $1
-cp compiled_code/kernel8.img /media/tsrapnik/ODESSA
-if [ $? -eq 0 ]
+if [ "$1" != "clean" ]
 then
-    echo "copy image to sd card."
+    cp compiled_code/kernel8.img /media/tsrapnik/ODESSA
+    if [ $? -eq 0 ]
+    then
+        echo "copy image to sd card."
+    fi
 fi
