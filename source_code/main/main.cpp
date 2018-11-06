@@ -83,12 +83,12 @@ extern "C" i32 main(void)
 
     while(true)
     {
-        for(int i = 0; i < 100; i++)
-            for(int j = 0; j < 100; j++)
-                framebuffer[j * 800 + i] = color(255,255,255,255);
+        // for(int i = 0; i < 100; i++)
+        //     for(int j = 0; j < 100; j++)
+        //         framebuffer[j * 800 + i] = color(255,255,255,255);
         // a_effect_graph.draw();
         a_screen.draw_text("cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",vector_2_u32(0,63));
-        // a_effect_chorus.move(vector_2_u32(0,1));
+        a_effect_chorus.move(vector_2_u32(0,5));
     }
     return 0;
 }
