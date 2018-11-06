@@ -2,6 +2,7 @@
 
 #include "mutex.h"
 #include "type_definitions.h"
+#include "enum_flags.h"
 
 class mailbox
 {

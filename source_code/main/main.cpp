@@ -73,13 +73,14 @@ extern "C" i32 main(void)
     effect_chorus a_effect_chorus(rectangle(vector_2_u32(50,50),vector_2_u32(100,50)),color(127,0,0,255));
     a_effect_graph.add_effect(&a_effect_chorus);
 
-    InitV3D();
-    V3D_InitializeScene(&scene, 800, 480);
-    V3D_AddVertexesToScene(&scene);
-    V3D_AddShadderToScene(&scene, &shader1[0], 18);
-    V3D_SetupRenderControl(&scene, static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer())));
-    V3D_SetupBinningConfig(&scene);
-    V3D_RenderScene(&scene);
+    gpu a_gpu;
+    a_gpu.InitV3D();
+    a_gpu.V3D_InitializeScene(&scene, 800, 480);
+    a_gpu.V3D_AddVertexesToScene(&scene);
+    a_gpu.V3D_AddShadderToScene(&scene, &shader1[0], 18);
+    a_gpu.V3D_SetupRenderControl(&scene, static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer())));
+    a_gpu.V3D_SetupBinningConfig(&scene);
+    a_gpu.V3D_RenderScene(&scene);
 
     while(true)
     {
