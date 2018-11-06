@@ -109,7 +109,6 @@
 
 #define ALIGN_128BIT_MASK 0xFFFFFF80
 
-/* primitive typoe in the GL pipline */
 typedef enum
 {
 	PRIM_POINT = 0,
@@ -121,7 +120,6 @@ typedef enum
 	PRIM_TRIANGLE_FAN = 6,
 } PRIMITIVE;
 
-/* GL pipe control commands */
 typedef enum
 {
 	GL_HALT = 0,
@@ -177,7 +175,7 @@ struct __attribute__((__packed__, aligned(1))) EMITDATA
 
 mailbox_property_tags& a_mailbox_property_tags = mailbox_property_tags::get_handle();
 
-int InitV3D(void)
+bool InitV3D(void)
 {
     a_mailbox_property_tags.set_clock_rate(mailbox_property_tags::clock_id::v3d,250000000);
 
@@ -187,35 +185,35 @@ int InitV3D(void)
 	return 0; // Initialize failed
 }
 
-GPU_HANDLE V3D_mem_alloc(u32 size, u32 align, V3D_MEMALLOC_FLAGS flags)
+u32 V3D_mem_alloc(u32 size, u32 align, V3D_MEMALLOC_FLAGS flags)
 {
 	return a_mailbox_property_tags.allocate_memory(size, align,static_cast<mailbox_property_tags::allocate_memory_flag>(flags));
 }
 
-int V3D_mem_free(GPU_HANDLE handle)
+bool V3D_mem_free(u32 handle)
 {
     a_mailbox_property_tags.release_memory(handle);
 	return 1;
 }
 
-u32 V3D_mem_lock(GPU_HANDLE handle)
+u32 V3D_mem_lock(u32 handle)
 {
     return a_mailbox_property_tags.lock_memory(handle);
 }
 
-int V3D_mem_unlock(GPU_HANDLE handle)
+bool V3D_mem_unlock(u32 handle)
 {
     a_mailbox_property_tags.unlock_memory(handle);
 	return 1;
 }
 
-int V3D_execute_code(u32 code, u32 r0, u32 r1, u32 r2, u32 r3, u32 r4, u32 r5)
+bool V3D_execute_code(u32 code, u32 r0, u32 r1, u32 r2, u32 r3, u32 r4, u32 r5)
 {
     a_mailbox_property_tags.execute_code(code,r0,r1,r2,r3,r4,r5);
 	return 1;
 }
 
-int V3D_execute_qpu(i32 num_qpus, u32 control, u32 noflush, u32 timeout)
+bool V3D_execute_qpu(i32 num_qpus, u32 control, u32 noflush, u32 timeout)
 {
     a_mailbox_property_tags.execute_qpu(num_qpus,control,noflush,timeout);
 	return 1;
@@ -251,7 +249,7 @@ static void emit_float(u8 **list, float f)
 	*((*list)++) = (*data).byte4;
 }
 
-int V3D_InitializeScene(RENDER_STRUCT *scene, u32 renderWth, u32 renderHt)
+bool V3D_InitializeScene(RENDER_STRUCT *scene, u32 renderWth, u32 renderHt)
 {
 	if (scene)
 	{
@@ -283,7 +281,7 @@ u32 GPUaddrToARMaddr2 (u32 GPUaddress)
 	return GPUaddress & ~0xC0000000;
 }
 
-int V3D_AddVertexesToScene(RENDER_STRUCT *scene)
+bool V3D_AddVertexesToScene(RENDER_STRUCT *scene)
 {
 	if (scene)
 	{
@@ -399,7 +397,7 @@ int V3D_AddVertexesToScene(RENDER_STRUCT *scene)
 	return 0;
 }
 
-int V3D_AddShadderToScene(RENDER_STRUCT *scene, u32 *frag_shader, u32 frag_shader_emits)
+bool V3D_AddShadderToScene(RENDER_STRUCT *scene, u32 *frag_shader, u32 frag_shader_emits)
 {
 	if (scene)
 	{
@@ -432,7 +430,7 @@ int V3D_AddShadderToScene(RENDER_STRUCT *scene, u32 *frag_shader, u32 frag_shade
 	return 0;
 }
 
-int V3D_SetupRenderControl(RENDER_STRUCT *scene, VC4_ADDR renderBufferAddr)
+bool V3D_SetupRenderControl(RENDER_STRUCT *scene, u32 renderBufferAddr)
 {
 	if (scene)
 	{
@@ -505,7 +503,7 @@ int V3D_SetupRenderControl(RENDER_STRUCT *scene, VC4_ADDR renderBufferAddr)
 	return 0;
 }
 
-int V3D_SetupBinningConfig(RENDER_STRUCT *scene)
+bool V3D_SetupBinningConfig(RENDER_STRUCT *scene)
 {
 	if (scene)
 	{
@@ -574,7 +572,7 @@ int V3D_SetupBinningConfig(RENDER_STRUCT *scene)
 /*-[ V3D_RenderScene ]------------------------------------------------------}
 . Pretty obvious asks the VC4 to renders the given scene
 .--------------------------------------------------------------------------*/
-void V3D_RenderScene(RENDER_STRUCT *scene)
+bool V3D_RenderScene(RENDER_STRUCT *scene)
 {
 	if (scene)
 	{
@@ -614,5 +612,7 @@ void V3D_RenderScene(RENDER_STRUCT *scene)
 		while (v3d_macro[V3D_RFC] == 0)
 		{
 		}
+		return true;
 	}
+	return false;
 }
