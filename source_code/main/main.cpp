@@ -3,7 +3,7 @@
 #include "effect_graph.h"
 #include "mailbox_framebuffer.h"
 #include "memory.h"
-#include "rpi-GLES.h"
+#include "gpu.h"
 #include "screen.h"
 
 static u32 shader1[18] = {
@@ -74,7 +74,6 @@ extern "C" i32 main(void)
     a_effect_graph.add_effect(&a_effect_chorus);
 
     gpu a_gpu;
-    a_gpu.InitV3D();
     a_gpu.V3D_InitializeScene(&scene, 800, 480);
     a_gpu.V3D_AddVertexesToScene(&scene);
     a_gpu.V3D_AddShadderToScene(&scene, &shader1[0], 18);

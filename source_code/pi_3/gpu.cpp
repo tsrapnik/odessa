@@ -1,9 +1,8 @@
 // #include <stdint.h>		// Needed for int and 1/0
 // #include <stdint.h>			// Needed for u8, u32, etc
 //#include "rpi-SmartStart.h" // Need for mailbox
-#include "rpi-GLES.h"
+#include "gpu.h"
 // #include "type_definitions.h"
-#include "mailbox_property_tags.h"
 
 /* REFERENCES */
 /* https://docs.broadcom.com/docs/12358545 */
@@ -173,15 +172,16 @@ struct __attribute__((__packed__, aligned(1))) EMITDATA
     u8 byte4;
 };
 
-mailbox_property_tags& a_mailbox_property_tags = mailbox_property_tags::get_handle();
-
-bool gpu::InitV3D(void)
+gpu::gpu() :
+    a_mailbox_property_tags(mailbox_property_tags::get_handle())
 {
-	
     a_mailbox_property_tags.set_clock_rate(mailbox_property_tags::clock_id::v3d, 250000000);
-
     a_mailbox_property_tags.enable_qpu(true);
-    return true;
+}
+
+gpu::~gpu()
+{
+    //todo: add release, unlock and disable functions.
 }
 
 static void emit_u8(u8** list, u8 d)

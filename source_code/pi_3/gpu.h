@@ -1,5 +1,6 @@
 #pragma once
 #include "type_definitions.h"
+#include "mailbox_property_tags.h"
 
 typedef enum
 {
@@ -56,8 +57,12 @@ typedef struct render_t
 
 class gpu
 {
+    private:
+    mailbox_property_tags& a_mailbox_property_tags;
+
     public:
-    bool InitV3D(void);
+    gpu();
+    ~gpu();
     bool V3D_InitializeScene(RENDER_STRUCT* scene, u32 renderWth, u32 renderHt);
     bool V3D_AddVertexesToScene(RENDER_STRUCT* scene);
     bool V3D_AddShadderToScene(RENDER_STRUCT* scene, u32* frag_shader, u32 frag_shader_emits);
