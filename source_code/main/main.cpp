@@ -74,12 +74,12 @@ extern "C" i32 main(void)
     a_effect_graph.add_effect(&a_effect_chorus);
 
     gpu a_gpu;
-    a_gpu.V3D_InitializeScene(&a_gpu.a_render_struct, 800, 480);
-    a_gpu.V3D_AddVertexesToScene(&a_gpu.a_render_struct);
-    a_gpu.V3D_AddShadderToScene(&a_gpu.a_render_struct, &shader1[0], 18);
-    a_gpu.V3D_SetupRenderControl(&a_gpu.a_render_struct, static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer())));
-    a_gpu.V3D_SetupBinningConfig(&a_gpu.a_render_struct);
-    a_gpu.V3D_RenderScene(&a_gpu.a_render_struct);
+    a_gpu.V3D_InitializeScene(800, 480);
+    a_gpu.V3D_AddVertexesToScene();
+    a_gpu.V3D_AddShadderToScene(&shader1[0], 18);
+    a_gpu.V3D_SetupRenderControl(static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer())));
+    a_gpu.V3D_SetupBinningConfig();
+    a_gpu.V3D_RenderScene();
 
     while(true)
     {

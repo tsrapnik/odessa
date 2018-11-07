@@ -215,33 +215,33 @@ static void emit_float(u8** list, float f)
     *((*list)++) = (*data).byte4;
 }
 
-void gpu::V3D_InitializeScene(RENDER_STRUCT* scene, u32 renderWth, u32 renderHt)
+void gpu::V3D_InitializeScene(u32 renderWth, u32 renderHt)
 {
-        scene->rendererHandle = a_mailbox_property_tags.allocate_memory(0x10000,
+        a_render_struct.rendererHandle = a_mailbox_property_tags.allocate_memory(0x10000,
                                                                         0x1000,
                                                                         mailbox_property_tags::allocate_memory_flag::coherent &
                                                                             mailbox_property_tags::allocate_memory_flag::zero);
-        scene->rendererDataVC4 = a_mailbox_property_tags.lock_memory(scene->rendererHandle);
-        scene->loadpos = scene->rendererDataVC4; // VC4 load from start of memory
+        a_render_struct.rendererDataVC4 = a_mailbox_property_tags.lock_memory(a_render_struct.rendererHandle);
+        a_render_struct.loadpos = a_render_struct.rendererDataVC4; // VC4 load from start of memory
 
-        scene->renderWth = renderWth; // Render width
-        scene->renderHt = renderHt; // Render height
-        scene->binWth = (renderWth + 63) / 64; // Tiles across
-        scene->binHt = (renderHt + 63) / 64; // Tiles down
+        a_render_struct.renderWth = renderWth; // Render width
+        a_render_struct.renderHt = renderHt; // Render height
+        a_render_struct.binWth = (renderWth + 63) / 64; // Tiles across
+        a_render_struct.binHt = (renderHt + 63) / 64; // Tiles down
 
-        scene->tileMemSize = 0x4000;
-        scene->tileHandle = a_mailbox_property_tags.allocate_memory(scene->tileMemSize + 0x4000,
+        a_render_struct.tileMemSize = 0x4000;
+        a_render_struct.tileHandle = a_mailbox_property_tags.allocate_memory(a_render_struct.tileMemSize + 0x4000,
                                                                     0x1000,
                                                                     mailbox_property_tags::allocate_memory_flag::coherent &
                                                                         mailbox_property_tags::allocate_memory_flag::zero);
-        scene->tileStateDataVC4 = a_mailbox_property_tags.lock_memory(scene->tileHandle);
-        scene->tileDataBufferVC4 = scene->tileStateDataVC4 + 0x4000;
+        a_render_struct.tileStateDataVC4 = a_mailbox_property_tags.lock_memory(a_render_struct.tileHandle);
+        a_render_struct.tileDataBufferVC4 = a_render_struct.tileStateDataVC4 + 0x4000;
 
-        scene->binningHandle = a_mailbox_property_tags.allocate_memory(0x10000,
+        a_render_struct.binningHandle = a_mailbox_property_tags.allocate_memory(0x10000,
                                                                        0x1000,
                                                                        mailbox_property_tags::allocate_memory_flag::coherent &
                                                                            mailbox_property_tags::allocate_memory_flag::zero);
-        scene->binningDataVC4 = a_mailbox_property_tags.lock_memory(scene->binningHandle);
+        a_render_struct.binningDataVC4 = a_mailbox_property_tags.lock_memory(a_render_struct.binningHandle);
 }
 
 u32 GPUaddrToARMaddr2(u32 GPUaddress)
@@ -249,20 +249,20 @@ u32 GPUaddrToARMaddr2(u32 GPUaddress)
     return GPUaddress & ~0xc0000000;
 }
 
-void gpu::V3D_AddVertexesToScene(RENDER_STRUCT* scene)
+void gpu::V3D_AddVertexesToScene()
 {
-        scene->vertexVC4 = (scene->loadpos + 127) & ALIGN_128BIT_MASK; // Hold vertex start adderss .. aligned to 128bits
-        u8* p = static_cast<u8*>(mailbox::translate_vc_to_arm(scene->vertexVC4));
+        a_render_struct.vertexVC4 = (a_render_struct.loadpos + 127) & ALIGN_128BIT_MASK; // Hold vertex start adderss .. aligned to 128bits
+        u8* p = static_cast<u8*>(mailbox::translate_vc_to_arm(a_render_struct.vertexVC4));
         u8* q = p;
 
         /* Setup triangle vertices from OpenGL tutorial which used this */
         // fTriangle[0] = -0.4f; fTriangle[1] = 0.1f; fTriangle[2] = 0.0f;
         // fTriangle[3] = 0.4f; fTriangle[4] = 0.1f; fTriangle[5] = 0.0f;
         // fTriangle[6] = 0.0f; fTriangle[7] = 0.7f; fTriangle[8] = 0.0f;
-        u32 centreX = scene->renderWth / 2; // triangle centre x
-        u32 centreY = (u32)(0.4f * (scene->renderHt / 2)); // triangle centre y
-        u32 half_shape_wth = (u32)(0.4f * (scene->renderWth / 2)); // Half width of triangle
-        u32 half_shape_ht = (u32)(0.3f * (scene->renderHt / 2)); // half height of tringle
+        u32 centreX = a_render_struct.renderWth / 2; // triangle centre x
+        u32 centreY = (u32)(0.4f * (a_render_struct.renderHt / 2)); // triangle centre y
+        u32 half_shape_wth = (u32)(0.4f * (a_render_struct.renderWth / 2)); // Half width of triangle
+        u32 half_shape_ht = (u32)(0.3f * (a_render_struct.renderHt / 2)); // half height of tringle
 
         // Vertex Data
 
@@ -298,7 +298,7 @@ void gpu::V3D_AddVertexesToScene(RENDER_STRUCT* scene)
         // fQuad[3] = -0.2f; fQuad[4] = -0.6f; fQuad[5] = 0.0f;
         // fQuad[6] = 0.2f; fQuad[7] = -0.1f; fQuad[8] = 0.0f;
         // fQuad[9] = 0.2f; fQuad[10] = -0.6f; fQuad[11] = 0.0f;
-        centreY = (u32)(1.35f * (scene->renderHt / 2)); // quad centre y
+        centreY = (u32)(1.35f * (a_render_struct.renderHt / 2)); // quad centre y
 
         // Vertex: Top, left  vary blue
         emit_u16(&p, (centreX - half_shape_wth) << 4); // X in 12.4 fixed point
@@ -336,11 +336,11 @@ void gpu::V3D_AddVertexesToScene(RENDER_STRUCT* scene)
         emit_float(&p, 1.0f); // Varying 1 (Green)
         emit_float(&p, 1.0f); // Varying 2 (Blue)
 
-        scene->num_verts = 7;
-        scene->loadpos = scene->vertexVC4 + (p - q); // Update load position
+        a_render_struct.num_verts = 7;
+        a_render_struct.loadpos = a_render_struct.vertexVC4 + (p - q); // Update load position
 
-        scene->indexVertexVC4 = (scene->loadpos + 127) & ALIGN_128BIT_MASK; // Hold index vertex start adderss .. align it to 128 bits
-        p = (u8*)(usize)GPUaddrToARMaddr2(scene->indexVertexVC4);
+        a_render_struct.indexVertexVC4 = (a_render_struct.loadpos + 127) & ALIGN_128BIT_MASK; // Hold index vertex start adderss .. align it to 128 bits
+        p = (u8*)(usize)GPUaddrToARMaddr2(a_render_struct.indexVertexVC4);
         q = p;
 
         emit_u8(&p, 0); // tri - top
@@ -354,25 +354,25 @@ void gpu::V3D_AddVertexesToScene(RENDER_STRUCT* scene)
         emit_u8(&p, 4); // quad - bottom left
         emit_u8(&p, 6); // quad - bottom right
         emit_u8(&p, 5); // quad - top right
-        scene->IndexVertexCt = 9;
-        scene->MaxIndexVertex = 6;
+        a_render_struct.IndexVertexCt = 9;
+        a_render_struct.MaxIndexVertex = 6;
 
-        scene->loadpos = scene->indexVertexVC4 + (p - q); // Move loaad pos to new position
+        a_render_struct.loadpos = a_render_struct.indexVertexVC4 + (p - q); // Move loaad pos to new position
 }
 
-void gpu::V3D_AddShadderToScene(RENDER_STRUCT* scene, u32* frag_shader, u32 frag_shader_emits)
+void gpu::V3D_AddShadderToScene(u32* frag_shader, u32 frag_shader_emits)
 {
-        scene->shaderStart = (scene->loadpos + 127) & ALIGN_128BIT_MASK; // Hold shader start adderss .. aligned to 127 bits
-        u8* p = (u8*)(usize)GPUaddrToARMaddr2(scene->shaderStart); // ARM address for load
+        a_render_struct.shaderStart = (a_render_struct.loadpos + 127) & ALIGN_128BIT_MASK; // Hold shader start adderss .. aligned to 127 bits
+        u8* p = (u8*)(usize)GPUaddrToARMaddr2(a_render_struct.shaderStart); // ARM address for load
         u8* q = p; // Hold start address
 
         for(u32 i = 0; i < frag_shader_emits; i++) // For the number of fragment shader emits
             emit_u32(&p, frag_shader[i]); // Emit fragment shader into our allocated memory
 
-        scene->loadpos = scene->shaderStart + (p - q); // Update load position
+        a_render_struct.loadpos = a_render_struct.shaderStart + (p - q); // Update load position
 
-        scene->fragShaderRecStart = (scene->loadpos + 127) & ALIGN_128BIT_MASK; // Hold frag shader start adderss .. .aligned to 128bits
-        p = (u8*)(usize)GPUaddrToARMaddr2(scene->fragShaderRecStart);
+        a_render_struct.fragShaderRecStart = (a_render_struct.loadpos + 127) & ALIGN_128BIT_MASK; // Hold frag shader start adderss .. .aligned to 128bits
+        p = (u8*)(usize)GPUaddrToARMaddr2(a_render_struct.fragShaderRecStart);
         q = p;
 
         // Okay now we need Shader Record to buffer
@@ -380,17 +380,17 @@ void gpu::V3D_AddShadderToScene(RENDER_STRUCT* scene, u32* frag_shader, u32 frag
         emit_u8(&p, 6 * 4); // stride
         emit_u8(&p, 0xcc); // num uniforms (not used)
         emit_u8(&p, 3); // num varyings
-        emit_u32(&p, scene->shaderStart); // Shader code address
+        emit_u32(&p, a_render_struct.shaderStart); // Shader code address
         emit_u32(&p, 0); // Fragment shader uniforms (not in use)
-        emit_u32(&p, scene->vertexVC4); // Vertex Data
+        emit_u32(&p, a_render_struct.vertexVC4); // Vertex Data
 
-        scene->loadpos = scene->fragShaderRecStart + (p - q); // Adjust VC4 load poistion
+        a_render_struct.loadpos = a_render_struct.fragShaderRecStart + (p - q); // Adjust VC4 load poistion
 }
 
-void gpu::V3D_SetupRenderControl(RENDER_STRUCT* scene, u32 renderBufferAddr)
+void gpu::V3D_SetupRenderControl(u32 renderBufferAddr)
 {
-        scene->renderControlVC4 = (scene->loadpos + 127) & ALIGN_128BIT_MASK; // Hold render control start adderss .. aligned to 128 bits
-        u8* p = (u8*)(usize)GPUaddrToARMaddr2(scene->renderControlVC4); // ARM address for load
+        a_render_struct.renderControlVC4 = (a_render_struct.loadpos + 127) & ALIGN_128BIT_MASK; // Hold render control start adderss .. aligned to 128 bits
+        u8* p = (u8*)(usize)GPUaddrToARMaddr2(a_render_struct.renderControlVC4); // ARM address for load
         u8* q = p; // Hold start address
 
         // Clear colors
@@ -405,8 +405,8 @@ void gpu::V3D_SetupRenderControl(RENDER_STRUCT* scene, u32 renderBufferAddr)
 
         emit_u32(&p, renderBufferAddr); // render address (will be framebuffer)
 
-        emit_u16(&p, scene->renderWth); // render width
-        emit_u16(&p, scene->renderHt); // render height
+        emit_u16(&p, a_render_struct.renderWth); // render width
+        emit_u16(&p, a_render_struct.renderHt); // render height
         emit_u8(&p, 0x04); // framebuffer mode (linear rgba8888)
         emit_u8(&p, 0x00);
 
@@ -422,9 +422,9 @@ void gpu::V3D_SetupRenderControl(RENDER_STRUCT* scene, u32 renderBufferAddr)
         emit_u32(&p, 0); // no address is needed
 
         // Link all binned lists together
-        for(u32 x = 0; x < scene->binWth; x++)
+        for(u32 x = 0; x < a_render_struct.binWth; x++)
         {
-            for(u32 y = 0; y < scene->binHt; y++)
+            for(u32 y = 0; y < a_render_struct.binHt; y++)
             {
 
                 // Tile Coordinates
@@ -434,10 +434,10 @@ void gpu::V3D_SetupRenderControl(RENDER_STRUCT* scene, u32 renderBufferAddr)
 
                 // Call Tile sublist
                 emit_u8(&p, GL_BRANCH_TO_SUBLIST);
-                emit_u32(&p, scene->tileDataBufferVC4 + (y * scene->binWth + x) * 32);
+                emit_u32(&p, a_render_struct.tileDataBufferVC4 + (y * a_render_struct.binWth + x) * 32);
 
                 // Last tile needs a special store instruction
-                if(x == (scene->binWth - 1) && (y == scene->binHt - 1))
+                if(x == (a_render_struct.binWth - 1) && (y == a_render_struct.binHt - 1))
                 {
                     // Store resolved tile color buffer and signal end of frame
                     emit_u8(&p, GL_STORE_MULTISAMPLE_END);
@@ -450,21 +450,21 @@ void gpu::V3D_SetupRenderControl(RENDER_STRUCT* scene, u32 renderBufferAddr)
             }
         }
 
-        scene->loadpos = scene->renderControlVC4 + (p - q); // Adjust VC4 load poistion
-        scene->renderControlEndVC4 = scene->loadpos; // Hold end of render control data
+        a_render_struct.loadpos = a_render_struct.renderControlVC4 + (p - q); // Adjust VC4 load poistion
+        a_render_struct.renderControlEndVC4 = a_render_struct.loadpos; // Hold end of render control data
 }
 
-void gpu::V3D_SetupBinningConfig(RENDER_STRUCT* scene)
+void gpu::V3D_SetupBinningConfig()
 {
-        u8* p = (u8*)(usize)GPUaddrToARMaddr2(scene->binningDataVC4); // ARM address for binning data load
+        u8* p = (u8*)(usize)GPUaddrToARMaddr2(a_render_struct.binningDataVC4); // ARM address for binning data load
         u8* list = p; // Hold start address
 
         emit_u8(&p, GL_TILE_BINNING_CONFIG); // tile binning config control
-        emit_u32(&p, scene->tileDataBufferVC4); // tile allocation memory address
-        emit_u32(&p, scene->tileMemSize); // tile allocation memory size
-        emit_u32(&p, scene->tileStateDataVC4); // Tile state data address
-        emit_u8(&p, scene->binWth); // renderWidth/64
-        emit_u8(&p, scene->binHt); // renderHt/64
+        emit_u32(&p, a_render_struct.tileDataBufferVC4); // tile allocation memory address
+        emit_u32(&p, a_render_struct.tileMemSize); // tile allocation memory size
+        emit_u32(&p, a_render_struct.tileStateDataVC4); // Tile state data address
+        emit_u8(&p, a_render_struct.binWth); // renderWidth/64
+        emit_u8(&p, a_render_struct.binHt); // renderHt/64
         emit_u8(&p, 0x04); // config
 
         // Start tile binning.
@@ -478,8 +478,8 @@ void gpu::V3D_SetupBinningConfig(RENDER_STRUCT* scene)
         emit_u8(&p, GL_CLIP_WINDOW); // Clip window
         emit_u16(&p, 0); // 0
         emit_u16(&p, 0); // 0
-        emit_u16(&p, scene->renderWth); // width
-        emit_u16(&p, scene->renderHt); // height
+        emit_u16(&p, a_render_struct.renderWth); // width
+        emit_u16(&p, a_render_struct.renderHt); // height
 
         // GL State
         emit_u8(&p, GL_CONFIG_STATE);
@@ -495,14 +495,14 @@ void gpu::V3D_SetupBinningConfig(RENDER_STRUCT* scene)
         // The triangle
         // No Vertex Shader state (takes pre-transformed vertexes so we don't have to supply a working coordinate shader.)
         emit_u8(&p, GL_NV_SHADER_STATE);
-        emit_u32(&p, scene->fragShaderRecStart); // Shader Record
+        emit_u32(&p, a_render_struct.fragShaderRecStart); // Shader Record
 
         // primitive index list
         emit_u8(&p, GL_INDEXED_PRIMITIVE_LIST); // Indexed primitive list command
         emit_u8(&p, PRIM_TRIANGLE); // 8bit index, triangles
-        emit_u32(&p, scene->IndexVertexCt); // Number of index vertex
-        emit_u32(&p, scene->indexVertexVC4); // Address of index vertex data
-        emit_u32(&p, scene->MaxIndexVertex); // Maximum index
+        emit_u32(&p, a_render_struct.IndexVertexCt); // Number of index vertex
+        emit_u32(&p, a_render_struct.indexVertexVC4); // Address of index vertex data
+        emit_u32(&p, a_render_struct.MaxIndexVertex); // Maximum index
 
         // End of bin list
         // So Flush
@@ -511,10 +511,10 @@ void gpu::V3D_SetupBinningConfig(RENDER_STRUCT* scene)
         emit_u8(&p, GL_NOP);
         // Halt
         emit_u8(&p, GL_HALT);
-        scene->binningCfgEnd = scene->binningDataVC4 + (p - list); // Hold binning data end address
+        a_render_struct.binningCfgEnd = a_render_struct.binningDataVC4 + (p - list); // Hold binning data end address
 }
 
-void gpu::V3D_RenderScene(RENDER_STRUCT* scene)
+void gpu::V3D_RenderScene()
 {
         // clear caches
         v3d_macro[V3D_L2CACTL] = 4;
@@ -528,8 +528,8 @@ void gpu::V3D_RenderScene(RENDER_STRUCT* scene)
 
         // Run our control list
         v3d_macro[V3D_BFC] = 1; // reset binning frame count
-        v3d_macro[V3D_CT0CA] = scene->binningDataVC4; // Start binning config address
-        v3d_macro[V3D_CT0EA] = scene->binningCfgEnd; // End binning config address is at render control start
+        v3d_macro[V3D_CT0CA] = a_render_struct.binningDataVC4; // Start binning config address
+        v3d_macro[V3D_CT0EA] = a_render_struct.binningCfgEnd; // End binning config address is at render control start
 
         // wait for binning to finish
         while(v3d_macro[V3D_BFC] == 0)
@@ -545,8 +545,8 @@ void gpu::V3D_RenderScene(RENDER_STRUCT* scene)
 
         // Run our render
         v3d_macro[V3D_RFC] = 1; // reset rendering frame count
-        v3d_macro[V3D_CT1CA] = scene->renderControlVC4; // Start address for render control
-        v3d_macro[V3D_CT1EA] = scene->renderControlEndVC4; // End address for render control
+        v3d_macro[V3D_CT1CA] = a_render_struct.renderControlVC4; // Start address for render control
+        v3d_macro[V3D_CT1EA] = a_render_struct.renderControlEndVC4; // End address for render control
 
         // wait for render to finish
         while(v3d_macro[V3D_RFC] == 0)

@@ -53,10 +53,10 @@ class gpu
     public:
     gpu();
     ~gpu();
-    void V3D_InitializeScene(RENDER_STRUCT* scene, u32 renderWth, u32 renderHt);
-    void V3D_AddVertexesToScene(RENDER_STRUCT* scene);
-    void V3D_AddShadderToScene(RENDER_STRUCT* scene, u32* frag_shader, u32 frag_shader_emits);
-    void V3D_SetupRenderControl(RENDER_STRUCT* scene, u32 renderBufferAddr);
-    void V3D_SetupBinningConfig(RENDER_STRUCT* scene);
-    void V3D_RenderScene(RENDER_STRUCT* scene);
+    void V3D_InitializeScene(u32 renderWth, u32 renderHt);
+    void V3D_AddVertexesToScene();
+    void V3D_AddShadderToScene(u32* frag_shader, u32 frag_shader_emits);
+    void V3D_SetupRenderControl(u32 renderBufferAddr);
+    void V3D_SetupBinningConfig();
+    void V3D_RenderScene();
 };
