@@ -177,6 +177,7 @@ gpu::gpu() :
 {
     a_mailbox_property_tags.set_clock_rate(mailbox_property_tags::clock_id::v3d, 250000000);
     a_mailbox_property_tags.enable_qpu(true);
+    //todo: exception if fails.
 }
 
 gpu::~gpu()
@@ -214,16 +215,12 @@ static void emit_float(u8** list, float f)
     *((*list)++) = (*data).byte4;
 }
 
-bool gpu::V3D_InitializeScene(RENDER_STRUCT* scene, u32 renderWth, u32 renderHt)
+void gpu::V3D_InitializeScene(RENDER_STRUCT* scene, u32 renderWth, u32 renderHt)
 {
-    if(scene)
-    {
         scene->rendererHandle = a_mailbox_property_tags.allocate_memory(0x10000,
                                                                         0x1000,
                                                                         mailbox_property_tags::allocate_memory_flag::coherent &
                                                                             mailbox_property_tags::allocate_memory_flag::zero);
-        if(!scene->rendererHandle)
-            return 0;
         scene->rendererDataVC4 = a_mailbox_property_tags.lock_memory(scene->rendererHandle);
         scene->loadpos = scene->rendererDataVC4; // VC4 load from start of memory
 
@@ -245,22 +242,17 @@ bool gpu::V3D_InitializeScene(RENDER_STRUCT* scene, u32 renderWth, u32 renderHt)
                                                                        mailbox_property_tags::allocate_memory_flag::coherent &
                                                                            mailbox_property_tags::allocate_memory_flag::zero);
         scene->binningDataVC4 = a_mailbox_property_tags.lock_memory(scene->binningHandle);
-        return 1;
-    }
-    return 0;
 }
 
 u32 GPUaddrToARMaddr2(u32 GPUaddress)
 {
-    return GPUaddress & ~0xC0000000;
+    return GPUaddress & ~0xc0000000;
 }
 
-bool gpu::V3D_AddVertexesToScene(RENDER_STRUCT* scene)
+void gpu::V3D_AddVertexesToScene(RENDER_STRUCT* scene)
 {
-    if(scene)
-    {
         scene->vertexVC4 = (scene->loadpos + 127) & ALIGN_128BIT_MASK; // Hold vertex start adderss .. aligned to 128bits
-        u8* p = (u8*)(usize)GPUaddrToARMaddr2(scene->vertexVC4);
+        u8* p = static_cast<u8*>(mailbox::translate_vc_to_arm(scene->vertexVC4));
         u8* q = p;
 
         /* Setup triangle vertices from OpenGL tutorial which used this */
@@ -366,15 +358,10 @@ bool gpu::V3D_AddVertexesToScene(RENDER_STRUCT* scene)
         scene->MaxIndexVertex = 6;
 
         scene->loadpos = scene->indexVertexVC4 + (p - q); // Move loaad pos to new position
-        return 1;
-    }
-    return 0;
 }
 
-bool gpu::V3D_AddShadderToScene(RENDER_STRUCT* scene, u32* frag_shader, u32 frag_shader_emits)
+void gpu::V3D_AddShadderToScene(RENDER_STRUCT* scene, u32* frag_shader, u32 frag_shader_emits)
 {
-    if(scene)
-    {
         scene->shaderStart = (scene->loadpos + 127) & ALIGN_128BIT_MASK; // Hold shader start adderss .. aligned to 127 bits
         u8* p = (u8*)(usize)GPUaddrToARMaddr2(scene->shaderStart); // ARM address for load
         u8* q = p; // Hold start address
@@ -398,16 +385,10 @@ bool gpu::V3D_AddShadderToScene(RENDER_STRUCT* scene, u32* frag_shader, u32 frag
         emit_u32(&p, scene->vertexVC4); // Vertex Data
 
         scene->loadpos = scene->fragShaderRecStart + (p - q); // Adjust VC4 load poistion
-
-        return 1;
-    }
-    return 0;
 }
 
-bool gpu::V3D_SetupRenderControl(RENDER_STRUCT* scene, u32 renderBufferAddr)
+void gpu::V3D_SetupRenderControl(RENDER_STRUCT* scene, u32 renderBufferAddr)
 {
-    if(scene)
-    {
         scene->renderControlVC4 = (scene->loadpos + 127) & ALIGN_128BIT_MASK; // Hold render control start adderss .. aligned to 128 bits
         u8* p = (u8*)(usize)GPUaddrToARMaddr2(scene->renderControlVC4); // ARM address for load
         u8* q = p; // Hold start address
@@ -471,16 +452,10 @@ bool gpu::V3D_SetupRenderControl(RENDER_STRUCT* scene, u32 renderBufferAddr)
 
         scene->loadpos = scene->renderControlVC4 + (p - q); // Adjust VC4 load poistion
         scene->renderControlEndVC4 = scene->loadpos; // Hold end of render control data
-
-        return 1;
-    }
-    return 0;
 }
 
-bool gpu::V3D_SetupBinningConfig(RENDER_STRUCT* scene)
+void gpu::V3D_SetupBinningConfig(RENDER_STRUCT* scene)
 {
-    if(scene)
-    {
         u8* p = (u8*)(usize)GPUaddrToARMaddr2(scene->binningDataVC4); // ARM address for binning data load
         u8* list = p; // Hold start address
 
@@ -537,16 +512,10 @@ bool gpu::V3D_SetupBinningConfig(RENDER_STRUCT* scene)
         // Halt
         emit_u8(&p, GL_HALT);
         scene->binningCfgEnd = scene->binningDataVC4 + (p - list); // Hold binning data end address
-
-        return 1;
-    }
-    return 0;
 }
 
-bool gpu::V3D_RenderScene(RENDER_STRUCT* scene)
+void gpu::V3D_RenderScene(RENDER_STRUCT* scene)
 {
-    if(scene)
-    {
         // clear caches
         v3d_macro[V3D_L2CACTL] = 4;
         v3d_macro[V3D_SLCACTL] = 0x0F0F0F0F;
@@ -583,7 +552,4 @@ bool gpu::V3D_RenderScene(RENDER_STRUCT* scene)
         while(v3d_macro[V3D_RFC] == 0)
         {
         }
-        return true;
-    }
-    return false;
 }

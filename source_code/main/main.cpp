@@ -44,7 +44,7 @@ static u32 shader1[18] = {
 //     0x100009E7, // nop; nop; nop
 // };
 
-static RENDER_STRUCT scene = {0};
+// static RENDER_STRUCT scene = {0};
 
 extern "C" i32 main(void)
 {
@@ -74,12 +74,12 @@ extern "C" i32 main(void)
     a_effect_graph.add_effect(&a_effect_chorus);
 
     gpu a_gpu;
-    a_gpu.V3D_InitializeScene(&scene, 800, 480);
-    a_gpu.V3D_AddVertexesToScene(&scene);
-    a_gpu.V3D_AddShadderToScene(&scene, &shader1[0], 18);
-    a_gpu.V3D_SetupRenderControl(&scene, static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer())));
-    a_gpu.V3D_SetupBinningConfig(&scene);
-    a_gpu.V3D_RenderScene(&scene);
+    a_gpu.V3D_InitializeScene(&a_gpu.a_render_struct, 800, 480);
+    a_gpu.V3D_AddVertexesToScene(&a_gpu.a_render_struct);
+    a_gpu.V3D_AddShadderToScene(&a_gpu.a_render_struct, &shader1[0], 18);
+    a_gpu.V3D_SetupRenderControl(&a_gpu.a_render_struct, static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer())));
+    a_gpu.V3D_SetupBinningConfig(&a_gpu.a_render_struct);
+    a_gpu.V3D_RenderScene(&a_gpu.a_render_struct);
 
     while(true)
     {

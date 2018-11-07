@@ -2,18 +2,6 @@
 #include "type_definitions.h"
 #include "mailbox_property_tags.h"
 
-typedef enum
-{
-    MEM_FLAG_DISCARDABLE = 1 << 0, /* can be resized to 0 at any time. Use for cached data */
-    MEM_FLAG_NORMAL = 0 << 2, /* normal allocating alias. Don't use from ARM			*/
-    MEM_FLAG_DIRECT = 1 << 2, /* 0xC alias uncached									*/
-    MEM_FLAG_COHERENT = 2 << 2, /* 0x8 alias. Non-allocating in L2 but coherent			*/
-    MEM_FLAG_L1_NONALLOCATING = (MEM_FLAG_DIRECT | MEM_FLAG_COHERENT), /* Allocating in L2									*/
-    MEM_FLAG_ZERO = 1 << 4, /* initialise buffer to all zeros						*/
-    MEM_FLAG_NO_INIT = 1 << 5, /* don't initialise (default is initialise to all ones	*/
-    MEM_FLAG_Hbool_PERMALOCK = 1 << 6, /* Likely to be locked for long periods of time.		*/
-} V3D_MEMALLOC_FLAGS;
-
 typedef struct render_t
 {
     /* This is the current load position */
@@ -57,16 +45,18 @@ typedef struct render_t
 
 class gpu
 {
+    public:
+    RENDER_STRUCT a_render_struct;
     private:
     mailbox_property_tags& a_mailbox_property_tags;
 
     public:
     gpu();
     ~gpu();
-    bool V3D_InitializeScene(RENDER_STRUCT* scene, u32 renderWth, u32 renderHt);
-    bool V3D_AddVertexesToScene(RENDER_STRUCT* scene);
-    bool V3D_AddShadderToScene(RENDER_STRUCT* scene, u32* frag_shader, u32 frag_shader_emits);
-    bool V3D_SetupRenderControl(RENDER_STRUCT* scene, u32 renderBufferAddr);
-    bool V3D_SetupBinningConfig(RENDER_STRUCT* scene);
-    bool V3D_RenderScene(RENDER_STRUCT* scene);
+    void V3D_InitializeScene(RENDER_STRUCT* scene, u32 renderWth, u32 renderHt);
+    void V3D_AddVertexesToScene(RENDER_STRUCT* scene);
+    void V3D_AddShadderToScene(RENDER_STRUCT* scene, u32* frag_shader, u32 frag_shader_emits);
+    void V3D_SetupRenderControl(RENDER_STRUCT* scene, u32 renderBufferAddr);
+    void V3D_SetupBinningConfig(RENDER_STRUCT* scene);
+    void V3D_RenderScene(RENDER_STRUCT* scene);
 };

@@ -42,6 +42,7 @@ bool mailbox_property_tags::enable_qpu(bool enable)
 
 u32 mailbox_property_tags::allocate_memory(u32 size, u32 alignment, allocate_memory_flag flag)
 {
+    //todo: exception if fails.
     tag_allocate_memory a_tag_allocate_memory;
     a_tag_allocate_memory.request.size = size;
     a_tag_allocate_memory.request.alignment = alignment;

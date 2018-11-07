@@ -34,6 +34,7 @@ inline void screen::put_transparent_pixel(vector_2_u32 position, color own_color
 
     color a_color = displaybuffer[position.coordinate[1] * footprint.size.coordinate[0] + position.coordinate[0]];
 
+    //to be completely correct we should divide by 255 and not >> 8 (which is divide by 256), but we do do it because it is much faster.
     a_color.red = static_cast<u8>((a_color.red * anti_alpha + own_color.red * alpha) >> 8);
     a_color.green = static_cast<u8>((a_color.green * anti_alpha + own_color.green * alpha) >> 8);
     a_color.blue = static_cast<u8>((a_color.blue * anti_alpha + own_color.blue * alpha) >> 8);
