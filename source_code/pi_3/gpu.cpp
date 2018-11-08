@@ -243,90 +243,58 @@ void gpu::V3D_InitializeScene(u16 renderWth, u16 renderHt)
     binningDataVC4 = a_mailbox_property_tags.lock_memory(memory_handle);
 }
 
-// u32 GPUaddrToARMaddr2(u32 GPUaddress)
-// {
-//     return GPUaddress & ~0xc0000000;
-// }
-
-//in screen coordinates.
-struct vertex
+void gpu::V3D_AddVertexesToScene(vertex* new_vertices, triangle* new_triangles, u32 new_vertices_size, u32 new_triangles_size)
 {
-    u16 x; //in 12.4 fixed point format.
-    u16 y; //in 12.4 fixed point format.
-    f32 z;
-    f32 w;
-    f32 r;
-    f32 g;
-    f32 b;
-} __attribute__((packed));
+    vertices_size = new_vertices_size;
+    triangles_size = new_triangles_size * 3;
 
-struct triangle
+    vertices = a_mailbox_property_tags.allocate_memory(vertices_size * sizeof(vertex) + triangles_size * sizeof(triangle),
+                                                        0x1000,
+                                                        mailbox_property_tags::allocate_memory_flag::coherent &
+                                                            mailbox_property_tags::allocate_memory_flag::zero);
+    a_mailbox_property_tags.lock_memory(vertices);
+
+    vertex* vertex_buffer = reinterpret_cast<vertex*>(vertices);
+
+    for(u32 i = 0; i < vertices_size; i++)
+    {
+        vertex_buffer[i].x = new_vertices[i].x;
+        vertex_buffer[i].y = new_vertices[i].y;
+        vertex_buffer[i].z = new_vertices[i].z;
+        vertex_buffer[i].w = new_vertices[i].w;
+        vertex_buffer[i].r = new_vertices[i].r;
+        vertex_buffer[i].g = new_vertices[i].g;
+        vertex_buffer[i].b = new_vertices[i].b;
+    }
+
+    triangles = vertices + vertices_size * sizeof(vertex);
+
+    triangle* triangle_buffer = reinterpret_cast<triangle*>(triangles);
+
+    for(u32 i = 0; i < triangles_size; i++)
+        triangle_buffer[i] = new_triangles[i];
+
+}
+
+void gpu::update_vertices(vertex* new_vertices, triangle* new_triangles)
 {
-    u8 index_0;
-    u8 index_1;
-    u8 index_2;
-} __attribute__((packed));
+    vertex* vertex_buffer = reinterpret_cast<vertex*>(vertices);
 
-void gpu::V3D_AddVertexesToScene()
-{
-    num_verts = 3;
-    IndexVertexCt = 3;
+    for(u32 i = 0; i < vertices_size; i++)
+    {
+        vertex_buffer[i].x = new_vertices[i].x;
+        vertex_buffer[i].y = new_vertices[i].y;
+        vertex_buffer[i].z = new_vertices[i].z;
+        vertex_buffer[i].w = new_vertices[i].w;
+        vertex_buffer[i].r = new_vertices[i].r;
+        vertex_buffer[i].g = new_vertices[i].g;
+        vertex_buffer[i].b = new_vertices[i].b;
+    }
 
-    vertexVC4 = a_mailbox_property_tags.allocate_memory(num_verts * sizeof(vertex) + IndexVertexCt * sizeof(triangle),
-                                                            0x1000,
-                                                            mailbox_property_tags::allocate_memory_flag::coherent &
-                                                                mailbox_property_tags::allocate_memory_flag::zero);
-    a_mailbox_property_tags.lock_memory(vertexVC4);
+    triangle* triangle_buffer = reinterpret_cast<triangle*>(triangles);
 
-    volatile vertex* vertex_buffer = const_cast<volatile vertex*>(reinterpret_cast<vertex*>((vertexVC4)));
-
-    vertex_buffer[0].x = (0) << 4;
-    vertex_buffer[0].y = (0) << 4;
-    vertex_buffer[0].z = 1.0;
-    vertex_buffer[0].w = 1.0;
-    vertex_buffer[0].r = 1.0;
-    vertex_buffer[0].g = 1.0;
-    vertex_buffer[0].b = 1.0;
-
-    vertex_buffer[1].x = (200) << 4;
-    vertex_buffer[1].y = (0) << 4;
-    vertex_buffer[1].z = 1.0;
-    vertex_buffer[1].w = 1.0;
-    vertex_buffer[1].r = 1.0;
-    vertex_buffer[1].g = 1.0;
-    vertex_buffer[1].b = 1.0;
-
-    vertex_buffer[2].x = (0) << 4;
-    vertex_buffer[2].y = (200) << 4;
-    vertex_buffer[2].z = 1.0;
-    vertex_buffer[2].w = 1.0;
-    vertex_buffer[2].r = 1.0;
-    vertex_buffer[2].g = 1.0;
-    vertex_buffer[2].b = 1.0;
-
-    indexVertexVC4 = vertexVC4 + num_verts * sizeof(vertex);
-
-    // indexVertexVC4 = a_mailbox_property_tags.allocate_memory(IndexVertexCt * sizeof(triangle),
-    //                                                         0x1000,
-    //                                                         mailbox_property_tags::allocate_memory_flag::coherent &
-    //                                                             mailbox_property_tags::allocate_memory_flag::zero);
-    // a_mailbox_property_tags.lock_memory(indexVertexVC4);
-
-    volatile triangle* triangle_buffer = const_cast<volatile triangle*>(reinterpret_cast<triangle*>(indexVertexVC4));
-
-    triangle_buffer[0].index_0 = 0;
-    triangle_buffer[0].index_1 = 1;
-    triangle_buffer[0].index_2 = 2;
-
-    triangle_buffer[1].index_0 = 3;
-    triangle_buffer[1].index_1 = 4;
-    triangle_buffer[1].index_2 = 5;
-
-    triangle_buffer[2].index_0 = 4;
-    triangle_buffer[2].index_1 = 6;
-    triangle_buffer[2].index_2 = 5;
-
-    MaxIndexVertex = 2;
+    for(u32 i = 0; i < triangles_size; i++)
+        triangle_buffer[i] = new_triangles[i];
 }
 
 void gpu::V3D_AddShadderToScene(u32* frag_shader, u32 frag_shader_emits)
@@ -351,7 +319,7 @@ void gpu::V3D_AddShadderToScene(u32* frag_shader, u32 frag_shader_emits)
     emit_u8(&p, 3); // num varyings
     emit_u32(&p, shaderStart); // Shader code address
     emit_u32(&p, 0); // Fragment shader uniforms (not in use)
-    emit_u32(&p, vertexVC4); // Vertex Data
+    emit_u32(&p, vertices); // Vertex Data
 
     loadpos = fragShaderRecStart + (p - q); // Adjust VC4 load poistion
 }
@@ -469,9 +437,9 @@ void gpu::V3D_SetupBinningConfig()
     // primitive index list
     emit_u8(&p, GL_INDEXED_PRIMITIVE_LIST); // Indexed primitive list command
     emit_u8(&p, PRIM_TRIANGLE); // 8bit index, triangles
-    emit_u32(&p, IndexVertexCt); // Number of index vertex
-    emit_u32(&p, indexVertexVC4); // Address of index vertex data
-    emit_u32(&p, MaxIndexVertex); // Maximum index
+    emit_u32(&p, triangles_size); // Number of index vertex
+    emit_u32(&p, triangles); // Address of index vertex data
+    emit_u32(&p, vertices_size - 1); // Maximum index
 
     // End of bin list
     // So Flush

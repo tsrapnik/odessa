@@ -9,13 +9,23 @@ _start:
 	msr	sp_el1, x3							/* EL1 stack set */
 	msr	sp_el0, x4							/* EL0 stack set */
 
-.if (__ARM_FP == 14)		//# If hard float compiling selected
+	/* Initialize Generic Timers */
+	mrs	x0, cnthctl_el2
+	orr	x0, x0, #0x3	/* Enable EL1 access to timers */
+	msr	cnthctl_el2, x0
+	msr	cntvoff_el2, xzr
+
+	/* Initilize MPID/MPIDR registers */
+	mrs	x0, midr_el1
+	mrs	x1, mpidr_el1
+	msr	vpidr_el2, x0
+	msr	vmpidr_el2, x1
+
 	mov	x0, #0x33ff
 	msr	cptr_el2, x0						// Disable coprocessor traps to EL2
 	msr	hstr_el2, xzr						// Disable coprocessor traps to EL2
 	mov	x0, #3 << 20
 	msr	cpacr_el1, x0						// Enable FP/SIMD at EL1
-.endif						//# __ARM_FP == 14 hard float on for compiling
 
 	mov	x0, #(1 << 31)						// 64bit EL1
 	msr	hcr_el2, x0

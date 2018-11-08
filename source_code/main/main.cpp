@@ -8,6 +8,7 @@
 #include "string.h"
 
 //todo: all mailbox and hardware accessing classes should use struct of volatile enum.
+//todo: figure out why use of d0 registers lets gpu fail and seperate memory assignment for triangle indices gives strange black corner artifact.
 
 static u32 shader1[18] = {
     // Vertex Color Shader
@@ -82,15 +83,62 @@ extern "C" i32 main(void)
     gpu a_gpu;
     a_gpu.a_screen = &a_screen;
     a_gpu.V3D_InitializeScene(800, 480);
-    a_gpu.V3D_AddVertexesToScene();
+
+    u32 vertex_buffer_size = 4;
+    gpu::vertex vertex_buffer[vertex_buffer_size];
+    vertex_buffer[0].x = (0) << 4;
+    vertex_buffer[0].y = (0) << 4;
+    vertex_buffer[0].z = 1.0;
+    vertex_buffer[0].w = 1.0;
+    vertex_buffer[0].r = 1.0;
+    vertex_buffer[0].g = 1.0;
+    vertex_buffer[0].b = 1.0;
+
+    vertex_buffer[1].x = (200) << 4;
+    vertex_buffer[1].y = (0) << 4;
+    vertex_buffer[1].z = 1.0;
+    vertex_buffer[1].w = 1.0;
+    vertex_buffer[1].r = 1.0;
+    vertex_buffer[1].g = 1.0;
+    vertex_buffer[1].b = 1.0;
+
+    vertex_buffer[2].x = (0) << 4;
+    vertex_buffer[2].y = (200) << 4;
+    vertex_buffer[2].z = 1.0;
+    vertex_buffer[2].w = 1.0;
+    vertex_buffer[2].r = 1.0;
+    vertex_buffer[2].g = 1.0;
+    vertex_buffer[2].b = 1.0;
+
+    vertex_buffer[3].x = (200) << 4;
+    vertex_buffer[3].y = (200) << 4;
+    vertex_buffer[3].z = 1.0;
+    vertex_buffer[3].w = 1.0;
+    vertex_buffer[3].r = 1.0;
+    vertex_buffer[3].g = 1.0;
+    vertex_buffer[3].b = 1.0;
+
+    u32 triangle_buffer_size = 2;
+    gpu::triangle triangle_buffer[triangle_buffer_size];
+    triangle_buffer[0].index_0 = 0;
+    triangle_buffer[0].index_1 = 1;
+    triangle_buffer[0].index_2 = 2;
+
+    triangle_buffer[1].index_0 = 0;
+    triangle_buffer[1].index_1 = 1;
+    triangle_buffer[1].index_2 = 3;
+
+    a_gpu.V3D_AddVertexesToScene(vertex_buffer, triangle_buffer, vertex_buffer_size, triangle_buffer_size);
     a_gpu.V3D_AddShadderToScene(&shader1[0], 18);
     a_gpu.V3D_SetupRenderControl(static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer())));
     a_gpu.V3D_SetupBinningConfig();
 
     while(true)
     {
+        a_gpu.update_vertices(vertex_buffer, triangle_buffer);
         a_gpu.V3D_RenderScene();
-        a_screen.draw_text("works.", vector_2_u32(0, 0));
+        vertex_buffer[3].x += 100 << 4;
+        // a_screen.draw_text("works.", vector_2_u32(0, 0));
         // for(int i = 0; i < 100; i++)
         //     for(int j = 0; j < 100; j++)
         //         framebuffer[j * 800 + i] = color(255,255,255,255);
@@ -131,3 +179,35 @@ extern "C" void __cxa_guard_release(void)
 extern "C" void __cxa_atexit(void)
 {
 }
+
+// extern "C" void memcpy(void* destination, void* source, usize size)
+// {
+// u32 size_u64 = size / 8;
+// u32 size_u8 = size % 8;
+
+// u64* destination_u64 = reinterpret_cast<u64*>(destination);
+// u64* source_u64 = reinterpret_cast<u64*>(source);
+// for(u32 i = 0; i < size_u64; i++)
+// {
+//     *destination_u64 = *source_u64;
+//     destination_u64++;
+//     source_u64++;
+// }
+
+// u8* destination_u8 = reinterpret_cast<u8*>(destination_u64);
+// u8* source_u8 = reinterpret_cast<u8*>(source_u64);
+// for(u32 i = 0; i < size_u8; i++)
+// {
+//      *destination_u8 = *source_u8;
+//      destination_u8++;
+//      source_u8++;
+// }
+// u8* destination_u8 = reinterpret_cast<u8*>(destination);
+// u8* source_u8 = reinterpret_cast<u8*>(source);
+// for(u32 i = 0; i < size; i++)
+// {
+//      *destination_u8 = *source_u8;
+//      destination_u8++;
+//      source_u8++;
+// }
+// }
