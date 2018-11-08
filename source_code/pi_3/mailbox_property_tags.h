@@ -4,7 +4,7 @@
 
 class mailbox_property_tags
 {
-  public:
+    public:
     enum class clock_id : u32
     {
         emmc = 0x1,
@@ -38,7 +38,7 @@ class mailbox_property_tags
         ccp2tx = 0x8,
     };
 
-  private:
+    private:
     enum class tag_id : u32
     {
         get_board_model = 0x00010001,
@@ -127,31 +127,31 @@ class mailbox_property_tags
             u32
                 response_size : 31,
                 is_response : 1;
-        }volatile response_request_code; //initialize both values to zero. is_response is set by vc to 1 to indicate there is a response. response_size is
-                                 //size in bytes of response. never used in practice, as the response size is already known from documentation.
+        } volatile response_request_code; //initialize both values to zero. is_response is set by vc to 1 to indicate there is a response. response_size is
+            //size in bytes of response. never used in practice, as the response size is already known from documentation.
     } __attribute__((packed));
 
-  private:
-    mailbox &a_mailbox;
+    private:
+    mailbox& a_mailbox;
 
-  private:
+    private:
     ///
     ///mailbox_property_tags is singleton to prevent multiple instances accessing the hardware at the same time.
     ///
     mailbox_property_tags();
-    mailbox_property_tags(const mailbox_property_tags &) = delete;
-    mailbox_property_tags &operator=(const mailbox_property_tags &) = delete;
+    mailbox_property_tags(const mailbox_property_tags&) = delete;
+    mailbox_property_tags& operator=(const mailbox_property_tags&) = delete;
 
-  public:
+    public:
     ~mailbox_property_tags();
 
     ///
     ///returns the reference to the mailbox_property_tags object. if not yet instantiated it automatically
     ///instantiates it.
     ///
-    static mailbox_property_tags &get_handle();
+    static mailbox_property_tags& get_handle();
 
-  private:
+    private:
     struct tag_set_clock_rate
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_set_clock_rate),
@@ -175,11 +175,11 @@ class mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //set clock with given id to given rate in Hz. returns true on success.
     bool set_clock_rate(clock_id a_clock_id, u32 rate);
 
-  private:
+    private:
     struct tag_enable_qpu
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_enable_qpu),
@@ -199,24 +199,24 @@ class mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns true on success.
     bool enable_qpu(bool enable);
 
-  public:
+    public:
     enum class allocate_memory_flag
     {
-        discardable = 1 << 0,                   //can be resized to 0 at any time. use for cached data.
-        normal = 0 << 2,                        //normal allocating alias. don't use from arm.
-        direct = 1 << 2,                        //0xc alias uncached.
-        coherent = 2 << 2,                      //0x8 alias. non-allocating in l2 but coherent.
+        discardable = 1 << 0, //can be resized to 0 at any time. use for cached data.
+        normal = 0 << 2, //normal allocating alias. don't use from arm.
+        direct = 1 << 2, //0xc alias uncached.
+        coherent = 2 << 2, //0x8 alias. non-allocating in l2 but coherent.
         l1_nonallocating = (direct | coherent), //allocating in l2.
-        zero = 1 << 4,                          //initialise buffer to all zeros.
-        no_init = 1 << 5,                       //don't initialise (default is initialise to all ones).
-        hint_permalock = 1 << 6,                //likely to be locked for long periods of time.
+        zero = 1 << 4, //initialise buffer to all zeros.
+        no_init = 1 << 5, //don't initialise (default is initialise to all ones).
+        hint_permalock = 1 << 6, //likely to be locked for long periods of time.
     };
 
-  private:
+    private:
     struct tag_allocate_memory
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_allocate_memory),
@@ -239,11 +239,11 @@ class mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns handle on success, returns zero on failure.
     u32 allocate_memory(u32 size, u32 alignment, allocate_memory_flag flag);
 
-  private:
+    private:
     struct tag_release_memory
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_release_memory),
@@ -264,11 +264,11 @@ class mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns true on success.
     bool release_memory(u32 handle);
 
-  private:
+    private:
     struct tag_lock_memory
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_lock_memory),
@@ -289,11 +289,11 @@ class mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns bus address on success, returns zero on failure.
     u32 lock_memory(u32 handle);
 
-  private:
+    private:
     struct tag_unlock_memory
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_unlock_memory),
@@ -314,11 +314,11 @@ class mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns true on success.
     bool unlock_memory(u32 handle);
 
-  private:
+    private:
     struct tag_execute_code
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_execute_code),
@@ -346,11 +346,11 @@ class mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns true on success.
     bool execute_code(u32 function_pointer, u32 r0, u32 r1, u32 r2, u32 r3, u32 r4, u32 r5);
 
-  private:
+    private:
     struct tag_execute_qpu
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_execute_qpu),
@@ -374,7 +374,7 @@ class mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns true on success.
     bool execute_qpu(u32 num_qpus, u32 control, u32 noflush, u32 timeout);
 };

@@ -169,7 +169,7 @@ void screen::draw_text(const char* text, vector_2_u32 position)
         if(*text == '\n' || *text == '\r')
         {
             position.coordinate[0] = original_x;
-            position.coordinate[1] += font::letter_height + 1;
+            position.coordinate[1] += font::letter_height;
         }
         else
         {
@@ -177,9 +177,9 @@ void screen::draw_text(const char* text, vector_2_u32 position)
                 for(u32 y = 0; y < font::letter_height; y++)
                 {
                     u8 greyscale = font::monospace[static_cast<u32>(*text)][y][x];
-                    put_transparent_pixel(vector_2_u32::sum(position, vector_2_u32(x, y)), color(0,0,0,greyscale));
+                    put_transparent_pixel(vector_2_u32::sum(position, vector_2_u32(x, y)), color(0,100,0,greyscale));
                 }
-            position.coordinate[0] += font::letter_width + 1;
+            position.coordinate[0] += font::letter_width;
         }
         text++;
     }

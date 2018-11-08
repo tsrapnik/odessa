@@ -1,10 +1,13 @@
 #include "buddy_heap.h"
 #include "effect_chorus.h"
 #include "effect_graph.h"
+#include "gpu.h"
 #include "mailbox_framebuffer.h"
 #include "memory.h"
-#include "gpu.h"
 #include "screen.h"
+#include "string.h"
+
+//todo: all mailbox and hardware accessing classes should use struct of volatile enum.
 
 static u32 shader1[18] = {
     // Vertex Color Shader
@@ -45,7 +48,10 @@ static u32 shader1[18] = {
 // };
 
 // static RENDER_STRUCT scene = {0};
-
+u32 GPUaddrToARMaddr3(u32 GPUaddress)
+{
+    return GPUaddress & ~0xc0000000;
+}
 extern "C" i32 main(void)
 {
     //clear bss.
@@ -70,25 +76,27 @@ extern "C" i32 main(void)
     color* framebuffer = a_mailbox_framebuffer.get_framebuffer();
     screen a_screen(vector_2_u32(800, 480), framebuffer);
     effect_graph a_effect_graph(&a_screen);
-    effect_chorus a_effect_chorus(rectangle(vector_2_u32(50,50),vector_2_u32(100,50)),color(127,0,0,255));
+    effect_chorus a_effect_chorus(rectangle(vector_2_u32(50, 50), vector_2_u32(100, 50)), color(127, 0, 0, 255));
     a_effect_graph.add_effect(&a_effect_chorus);
 
     gpu a_gpu;
+    a_gpu.a_screen = &a_screen;
     a_gpu.V3D_InitializeScene(800, 480);
     a_gpu.V3D_AddVertexesToScene();
     a_gpu.V3D_AddShadderToScene(&shader1[0], 18);
     a_gpu.V3D_SetupRenderControl(static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer())));
     a_gpu.V3D_SetupBinningConfig();
-    a_gpu.V3D_RenderScene();
 
     while(true)
     {
+        a_gpu.V3D_RenderScene();
+        a_screen.draw_text("works.", vector_2_u32(0, 0));
         // for(int i = 0; i < 100; i++)
         //     for(int j = 0; j < 100; j++)
         //         framebuffer[j * 800 + i] = color(255,255,255,255);
         // a_effect_graph.draw();
-        a_screen.draw_text("cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",vector_2_u32(0,63));
-        a_effect_chorus.move(vector_2_u32(0,5));
+        // a_screen.draw_text("cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",vector_2_u32(0,63));
+        // a_effect_chorus.move(vector_2_u32(0,5));
     }
     return 0;
 }

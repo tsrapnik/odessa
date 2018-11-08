@@ -4,5 +4,6 @@
 
 class string
 {
-    static u8* to_string(u64 number);
+    public:
+    static char* to_string(u64 number);
 };

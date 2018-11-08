@@ -215,341 +215,310 @@ static void emit_float(u8** list, float f)
     *((*list)++) = (*data).byte4;
 }
 
-void gpu::V3D_InitializeScene(u32 renderWth, u32 renderHt)
+void gpu::V3D_InitializeScene(u16 renderWth, u16 renderHt)
 {
-        a_render_struct.rendererHandle = a_mailbox_property_tags.allocate_memory(0x10000,
-                                                                        0x1000,
-                                                                        mailbox_property_tags::allocate_memory_flag::coherent &
-                                                                            mailbox_property_tags::allocate_memory_flag::zero);
-        a_render_struct.rendererDataVC4 = a_mailbox_property_tags.lock_memory(a_render_struct.rendererHandle);
-        a_render_struct.loadpos = a_render_struct.rendererDataVC4; // VC4 load from start of memory
+    u32 memory_handle = a_mailbox_property_tags.allocate_memory(0x10000,
+                                                                0x1000,
+                                                                mailbox_property_tags::allocate_memory_flag::coherent &
+                                                                    mailbox_property_tags::allocate_memory_flag::zero);
+    loadpos = a_mailbox_property_tags.lock_memory(memory_handle);
 
-        a_render_struct.renderWth = renderWth; // Render width
-        a_render_struct.renderHt = renderHt; // Render height
-        a_render_struct.binWth = (renderWth + 63) / 64; // Tiles across
-        a_render_struct.binHt = (renderHt + 63) / 64; // Tiles down
+    this->renderWth = renderWth;
+    this->renderHt = renderHt;
+    binWth = (renderWth + 63) / 64;
+    binHt = (renderHt + 63) / 64;
 
-        a_render_struct.tileMemSize = 0x4000;
-        a_render_struct.tileHandle = a_mailbox_property_tags.allocate_memory(a_render_struct.tileMemSize + 0x4000,
-                                                                    0x1000,
-                                                                    mailbox_property_tags::allocate_memory_flag::coherent &
-                                                                        mailbox_property_tags::allocate_memory_flag::zero);
-        a_render_struct.tileStateDataVC4 = a_mailbox_property_tags.lock_memory(a_render_struct.tileHandle);
-        a_render_struct.tileDataBufferVC4 = a_render_struct.tileStateDataVC4 + 0x4000;
+    tileMemSize = 0x4000;
+    memory_handle = a_mailbox_property_tags.allocate_memory(tileMemSize + 0x4000,
+                                                            0x1000,
+                                                            mailbox_property_tags::allocate_memory_flag::coherent &
+                                                                mailbox_property_tags::allocate_memory_flag::zero);
+    tileStateDataVC4 = a_mailbox_property_tags.lock_memory(memory_handle);
+    tileDataBufferVC4 = tileStateDataVC4 + 0x4000;
 
-        a_render_struct.binningHandle = a_mailbox_property_tags.allocate_memory(0x10000,
-                                                                       0x1000,
-                                                                       mailbox_property_tags::allocate_memory_flag::coherent &
-                                                                           mailbox_property_tags::allocate_memory_flag::zero);
-        a_render_struct.binningDataVC4 = a_mailbox_property_tags.lock_memory(a_render_struct.binningHandle);
+    memory_handle = a_mailbox_property_tags.allocate_memory(0x10000,
+                                                            0x1000,
+                                                            mailbox_property_tags::allocate_memory_flag::coherent &
+                                                                mailbox_property_tags::allocate_memory_flag::zero);
+    binningDataVC4 = a_mailbox_property_tags.lock_memory(memory_handle);
 }
 
-u32 GPUaddrToARMaddr2(u32 GPUaddress)
+// u32 GPUaddrToARMaddr2(u32 GPUaddress)
+// {
+//     return GPUaddress & ~0xc0000000;
+// }
+
+//in screen coordinates.
+struct vertex
 {
-    return GPUaddress & ~0xc0000000;
-}
+    u16 x; //in 12.4 fixed point format.
+    u16 y; //in 12.4 fixed point format.
+    f32 z;
+    f32 w;
+    f32 r;
+    f32 g;
+    f32 b;
+} __attribute__((packed));
+
+struct triangle
+{
+    u8 index_0;
+    u8 index_1;
+    u8 index_2;
+} __attribute__((packed));
 
 void gpu::V3D_AddVertexesToScene()
 {
-        a_render_struct.vertexVC4 = (a_render_struct.loadpos + 127) & ALIGN_128BIT_MASK; // Hold vertex start adderss .. aligned to 128bits
-        u8* p = static_cast<u8*>(mailbox::translate_vc_to_arm(a_render_struct.vertexVC4));
-        u8* q = p;
+    num_verts = 3;
+    IndexVertexCt = 3;
 
-        /* Setup triangle vertices from OpenGL tutorial which used this */
-        // fTriangle[0] = -0.4f; fTriangle[1] = 0.1f; fTriangle[2] = 0.0f;
-        // fTriangle[3] = 0.4f; fTriangle[4] = 0.1f; fTriangle[5] = 0.0f;
-        // fTriangle[6] = 0.0f; fTriangle[7] = 0.7f; fTriangle[8] = 0.0f;
-        u32 centreX = a_render_struct.renderWth / 2; // triangle centre x
-        u32 centreY = (u32)(0.4f * (a_render_struct.renderHt / 2)); // triangle centre y
-        u32 half_shape_wth = (u32)(0.4f * (a_render_struct.renderWth / 2)); // Half width of triangle
-        u32 half_shape_ht = (u32)(0.3f * (a_render_struct.renderHt / 2)); // half height of tringle
+    vertexVC4 = a_mailbox_property_tags.allocate_memory(num_verts * sizeof(vertex) + IndexVertexCt * sizeof(triangle),
+                                                            0x1000,
+                                                            mailbox_property_tags::allocate_memory_flag::coherent &
+                                                                mailbox_property_tags::allocate_memory_flag::zero);
+    a_mailbox_property_tags.lock_memory(vertexVC4);
 
-        // Vertex Data
+    volatile vertex* vertex_buffer = const_cast<volatile vertex*>(reinterpret_cast<vertex*>((vertexVC4)));
 
-        // Vertex: Top, vary red
-        emit_u16(&p, (centreX) << 4); // X in 12.4 fixed point
-        emit_u16(&p, (centreY - half_shape_ht) << 4); // Y in 12.4 fixed point
-        emit_float(&p, 1.0f); // Z
-        emit_float(&p, 1.0f); // 1/W
-        emit_float(&p, 0.0f); // Varying 0 (Red)
-        emit_float(&p, 0.0f); // Varying 1 (Green)
-        emit_float(&p, 1.0f); // Varying 2 (Blue)
+    vertex_buffer[0].x = (0) << 4;
+    vertex_buffer[0].y = (0) << 4;
+    vertex_buffer[0].z = 1.0;
+    vertex_buffer[0].w = 1.0;
+    vertex_buffer[0].r = 1.0;
+    vertex_buffer[0].g = 1.0;
+    vertex_buffer[0].b = 1.0;
 
-        // Vertex: bottom left, vary blue
-        emit_u16(&p, (centreX - half_shape_wth) << 4); // X in 12.4 fixed point
-        emit_u16(&p, (centreY + half_shape_ht) << 4); // Y in 12.4 fixed point
-        emit_float(&p, 1.0f); // Z
-        emit_float(&p, 1.0f); // 1/W
-        emit_float(&p, 0.0f); // Varying 0 (Red)
-        emit_float(&p, 0.0f); // Varying 1 (Green)
-        emit_float(&p, 1.0f); // Varying 2 (Blue)
+    vertex_buffer[1].x = (200) << 4;
+    vertex_buffer[1].y = (0) << 4;
+    vertex_buffer[1].z = 1.0;
+    vertex_buffer[1].w = 1.0;
+    vertex_buffer[1].r = 1.0;
+    vertex_buffer[1].g = 1.0;
+    vertex_buffer[1].b = 1.0;
 
-        // Vertex: bottom right, vary green
-        emit_u16(&p, (centreX + half_shape_wth) << 4); // X in 12.4 fixed point
-        emit_u16(&p, (centreY + half_shape_ht) << 4); // Y in 12.4 fixed point
-        emit_float(&p, 1.0f); // Z
-        emit_float(&p, 1.0f); // 1/W
-        emit_float(&p, 0.0f); // Varying 0 (Red)
-        emit_float(&p, 1.0f); // Varying 1 (Green)
-        emit_float(&p, 0.0f); // Varying 2 (Blue)
+    vertex_buffer[2].x = (0) << 4;
+    vertex_buffer[2].y = (200) << 4;
+    vertex_buffer[2].z = 1.0;
+    vertex_buffer[2].w = 1.0;
+    vertex_buffer[2].r = 1.0;
+    vertex_buffer[2].g = 1.0;
+    vertex_buffer[2].b = 1.0;
 
-        /* Setup triangle vertices from OpenGL tutorial which used this */
-        // fQuad[0] = -0.2f; fQuad[1] = -0.1f; fQuad[2] = 0.0f;
-        // fQuad[3] = -0.2f; fQuad[4] = -0.6f; fQuad[5] = 0.0f;
-        // fQuad[6] = 0.2f; fQuad[7] = -0.1f; fQuad[8] = 0.0f;
-        // fQuad[9] = 0.2f; fQuad[10] = -0.6f; fQuad[11] = 0.0f;
-        centreY = (u32)(1.35f * (a_render_struct.renderHt / 2)); // quad centre y
+    indexVertexVC4 = vertexVC4 + num_verts * sizeof(vertex);
 
-        // Vertex: Top, left  vary blue
-        emit_u16(&p, (centreX - half_shape_wth) << 4); // X in 12.4 fixed point
-        emit_u16(&p, (centreY - half_shape_ht) << 4); // Y in 12.4 fixed point
-        emit_float(&p, 1.0f); // Z
-        emit_float(&p, 1.0f); // 1/W
-        emit_float(&p, 0.0f); // Varying 0 (Red)
-        emit_float(&p, 0.0f); // Varying 1 (Green)
-        emit_float(&p, 1.0f); // Varying 2 (Blue)
+    // indexVertexVC4 = a_mailbox_property_tags.allocate_memory(IndexVertexCt * sizeof(triangle),
+    //                                                         0x1000,
+    //                                                         mailbox_property_tags::allocate_memory_flag::coherent &
+    //                                                             mailbox_property_tags::allocate_memory_flag::zero);
+    // a_mailbox_property_tags.lock_memory(indexVertexVC4);
 
-        // Vertex: bottom left, vary Green
-        emit_u16(&p, (centreX - half_shape_wth) << 4); // X in 12.4 fixed point
-        emit_u16(&p, (centreY + half_shape_ht) << 4); // Y in 12.4 fixed point
-        emit_float(&p, 1.0f); // Z
-        emit_float(&p, 1.0f); // 1/W
-        emit_float(&p, 0.0f); // Varying 0 (Red)
-        emit_float(&p, 1.0f); // Varying 1 (Green)
-        emit_float(&p, 0.0f); // Varying 2 (Blue)
+    volatile triangle* triangle_buffer = const_cast<volatile triangle*>(reinterpret_cast<triangle*>(indexVertexVC4));
 
-        // Vertex: top right, vary red
-        emit_u16(&p, (centreX + half_shape_wth) << 4); // X in 12.4 fixed point
-        emit_u16(&p, (centreY - half_shape_ht) << 4); // Y in 12.4 fixed point
-        emit_float(&p, 1.0f); // Z
-        emit_float(&p, 1.0f); // 1/W
-        emit_float(&p, 1.0f); // Varying 0 (Red)
-        emit_float(&p, 0.0f); // Varying 1 (Green)
-        emit_float(&p, 0.0f); // Varying 2 (Blue)
+    triangle_buffer[0].index_0 = 0;
+    triangle_buffer[0].index_1 = 1;
+    triangle_buffer[0].index_2 = 2;
 
-        // Vertex: bottom right, vary yellow
-        emit_u16(&p, (centreX + half_shape_wth) << 4); // X in 12.4 fixed point
-        emit_u16(&p, (centreY + half_shape_ht) << 4); // Y in 12.4 fixed point
-        emit_float(&p, 1.0f); // Z
-        emit_float(&p, 1.0f); // 1/W
-        emit_float(&p, 0.0f); // Varying 0 (Red)
-        emit_float(&p, 1.0f); // Varying 1 (Green)
-        emit_float(&p, 1.0f); // Varying 2 (Blue)
+    triangle_buffer[1].index_0 = 3;
+    triangle_buffer[1].index_1 = 4;
+    triangle_buffer[1].index_2 = 5;
 
-        a_render_struct.num_verts = 7;
-        a_render_struct.loadpos = a_render_struct.vertexVC4 + (p - q); // Update load position
+    triangle_buffer[2].index_0 = 4;
+    triangle_buffer[2].index_1 = 6;
+    triangle_buffer[2].index_2 = 5;
 
-        a_render_struct.indexVertexVC4 = (a_render_struct.loadpos + 127) & ALIGN_128BIT_MASK; // Hold index vertex start adderss .. align it to 128 bits
-        p = (u8*)(usize)GPUaddrToARMaddr2(a_render_struct.indexVertexVC4);
-        q = p;
-
-        emit_u8(&p, 0); // tri - top
-        emit_u8(&p, 1); // tri - bottom left
-        emit_u8(&p, 2); // tri - bottom right
-
-        emit_u8(&p, 3); // quad - top left
-        emit_u8(&p, 4); // quad - bottom left
-        emit_u8(&p, 5); // quad - top right
-
-        emit_u8(&p, 4); // quad - bottom left
-        emit_u8(&p, 6); // quad - bottom right
-        emit_u8(&p, 5); // quad - top right
-        a_render_struct.IndexVertexCt = 9;
-        a_render_struct.MaxIndexVertex = 6;
-
-        a_render_struct.loadpos = a_render_struct.indexVertexVC4 + (p - q); // Move loaad pos to new position
+    MaxIndexVertex = 2;
 }
 
 void gpu::V3D_AddShadderToScene(u32* frag_shader, u32 frag_shader_emits)
 {
-        a_render_struct.shaderStart = (a_render_struct.loadpos + 127) & ALIGN_128BIT_MASK; // Hold shader start adderss .. aligned to 127 bits
-        u8* p = (u8*)(usize)GPUaddrToARMaddr2(a_render_struct.shaderStart); // ARM address for load
-        u8* q = p; // Hold start address
+    shaderStart = (loadpos + 127) & ALIGN_128BIT_MASK; // Hold shader start adderss .. aligned to 127 bits
+    u8* p = reinterpret_cast<u8*>(mailbox::translate_vc_to_arm(shaderStart)); // ARM address for load
+    u8* q = p; // Hold start address
 
-        for(u32 i = 0; i < frag_shader_emits; i++) // For the number of fragment shader emits
-            emit_u32(&p, frag_shader[i]); // Emit fragment shader into our allocated memory
+    for(u32 i = 0; i < frag_shader_emits; i++) // For the number of fragment shader emits
+        emit_u32(&p, frag_shader[i]); // Emit fragment shader into our allocated memory
 
-        a_render_struct.loadpos = a_render_struct.shaderStart + (p - q); // Update load position
+    loadpos = shaderStart + (p - q); // Update load position
 
-        a_render_struct.fragShaderRecStart = (a_render_struct.loadpos + 127) & ALIGN_128BIT_MASK; // Hold frag shader start adderss .. .aligned to 128bits
-        p = (u8*)(usize)GPUaddrToARMaddr2(a_render_struct.fragShaderRecStart);
-        q = p;
+    fragShaderRecStart = (loadpos + 127) & ALIGN_128BIT_MASK; // Hold frag shader start adderss .. .aligned to 128bits
+    p = reinterpret_cast<u8*>(mailbox::translate_vc_to_arm(fragShaderRecStart));
+    q = p;
 
-        // Okay now we need Shader Record to buffer
-        emit_u8(&p, 0x01); // flags
-        emit_u8(&p, 6 * 4); // stride
-        emit_u8(&p, 0xcc); // num uniforms (not used)
-        emit_u8(&p, 3); // num varyings
-        emit_u32(&p, a_render_struct.shaderStart); // Shader code address
-        emit_u32(&p, 0); // Fragment shader uniforms (not in use)
-        emit_u32(&p, a_render_struct.vertexVC4); // Vertex Data
+    // Okay now we need Shader Record to buffer
+    emit_u8(&p, 0x01); // flags
+    emit_u8(&p, 6 * 4); // stride
+    emit_u8(&p, 0xcc); // num uniforms (not used)
+    emit_u8(&p, 3); // num varyings
+    emit_u32(&p, shaderStart); // Shader code address
+    emit_u32(&p, 0); // Fragment shader uniforms (not in use)
+    emit_u32(&p, vertexVC4); // Vertex Data
 
-        a_render_struct.loadpos = a_render_struct.fragShaderRecStart + (p - q); // Adjust VC4 load poistion
+    loadpos = fragShaderRecStart + (p - q); // Adjust VC4 load poistion
 }
 
 void gpu::V3D_SetupRenderControl(u32 renderBufferAddr)
 {
-        a_render_struct.renderControlVC4 = (a_render_struct.loadpos + 127) & ALIGN_128BIT_MASK; // Hold render control start adderss .. aligned to 128 bits
-        u8* p = (u8*)(usize)GPUaddrToARMaddr2(a_render_struct.renderControlVC4); // ARM address for load
-        u8* q = p; // Hold start address
+    renderControlVC4 = (loadpos + 127) & ALIGN_128BIT_MASK; // Hold render control start adderss .. aligned to 128 bits
+    u8* p = reinterpret_cast<u8*>(mailbox::translate_vc_to_arm(renderControlVC4)); // ARM address for load
+    u8* q = p; // Hold start address
 
-        // Clear colors
-        emit_u8(&p, GL_CLEAR_COLORS);
-        emit_u32(&p, 0xff000000); // Opaque Black
-        emit_u32(&p, 0xff000000); // 32 bit clear colours need to be repeated twice
-        emit_u32(&p, 0);
-        emit_u8(&p, 0);
+    // Clear colors
+    emit_u8(&p, GL_CLEAR_COLORS);
+    emit_u32(&p, 0xff000000); // Opaque Black
+    emit_u32(&p, 0xff000000); // 32 bit clear colours need to be repeated twice
+    emit_u32(&p, 0);
+    emit_u8(&p, 0);
 
-        // Tile Rendering Mode Configuration
-        emit_u8(&p, GL_TILE_RENDER_CONFIG);
+    // Tile Rendering Mode Configuration
+    emit_u8(&p, GL_TILE_RENDER_CONFIG);
 
-        emit_u32(&p, renderBufferAddr); // render address (will be framebuffer)
+    emit_u32(&p, renderBufferAddr); // render address (will be framebuffer)
 
-        emit_u16(&p, a_render_struct.renderWth); // render width
-        emit_u16(&p, a_render_struct.renderHt); // render height
-        emit_u8(&p, 0x04); // framebuffer mode (linear rgba8888)
-        emit_u8(&p, 0x00);
+    emit_u16(&p, renderWth); // render width
+    emit_u16(&p, renderHt); // render height
+    emit_u8(&p, 0x04); // framebuffer mode (linear rgba8888)
+    emit_u8(&p, 0x00);
 
-        // Do a store of the first tile to force the tile buffer to be cleared
-        // Tile Coordinates
-        emit_u8(&p, GL_TILE_COORDINATES);
-        emit_u8(&p, 0);
-        emit_u8(&p, 0);
+    // Do a store of the first tile to force the tile buffer to be cleared
+    // Tile Coordinates
+    emit_u8(&p, GL_TILE_COORDINATES);
+    emit_u8(&p, 0);
+    emit_u8(&p, 0);
 
-        // Store Tile Buffer General
-        emit_u8(&p, GL_STORE_TILE_BUFFER);
-        emit_u16(&p, 0); // Store nothing (just clear)
-        emit_u32(&p, 0); // no address is needed
+    // Store Tile Buffer General
+    emit_u8(&p, GL_STORE_TILE_BUFFER);
+    emit_u16(&p, 0); // Store nothing (just clear)
+    emit_u32(&p, 0); // no address is needed
 
-        // Link all binned lists together
-        for(u32 x = 0; x < a_render_struct.binWth; x++)
+    // Link all binned lists together
+    for(u32 x = 0; x < binWth; x++)
+    {
+        for(u32 y = 0; y < binHt; y++)
         {
-            for(u32 y = 0; y < a_render_struct.binHt; y++)
+
+            // Tile Coordinates
+            emit_u8(&p, GL_TILE_COORDINATES);
+            emit_u8(&p, x);
+            emit_u8(&p, y);
+
+            // Call Tile sublist
+            emit_u8(&p, GL_BRANCH_TO_SUBLIST);
+            emit_u32(&p, tileDataBufferVC4 + (y * binWth + x) * 32);
+
+            // Last tile needs a special store instruction
+            if(x == (binWth - 1) && (y == binHt - 1))
             {
-
-                // Tile Coordinates
-                emit_u8(&p, GL_TILE_COORDINATES);
-                emit_u8(&p, x);
-                emit_u8(&p, y);
-
-                // Call Tile sublist
-                emit_u8(&p, GL_BRANCH_TO_SUBLIST);
-                emit_u32(&p, a_render_struct.tileDataBufferVC4 + (y * a_render_struct.binWth + x) * 32);
-
-                // Last tile needs a special store instruction
-                if(x == (a_render_struct.binWth - 1) && (y == a_render_struct.binHt - 1))
-                {
-                    // Store resolved tile color buffer and signal end of frame
-                    emit_u8(&p, GL_STORE_MULTISAMPLE_END);
-                }
-                else
-                {
-                    // Store resolved tile color buffer
-                    emit_u8(&p, GL_STORE_MULTISAMPLE);
-                }
+                // Store resolved tile color buffer and signal end of frame
+                emit_u8(&p, GL_STORE_MULTISAMPLE_END);
+            }
+            else
+            {
+                // Store resolved tile color buffer
+                emit_u8(&p, GL_STORE_MULTISAMPLE);
             }
         }
+    }
 
-        a_render_struct.loadpos = a_render_struct.renderControlVC4 + (p - q); // Adjust VC4 load poistion
-        a_render_struct.renderControlEndVC4 = a_render_struct.loadpos; // Hold end of render control data
+    loadpos = renderControlVC4 + (p - q); // Adjust VC4 load poistion
+    renderControlEndVC4 = loadpos; // Hold end of render control data
 }
 
 void gpu::V3D_SetupBinningConfig()
 {
-        u8* p = (u8*)(usize)GPUaddrToARMaddr2(a_render_struct.binningDataVC4); // ARM address for binning data load
-        u8* list = p; // Hold start address
+    u8* p = reinterpret_cast<u8*>(mailbox::translate_vc_to_arm(binningDataVC4)); // ARM address for binning data load
+    u8* list = p; // Hold start address
 
-        emit_u8(&p, GL_TILE_BINNING_CONFIG); // tile binning config control
-        emit_u32(&p, a_render_struct.tileDataBufferVC4); // tile allocation memory address
-        emit_u32(&p, a_render_struct.tileMemSize); // tile allocation memory size
-        emit_u32(&p, a_render_struct.tileStateDataVC4); // Tile state data address
-        emit_u8(&p, a_render_struct.binWth); // renderWidth/64
-        emit_u8(&p, a_render_struct.binHt); // renderHt/64
-        emit_u8(&p, 0x04); // config
+    emit_u8(&p, GL_TILE_BINNING_CONFIG); // tile binning config control
+    emit_u32(&p, tileDataBufferVC4); // tile allocation memory address
+    emit_u32(&p, tileMemSize); // tile allocation memory size
+    emit_u32(&p, tileStateDataVC4); // Tile state data address
+    emit_u8(&p, binWth); // renderWidth/64
+    emit_u8(&p, binHt); // renderHt/64
+    emit_u8(&p, 0x04); // config
 
-        // Start tile binning.
-        emit_u8(&p, GL_START_TILE_BINNING); // Start binning command
+    // Start tile binning.
+    emit_u8(&p, GL_START_TILE_BINNING); // Start binning command
 
-        // Primitive type
-        emit_u8(&p, GL_PRIMITIVE_LIST_FORMAT);
-        emit_u8(&p, 0x32); // 16 bit triangle
+    // Primitive type
+    emit_u8(&p, GL_PRIMITIVE_LIST_FORMAT);
+    emit_u8(&p, 0x32); // 16 bit triangle
 
-        // Clip Window
-        emit_u8(&p, GL_CLIP_WINDOW); // Clip window
-        emit_u16(&p, 0); // 0
-        emit_u16(&p, 0); // 0
-        emit_u16(&p, a_render_struct.renderWth); // width
-        emit_u16(&p, a_render_struct.renderHt); // height
+    // Clip Window
+    emit_u8(&p, GL_CLIP_WINDOW); // Clip window
+    emit_u16(&p, 0); // 0
+    emit_u16(&p, 0); // 0
+    emit_u16(&p, renderWth); // width
+    emit_u16(&p, renderHt); // height
 
-        // GL State
-        emit_u8(&p, GL_CONFIG_STATE);
-        emit_u8(&p, 0x03); // enable both foward and back facing polygons
-        emit_u8(&p, 0x00); // depth testing disabled
-        emit_u8(&p, 0x02); // enable early depth write
+    // GL State
+    emit_u8(&p, GL_CONFIG_STATE);
+    emit_u8(&p, 0x03); // enable both foward and back facing polygons
+    emit_u8(&p, 0x00); // depth testing disabled
+    emit_u8(&p, 0x02); // enable early depth write
 
-        // Viewport offset
-        emit_u8(&p, GL_VIEWPORT_OFFSET); // Viewport offset
-        emit_u16(&p, 0); // 0
-        emit_u16(&p, 0); // 0
+    // Viewport offset
+    emit_u8(&p, GL_VIEWPORT_OFFSET); // Viewport offset
+    emit_u16(&p, 0); // 0
+    emit_u16(&p, 0); // 0
 
-        // The triangle
-        // No Vertex Shader state (takes pre-transformed vertexes so we don't have to supply a working coordinate shader.)
-        emit_u8(&p, GL_NV_SHADER_STATE);
-        emit_u32(&p, a_render_struct.fragShaderRecStart); // Shader Record
+    // The triangle
+    // No Vertex Shader state (takes pre-transformed vertexes so we don't have to supply a working coordinate shader.)
+    emit_u8(&p, GL_NV_SHADER_STATE);
+    emit_u32(&p, fragShaderRecStart); // Shader Record
 
-        // primitive index list
-        emit_u8(&p, GL_INDEXED_PRIMITIVE_LIST); // Indexed primitive list command
-        emit_u8(&p, PRIM_TRIANGLE); // 8bit index, triangles
-        emit_u32(&p, a_render_struct.IndexVertexCt); // Number of index vertex
-        emit_u32(&p, a_render_struct.indexVertexVC4); // Address of index vertex data
-        emit_u32(&p, a_render_struct.MaxIndexVertex); // Maximum index
+    // primitive index list
+    emit_u8(&p, GL_INDEXED_PRIMITIVE_LIST); // Indexed primitive list command
+    emit_u8(&p, PRIM_TRIANGLE); // 8bit index, triangles
+    emit_u32(&p, IndexVertexCt); // Number of index vertex
+    emit_u32(&p, indexVertexVC4); // Address of index vertex data
+    emit_u32(&p, MaxIndexVertex); // Maximum index
 
-        // End of bin list
-        // So Flush
-        emit_u8(&p, GL_FLUSH_ALL_STATE);
-        // Nop
-        emit_u8(&p, GL_NOP);
-        // Halt
-        emit_u8(&p, GL_HALT);
-        a_render_struct.binningCfgEnd = a_render_struct.binningDataVC4 + (p - list); // Hold binning data end address
+    // End of bin list
+    // So Flush
+    emit_u8(&p, GL_FLUSH_ALL_STATE);
+    // Nop
+    emit_u8(&p, GL_NOP);
+    // Halt
+    emit_u8(&p, GL_HALT);
+    binningCfgEnd = binningDataVC4 + (p - list); // Hold binning data end address
 }
 
 void gpu::V3D_RenderScene()
 {
-        // clear caches
-        v3d_macro[V3D_L2CACTL] = 4;
-        v3d_macro[V3D_SLCACTL] = 0x0F0F0F0F;
+    // clear caches
+    v3d_macro[V3D_L2CACTL] = 4;
+    v3d_macro[V3D_SLCACTL] = 0x0F0F0F0F;
 
-        // stop the thread
-        v3d_macro[V3D_CT0CS] = 0x20;
-        // wait for it to stop
-        while(v3d_macro[V3D_CT0CS] & 0x20)
-            ;
+    // stop the thread
+    v3d_macro[V3D_CT0CS] = 0x20;
+    // wait for it to stop
+    while(v3d_macro[V3D_CT0CS] & 0x20)
+        ;
 
-        // Run our control list
-        v3d_macro[V3D_BFC] = 1; // reset binning frame count
-        v3d_macro[V3D_CT0CA] = a_render_struct.binningDataVC4; // Start binning config address
-        v3d_macro[V3D_CT0EA] = a_render_struct.binningCfgEnd; // End binning config address is at render control start
+    // Run our control list
+    v3d_macro[V3D_BFC] = 1; // reset binning frame count
+    v3d_macro[V3D_CT0CA] = binningDataVC4; // Start binning config address
+    v3d_macro[V3D_CT0EA] = binningCfgEnd; // End binning config address is at render control start
 
-        // wait for binning to finish
-        while(v3d_macro[V3D_BFC] == 0)
-        {
-        }
+    // wait for binning to finish
+    while(v3d_macro[V3D_BFC] == 0)
+    {
+    }
 
-        // stop the thread
-        v3d_macro[V3D_CT1CS] = 0x20;
+    // stop the thread
+    v3d_macro[V3D_CT1CS] = 0x20;
 
-        // Wait for thread to stop
-        while(v3d_macro[V3D_CT1CS] & 0x20)
-            ;
+    // Wait for thread to stop
+    while(v3d_macro[V3D_CT1CS] & 0x20)
+        ;
 
-        // Run our render
-        v3d_macro[V3D_RFC] = 1; // reset rendering frame count
-        v3d_macro[V3D_CT1CA] = a_render_struct.renderControlVC4; // Start address for render control
-        v3d_macro[V3D_CT1EA] = a_render_struct.renderControlEndVC4; // End address for render control
+    // Run our render
+    v3d_macro[V3D_RFC] = 1; // reset rendering frame count
+    v3d_macro[V3D_CT1CA] = renderControlVC4; // Start address for render control
+    v3d_macro[V3D_CT1EA] = renderControlEndVC4; // End address for render control
 
-        // wait for render to finish
-        while(v3d_macro[V3D_RFC] == 0)
-        {
-        }
+    // wait for render to finish
+    while(v3d_macro[V3D_RFC] == 0)
+    {
+    }
 }
