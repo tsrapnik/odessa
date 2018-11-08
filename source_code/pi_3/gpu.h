@@ -60,8 +60,9 @@ class gpu
     void V3D_InitializeScene(u16 renderWth, u16 renderHt);
     void V3D_AddVertexesToScene(vertex* vertices, triangle* triangles, u32 vertices_size, u32 triangles_size);
     void update_vertices(vertex* new_vertices, triangle* new_triangles);
-    void V3D_AddShadderToScene(u32* frag_shader, u32 frag_shader_emits);
+    void V3D_AddShadderToScene();
     void V3D_SetupRenderControl(u32 renderBufferAddr);
     void V3D_SetupBinningConfig();
     void V3D_RenderScene();
+    void testTriangle (u16 renderWth, u16 renderHt, u32 renderBufferAddr, vertex* new_vertices, triangle* new_triangles, u32 new_vertices_size, u32 new_triangles_size);
 };
