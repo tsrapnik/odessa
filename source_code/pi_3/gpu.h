@@ -64,5 +64,6 @@ class gpu
     void V3D_SetupRenderControl(u32 renderBufferAddr);
     void V3D_SetupBinningConfig();
     void V3D_RenderScene();
-    void testTriangle (u16 renderWth, u16 renderHt, u32 renderBufferAddr, vertex* new_vertices, triangle* new_triangles, u32 new_vertices_size, u32 new_triangles_size);
+    void testTriangle(u16 renderWth, u16 renderHt, u32 renderBufferAddr, vertex* new_vertices, triangle* new_triangles, u32 new_vertices_size, u32 new_triangles_size);
+    void render(u16 renderWth, u16 renderHt, u32 renderBufferAddr, vertex* new_vertices, triangle* new_triangles, u32 new_vertices_size, u32 new_triangles_size);
 };

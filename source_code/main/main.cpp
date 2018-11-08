@@ -83,12 +83,14 @@ extern "C" i32 main(void)
 
     gpu a_gpu;
     a_gpu.a_screen = &a_screen;
-    a_gpu.V3D_InitializeScene(800, 480);
-    a_gpu.V3D_AddVertexesToScene(vertex_buffer, triangle_buffer, vertex_buffer_size, triangle_buffer_size);
-    a_gpu.V3D_AddShadderToScene();
-    a_gpu.V3D_SetupRenderControl(static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer())));
-    a_gpu.V3D_SetupBinningConfig();
-    a_gpu.V3D_RenderScene();
+    u32 frame_buffer_handle = static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer()));
+    // a_gpu.V3D_InitializeScene(800, 480);
+    // a_gpu.V3D_AddVertexesToScene(vertex_buffer, triangle_buffer, vertex_buffer_size, triangle_buffer_size);
+    // a_gpu.V3D_AddShadderToScene();
+    // a_gpu.V3D_SetupRenderControl(frame_buffer_handle);
+    // a_gpu.V3D_SetupBinningConfig();
+    // a_gpu.V3D_RenderScene();
+    a_gpu.render(800,480,frame_buffer_handle,vertex_buffer, triangle_buffer, vertex_buffer_size, triangle_buffer_size);
     while(true)
     {
         // a_gpu.testTriangle(800,480,static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer())),vertex_buffer,triangle_buffer,vertex_buffer_size,triangle_buffer_size);
