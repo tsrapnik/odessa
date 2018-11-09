@@ -19,12 +19,12 @@ mailbox& mailbox::get_handle()
     return handle;
 }
 
-u32 mailbox::translate_arm_to_vc(void* arm_address)
+u32 mailbox::cast_to_vc_pointer(void* arm_address)
 {
     return static_cast<u32>(reinterpret_cast<usize>(arm_address)) | 0xc0000000;
 }
 
-void* mailbox::translate_vc_to_arm(u32 vc_address)
+void* mailbox::cast_to_arm_pointer(u32 vc_address)
 {
     return reinterpret_cast<void*>(static_cast<usize>(vc_address & ~0xc0000000));
 }

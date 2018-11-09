@@ -19,7 +19,7 @@ mailbox_framebuffer::mailbox_framebuffer() :
     memory::clean_data_cache();
     memory::data_sync_barrier();
 
-    a_mailbox.write_read(mailbox::translate_arm_to_vc(&a_mailbox_framebuffer_info),
+    a_mailbox.write_read(mailbox::cast_to_vc_pointer(&a_mailbox_framebuffer_info),
                          mailbox::channel::frame_buffer);
 
     memory::invalidate_data_cache();

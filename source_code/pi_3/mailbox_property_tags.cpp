@@ -21,7 +21,7 @@ bool mailbox_property_tags::set_clock_rate(clock_id a_clock_id, u32 rate)
     a_tag_set_clock_rate.request.a_clock_id = a_clock_id;
     a_tag_set_clock_rate.request.rate = rate;
 
-    a_mailbox.write_read(mailbox::translate_arm_to_vc(const_cast<tag_set_clock_rate*>(&a_tag_set_clock_rate)),
+    a_mailbox.write_read(mailbox::cast_to_vc_pointer(const_cast<tag_set_clock_rate*>(&a_tag_set_clock_rate)),
                          mailbox::channel::property_tags_arm_to_vc);
     if(a_tag_set_clock_rate.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return true;
@@ -33,7 +33,7 @@ bool mailbox_property_tags::enable_qpu(bool enable)
     tag_enable_qpu a_tag_enable_qpu;
     a_tag_enable_qpu.request.enable = 1;
 
-    a_mailbox.write_read(mailbox::translate_arm_to_vc(const_cast<tag_enable_qpu*>(&a_tag_enable_qpu)),
+    a_mailbox.write_read(mailbox::cast_to_vc_pointer(const_cast<tag_enable_qpu*>(&a_tag_enable_qpu)),
                          mailbox::channel::property_tags_arm_to_vc);
     if(a_tag_enable_qpu.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return true;
@@ -48,7 +48,7 @@ u32 mailbox_property_tags::allocate_memory(u32 size, u32 alignment, allocate_mem
     a_tag_allocate_memory.request.alignment = alignment;
     a_tag_allocate_memory.request.flag = flag;
 
-    a_mailbox.write_read(mailbox::translate_arm_to_vc(const_cast<tag_allocate_memory*>(&a_tag_allocate_memory)),
+    a_mailbox.write_read(mailbox::cast_to_vc_pointer(const_cast<tag_allocate_memory*>(&a_tag_allocate_memory)),
                          mailbox::channel::property_tags_arm_to_vc);
     if(a_tag_allocate_memory.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return a_tag_allocate_memory.response.handle;
@@ -60,7 +60,7 @@ bool mailbox_property_tags::release_memory(u32 handle)
     tag_release_memory a_tag_release_memory;
     a_tag_release_memory.request.handle = handle;
 
-    a_mailbox.write_read(mailbox::translate_arm_to_vc(const_cast<tag_release_memory*>(&a_tag_release_memory)),
+    a_mailbox.write_read(mailbox::cast_to_vc_pointer(const_cast<tag_release_memory*>(&a_tag_release_memory)),
                          mailbox::channel::property_tags_arm_to_vc);
     if(a_tag_release_memory.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         if(a_tag_release_memory.response.status == 0)
@@ -73,7 +73,7 @@ u32 mailbox_property_tags::lock_memory(u32 handle)
     tag_lock_memory a_tag_lock_memory;
     a_tag_lock_memory.request.handle = handle;
 
-    a_mailbox.write_read(mailbox::translate_arm_to_vc(const_cast<tag_lock_memory*>(&a_tag_lock_memory)),
+    a_mailbox.write_read(mailbox::cast_to_vc_pointer(const_cast<tag_lock_memory*>(&a_tag_lock_memory)),
                          mailbox::channel::property_tags_arm_to_vc);
     if(a_tag_lock_memory.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return a_tag_lock_memory.response.bus_address;
@@ -85,7 +85,7 @@ bool mailbox_property_tags::unlock_memory(u32 handle)
     tag_unlock_memory a_tag_unlock_memory;
     a_tag_unlock_memory.request.handle = handle;
 
-    a_mailbox.write_read(mailbox::translate_arm_to_vc(const_cast<tag_unlock_memory*>(&a_tag_unlock_memory)),
+    a_mailbox.write_read(mailbox::cast_to_vc_pointer(const_cast<tag_unlock_memory*>(&a_tag_unlock_memory)),
                          mailbox::channel::property_tags_arm_to_vc);
     if(a_tag_unlock_memory.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         if(a_tag_unlock_memory.response.status == 0)
@@ -104,7 +104,7 @@ bool mailbox_property_tags::execute_code(u32 function_pointer, u32 r0, u32 r1, u
     a_tag_execute_code.request.r4 = r4;
     a_tag_execute_code.request.r5 = r5;
 
-    a_mailbox.write_read(mailbox::translate_arm_to_vc(const_cast<tag_execute_code*>(&a_tag_execute_code)),
+    a_mailbox.write_read(mailbox::cast_to_vc_pointer(const_cast<tag_execute_code*>(&a_tag_execute_code)),
                          mailbox::channel::property_tags_arm_to_vc);
     if(a_tag_execute_code.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return true;
@@ -119,7 +119,7 @@ bool mailbox_property_tags::execute_qpu(u32 num_qpus, u32 control, u32 noflush, 
     a_tag_execute_qpu.request.noflush = noflush;
     a_tag_execute_qpu.request.timeout = timeout;
 
-    a_mailbox.write_read(mailbox::translate_arm_to_vc(const_cast<tag_execute_qpu*>(&a_tag_execute_qpu)),
+    a_mailbox.write_read(mailbox::cast_to_vc_pointer(const_cast<tag_execute_qpu*>(&a_tag_execute_qpu)),
                          mailbox::channel::property_tags_arm_to_vc);
     if(a_tag_execute_qpu.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return true;

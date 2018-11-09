@@ -62,8 +62,8 @@ class mailbox
     static mailbox& get_handle();
 
     public:
-    static u32 translate_arm_to_vc(void* arm_address);
-    static void* translate_vc_to_arm(u32 vc_address);
+    static u32 cast_to_vc_pointer(void* arm_address);
+    static void* cast_to_arm_pointer(u32 vc_address);
     u32 write_read(u32 data, channel a_channel);
 
     private:
