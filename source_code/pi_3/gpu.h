@@ -35,4 +35,5 @@ class gpu
     gpu();
     ~gpu();
     void render(u16 width, u16 height, u32 frame_buffer, vertex* new_vertex_buffer, triangle* new_triangle_buffer, u32 vertex_buffer_size, u32 triangle_buffer_size);
+    void testTriangle(u16 renderWth, u16 renderHt, u32 renderBufferAddr, u32 offset);
 };

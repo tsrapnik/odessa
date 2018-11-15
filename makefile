@@ -23,7 +23,7 @@ object_mapper = $(prefix)nm
 
 architecture = -march=armv8-a -mtune=cortex-a53 -mlittle-endian -mcmodel=small
 assembler_flags = $(architecture)
-cpp_flags = $(architecture) -Wall -Ofast -std=c++17 -fno-exceptions -fno-rtti -fno-builtin -nostdlib -nostdinc -mstrict-align
+cpp_flags = $(architecture) -Wall -O0 -std=c++17 -fno-exceptions -fno-rtti -fno-builtin -nostdlib -nostdinc -mstrict-align
 
 #definitions of the source code directory and the object directory, where all generated files will be stored.
 source_directory = source_code

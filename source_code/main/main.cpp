@@ -3,7 +3,9 @@
 #include "effect_graph.h"
 #include "gpu.h"
 #include "mailbox_framebuffer.h"
+#include "mailbox_property_tags.h"
 #include "memory.h"
+#include "scratchpad.h"
 #include "screen.h"
 #include "string.h"
 
@@ -27,6 +29,10 @@ extern "C" i32 main(void)
     // {
     //     (**constructor)();
     // }
+
+    mailbox_property_tags& a_mailbox_property_tags = mailbox_property_tags::get_handle();
+    u32 max_clock_rate = a_mailbox_property_tags.get_max_clock_rate(mailbox_property_tags::clock_id::arm);
+    a_mailbox_property_tags.set_clock_rate(mailbox_property_tags::clock_id::arm, max_clock_rate);
 
     // memory::enable_mmu();
     buddy_heap::initialize();
@@ -84,24 +90,13 @@ extern "C" i32 main(void)
     gpu a_gpu;
     a_gpu.a_screen = &a_screen;
     u32 frame_buffer_handle = static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer()));
-    // a_gpu.V3D_InitializeScene(800, 480);
-    // a_gpu.V3D_AddVertexesToScene(vertex_buffer, triangle_buffer, vertex_buffer_size, triangle_buffer_size);
-    // a_gpu.V3D_AddShadderToScene();
-    // a_gpu.V3D_SetupRenderControl(frame_buffer_handle);
-    // a_gpu.V3D_SetupBinningConfig();
-    // a_gpu.V3D_RenderScene();
-    a_gpu.render(800,480,frame_buffer_handle,vertex_buffer, triangle_buffer, vertex_buffer_size, triangle_buffer_size);
+    // a_gpu.render(800, 480, frame_buffer_handle, vertex_buffer, triangle_buffer, vertex_buffer_size, triangle_buffer_size);
+    
+    u32 i = 0;
     while(true)
     {
-        // a_gpu.testTriangle(800,480,static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer())),vertex_buffer,triangle_buffer,vertex_buffer_size,triangle_buffer_size);
-        // vertex_buffer[3].x += 1 << 4;
-        // a_screen.draw_text("works.", vector_2_u32(0, 0));
-        // for(int i = 0; i < 100; i++)
-        //     for(int j = 0; j < 100; j++)
-        //         framebuffer[j * 800 + i] = color(255,255,255,255);
-        // a_effect_graph.draw();
-        // a_screen.draw_text("cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",vector_2_u32(0,63));
-        // a_effect_chorus.move(vector_2_u32(0,5));
+        a_gpu.testTriangle(800,480,frame_buffer_handle,i);
+        i++;
     }
     return 0;
 }

@@ -28,6 +28,16 @@ bool mailbox_property_tags::set_clock_rate(clock_id a_clock_id, u32 rate)
     return false;
 }
 
+u32 mailbox_property_tags::get_max_clock_rate(clock_id a_clock_id)
+{
+    tag_get_max_clock_rate a_tag_get_max_clock_rate;
+    a_tag_get_max_clock_rate.request.a_clock_id = a_clock_id;
+
+    a_mailbox.write_read(mailbox::cast_to_vc_pointer(const_cast<tag_get_max_clock_rate*>(&a_tag_get_max_clock_rate)),
+                         mailbox::channel::property_tags_arm_to_vc);
+    return a_tag_get_max_clock_rate.response.rate;
+}
+
 bool mailbox_property_tags::enable_qpu(bool enable)
 {
     tag_enable_qpu a_tag_enable_qpu;

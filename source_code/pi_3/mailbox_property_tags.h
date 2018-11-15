@@ -180,6 +180,32 @@ class mailbox_property_tags
     bool set_clock_rate(clock_id a_clock_id, u32 rate);
 
     private:
+    struct tag_get_max_clock_rate
+    {
+        buffer_header a_buffer_header = {.size = sizeof(tag_get_max_clock_rate),
+                                         .a_request_response_code = request_response_code::process_request};
+        tag_header a_tag_header = {.a_tag_id = tag_id::get_max_clock_rate,
+                                   .value_buffer_size = sizeof(tag_get_max_clock_rate::request),
+                                   .response_request_code = {.response_size = 0, .is_response = 0}};
+        union {
+            struct
+            {
+                clock_id a_clock_id;
+            } request;
+            struct
+            {
+                clock_id a_clock_id;
+                u32 rate; //in Hz.
+            } response;
+        };
+        u32 end_tag = 0; //indicates end of the tag.
+    } __attribute__((packed, aligned(16)));
+
+    public:
+    //get maximum frequency in Hz of clock with given id.
+    u32 get_max_clock_rate(clock_id a_clock_id);
+
+    private:
     struct tag_enable_qpu
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_enable_qpu),
