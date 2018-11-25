@@ -30,10 +30,19 @@ class gpu
     private:
     mailbox_property_tags& a_mailbox_property_tags;
 
+    u32 vertex_buffer_handle;
+    u32 shader_handle;
+    u32 render_control;
+    u32 tile_state_size;
+    u32 tile_state_handle;
+    u32 tile_state;
+    u32 binning_data_handle;
+    u32 binning_data;
+
+
     public:
     screen* a_screen; //todo: remove.
-    gpu();
+    gpu(u32 vertex_buffer_size, u32 triangle_buffer_size);
     ~gpu();
     void render(u16 width, u16 height, u32 frame_buffer, vertex* new_vertex_buffer, triangle* new_triangle_buffer, u32 vertex_buffer_size, u32 triangle_buffer_size);
-    void testTriangle(u16 renderWth, u16 renderHt, u32 renderBufferAddr, u32 offset);
 };

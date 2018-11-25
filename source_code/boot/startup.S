@@ -78,25 +78,25 @@ b	\handler
 .globl	VectorTable
 VectorTable:
 	/* from current EL with sp_el0 */
-	vector	_start			/* Synchronous */
-	vector  hang			/* IRQ */
-	vector	hang			/* FIQ */
-	vector	hang			/* SErrorStub */
+	vector	syn_cur_el0			/* Synchronous */
+	vector  irq_cur_el0			/* IRQ */
+	vector	fiq_cur_el0			/* FIQ */
+	vector	err_cur_el0			/* SErrorStub */
 
 	/* from current EL with sp_elx, x != 0 */
-	vector	hang			 /* Synchronous */
-	vector	irq_handler_stub /* IRQ */
-	vector	fiq_handler_stub /* FIQ */
-	vector	hang			 /* SErrorStub */
+	vector	syn_cur_elx			 /* Synchronous */
+	vector	irq_cur_elx /* IRQ */
+	vector	fiq_cur_elx /* FIQ */
+	vector	err_cur_elx			 /* SErrorStub */
 
 	/* from lower EL, target EL minus 1 is AArch64 */
-	vector	hang			/* Synchronous */
-	vector  hang			/* IRQ */
-	vector	hang			/* FIQ */
-	vector	hang			/* SErrorStub */
+	vector	syn_low64_elx			/* Synchronous */
+	vector  irq_low64_elx			/* IRQ */
+	vector	fiq_low64_elx			/* FIQ */
+	vector	err_low64_elx			/* SErrorStub */
 
 	/* from lower EL, target EL minus 1 is AArch32 */
-	vector	hang			/* Synchronous */
-	vector  hang			/* IRQ */
-	vector	hang			/* FIQ */
-	vector	hang			/* SErrorStub */
+	vector	syn_low32_elx			/* Synchronous */
+	vector  irq_low32_elx			/* IRQ */
+	vector	fiq_low32_elx			/* FIQ */
+	vector	err_low32_elx			/* SErrorStub */

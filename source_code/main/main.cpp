@@ -12,6 +12,8 @@
 //todo: all mailbox and hardware accessing classes should use struct of volatile enum.
 //todo: figure out why use of d0 registers lets gpu fail and seperate memory assignment for triangle indices gives strange black corner artifact.
 
+screen* a_global_screen;
+
 extern "C" i32 main(void)
 {
     //clear bss.
@@ -39,11 +41,14 @@ extern "C" i32 main(void)
     mailbox_framebuffer a_mailbox_framebuffer;
     color* framebuffer = a_mailbox_framebuffer.get_framebuffer();
     screen a_screen(vector_2_u32(800, 480), framebuffer);
+
+    a_global_screen = &a_screen;
+
     effect_graph a_effect_graph(&a_screen);
     effect_chorus a_effect_chorus(rectangle(vector_2_u32(50, 50), vector_2_u32(100, 50)), color(127, 0, 0, 255));
     a_effect_graph.add_effect(&a_effect_chorus);
 
-    u32 vertex_buffer_size = 4;
+    u32 vertex_buffer_size = 3;
     gpu::vertex vertex_buffer[vertex_buffer_size];
     vertex_buffer[0].x = (0) << 4;
     vertex_buffer[0].y = (0) << 4;
@@ -53,7 +58,7 @@ extern "C" i32 main(void)
     vertex_buffer[0].g = 1.0;
     vertex_buffer[0].b = 1.0;
 
-    vertex_buffer[1].x = (200) << 4;
+    vertex_buffer[1].x = (00) << 4;
     vertex_buffer[1].y = (0) << 4;
     vertex_buffer[1].z = 1.0;
     vertex_buffer[1].w = 1.0;
@@ -62,43 +67,117 @@ extern "C" i32 main(void)
     vertex_buffer[1].b = 1.0;
 
     vertex_buffer[2].x = (0) << 4;
-    vertex_buffer[2].y = (200) << 4;
+    vertex_buffer[2].y = (0) << 4;
     vertex_buffer[2].z = 1.0;
     vertex_buffer[2].w = 1.0;
     vertex_buffer[2].r = 1.0;
     vertex_buffer[2].g = 1.0;
     vertex_buffer[2].b = 1.0;
 
-    vertex_buffer[3].x = (200) << 4;
-    vertex_buffer[3].y = (200) << 4;
-    vertex_buffer[3].z = 1.0;
-    vertex_buffer[3].w = 1.0;
-    vertex_buffer[3].r = 1.0;
-    vertex_buffer[3].g = 1.0;
-    vertex_buffer[3].b = 1.0;
-
-    u32 triangle_buffer_size = 2;
+    u32 triangle_buffer_size = 1;
     gpu::triangle triangle_buffer[triangle_buffer_size];
     triangle_buffer[0].index_0 = 0;
     triangle_buffer[0].index_1 = 1;
     triangle_buffer[0].index_2 = 2;
 
-    triangle_buffer[1].index_0 = 0;
-    triangle_buffer[1].index_1 = 1;
-    triangle_buffer[1].index_2 = 3;
-
-    gpu a_gpu;
+    gpu a_gpu(vertex_buffer_size, triangle_buffer_size);
     a_gpu.a_screen = &a_screen;
     u32 frame_buffer_handle = static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer()));
-    // a_gpu.render(800, 480, frame_buffer_handle, vertex_buffer, triangle_buffer, vertex_buffer_size, triangle_buffer_size);
-    
+    a_gpu.render(800, 480, frame_buffer_handle, vertex_buffer, triangle_buffer, vertex_buffer_size, triangle_buffer_size);
+
     u32 i = 0;
     while(true)
     {
-        a_gpu.testTriangle(800,480,frame_buffer_handle,i);
-        i++;
+        // a_gpu.testTriangle(800,480,frame_buffer_handle,i);
+        a_screen.draw_text("x", vector_2_u32(i, 0));
+        i += 60;
+        a_gpu.render(800, 480, frame_buffer_handle, vertex_buffer, triangle_buffer, vertex_buffer_size, triangle_buffer_size);
     }
     return 0;
+}
+
+extern "C" void syn_cur_el0()
+{
+    while(true)
+        a_global_screen->draw_text("syn_cur_el0", vector_2_u32(0, 0));
+}
+extern "C" void irq_cur_el0()
+{
+    while(true)
+        a_global_screen->draw_text("irq_cur_el0", vector_2_u32(0, 0));
+}
+extern "C" void fiq_cur_el0()
+{
+    while(true)
+        a_global_screen->draw_text("fiq_cur_el0", vector_2_u32(0, 0));
+}
+extern "C" void err_cur_el0()
+{
+    while(true)
+        a_global_screen->draw_text("err_cur_el0", vector_2_u32(0, 0));
+}
+
+extern "C" void syn_cur_elx()
+{
+    while(true)
+        a_global_screen->draw_text("syn_cur_elx", vector_2_u32(0, 0));
+}
+extern "C" void irq_cur_elx()
+{
+    while(true)
+        a_global_screen->draw_text("irq_cur_elx", vector_2_u32(0, 0));
+}
+extern "C" void fiq_cur_elx()
+{
+    while(true)
+        a_global_screen->draw_text("fiq_cur_elx", vector_2_u32(0, 0));
+}
+extern "C" void err_cur_elx()
+{
+    while(true)
+        a_global_screen->draw_text("err_cur_elx", vector_2_u32(0, 0));
+}
+
+extern "C" void syn_low64_elx()
+{
+    while(true)
+        a_global_screen->draw_text("csyn_low64_elx", vector_2_u32(0, 0));
+}
+extern "C" void irq_low64_elx()
+{
+    while(true)
+        a_global_screen->draw_text("irq_low64_elx", vector_2_u32(0, 0));
+}
+extern "C" void fiq_low64_elx()
+{
+    while(true)
+        a_global_screen->draw_text("fiq_low64_elx", vector_2_u32(0, 0));
+}
+extern "C" void err_low64_elx()
+{
+    while(true)
+        a_global_screen->draw_text("err_low64_elx", vector_2_u32(0, 0));
+}
+
+extern "C" void syn_low32_elx()
+{
+    while(true)
+        a_global_screen->draw_text("syn_low32_elx", vector_2_u32(0, 0));
+}
+extern "C" void irq_low32_elx()
+{
+    while(true)
+        a_global_screen->draw_text("irq_low32_elx", vector_2_u32(0, 0));
+}
+extern "C" void fiq_low32_elx()
+{
+    while(true)
+        a_global_screen->draw_text("fiq_low32_elx", vector_2_u32(0, 0));
+}
+extern "C" void err_low32_elx()
+{
+    while(true)
+        a_global_screen->draw_text("err_low32_elx", vector_2_u32(0, 0));
 }
 
 //dummy functions to avoid linker complaints.
