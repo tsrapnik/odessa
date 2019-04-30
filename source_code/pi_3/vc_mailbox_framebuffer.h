@@ -1,10 +1,9 @@
-#include "mailbox.h"
-#include "color.h"
+#include "vc_pointer.h"
 
-class mailbox_framebuffer
+class vc_mailbox_framebuffer
 {
     private:
-    struct mailbox_framebuffer_info
+    struct vc_mailbox_framebuffer_info
     {
         volatile u32 width; //physical width in pixels.
         volatile u32 height; //physical height in pixels.
@@ -19,14 +18,12 @@ class mailbox_framebuffer
     } __attribute__((packed, aligned(16)));
 
     private:
-    mailbox& a_mailbox;
-    mailbox_framebuffer_info a_mailbox_framebuffer_info;
+    vc_mailbox_framebuffer_info a_vc_mailbox_framebuffer_info;
 
     public:
-    mailbox_framebuffer();
-    ~mailbox_framebuffer();
-	color* get_framebuffer();
-	u32 get_framebuffer_width();
-	u32 get_framebuffer_height();
-    u64 get_info_address();
+    vc_mailbox_framebuffer();
+    ~vc_mailbox_framebuffer();
+	vc_pointer get_buffer();
+	u32 get_width();
+	u32 get_height();
 };

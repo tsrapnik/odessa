@@ -12,7 +12,7 @@
 hide = @
 
 #compiler definitions and flags.
-prefix = aarch64-linux-gnu-
+prefix = aarch64-elf-
 
 assembler = $(prefix)gcc
 compiler = $(prefix)g++

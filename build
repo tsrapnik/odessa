@@ -18,7 +18,7 @@ elif [ "$1" = "clean" ]
 then
     make clean
 else
-    export PATH=$PATH:$(dirname $(dirname $PWD))/compilers/gcc-linaro-7.1.1-2017.08-x86_64_aarch64-linux-gnu/bin
+    export PATH=$PATH:$(dirname $(dirname $PWD))/compilers/gcc-linaro-7.1.1-2017.08-x86_64_aarch64-elf/bin
     make
     cp compiled_code/kernel8.img /media/tsrapnik/ODESSA
     if [ $? -eq 0 ]

@@ -5,5 +5,5 @@
 class string
 {
     public:
-    static char* to_string(u64 number);
+    static char* to_string(u64 number, char* a_string);
 };

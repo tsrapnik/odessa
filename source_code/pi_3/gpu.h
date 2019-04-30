@@ -30,16 +30,6 @@ class gpu
     private:
     mailbox_property_tags& a_mailbox_property_tags;
 
-    u32 vertex_buffer_handle;
-    u32 shader_handle;
-    u32 render_control;
-    u32 tile_state_size;
-    u32 tile_state_handle;
-    u32 tile_state;
-    u32 binning_data_handle;
-    u32 binning_data;
-
-
     public:
     screen* a_screen; //todo: remove.
     gpu(u32 vertex_buffer_size, u32 triangle_buffer_size);

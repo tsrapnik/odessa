@@ -1,9 +1,9 @@
 #include "string.h"
 
-//caller of this function has ownership over the u8[].
-char* string::to_string(u64 number)
+//caller of this function has ownership over the returned char[].
+char* string::to_string(u64 number, char* a_string)
 {
-    char* a_string = new char[19];
+    // char* a_string = new char[19];
     a_string[0] = '0';
     a_string[1] = 'x';
     a_string[18] = '\0';

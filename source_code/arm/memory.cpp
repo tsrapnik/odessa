@@ -86,6 +86,19 @@ void memory::invalidate_l2_unified_cache()
     }
 }
 
+void memory::invalidate_virtual_address_range(void* start, usize size)
+{
+    u8* address = reinterpret_cast<u8*>(start);
+    for(u32 index = 0; index < size; size += 64)
+    {
+        asm volatile("dc ivac, %0"
+                        :
+                        : "r"(address)
+                        : "memory");
+        address += 64;
+    }
+}
+
 void memory::data_sync_barrier()
 {
     asm volatile("dsb sy"
