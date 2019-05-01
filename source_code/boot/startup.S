@@ -61,14 +61,6 @@ exit_el1:
 hang:
 	b hang
 
-.weak irq_handler_stub
-irq_handler_stub:
-	eret
-
-.weak fiq_handler_stub
-fiq_handler_stub:
-	eret
-
 .macro	vector handler
 .balign 0x80
 b	\handler

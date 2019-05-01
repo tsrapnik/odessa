@@ -1,5 +1,5 @@
 #this makefile is intended to act as a generic c++ compiler. it will look for all c++ files in the specified
-#source_code subdirectory and all its subdirectories and compile them to a single image file. the makefile
+#source_directory subdirectory and all its subdirectories and compile them to a single image file. the makefile
 #was built specifically for raspberry pi 3, but can be used for different purposes with only a few minor
 #adjustements. adjust the assignments in the ###definitions### part to change compiler, compiler flags and
 #names of the folders that are to be used. the compiler only reads source code from the source_directory and
@@ -23,7 +23,7 @@ object_mapper = $(prefix)nm
 
 architecture = -march=armv8-a -mtune=cortex-a53 -mlittle-endian -mcmodel=small
 assembler_flags = $(architecture)
-cpp_flags = $(architecture) -Wall -O0 -std=c++17 -fno-exceptions -fno-rtti -fno-builtin -nostdlib -nostdinc -mstrict-align
+cpp_flags = $(architecture) -Wall -O3 -std=c++17 -fno-exceptions -fno-rtti -fno-builtin -nostdlib -nostdinc -mstrict-align
 
 #definitions of the source code directory and the object directory, where all generated files will be stored.
 source_directory = source_code
