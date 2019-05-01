@@ -91,14 +91,14 @@ extern "C" i32 main(void)
 	color background_color(0, 0, 0, 0);
 	while (1)
 	{
-		if (offset % 4 == 0)
-			background_color = color(255, 0, 0, 0);
-		else if (offset % 4 == 1)
-			background_color = color(0, 255, 0, 0);
-		else if (offset % 4 == 2)
-			background_color = color(0, 0, 255, 0);
-		else
-			background_color = color(0, 0, 0, 255);
+		// if (offset % 4 == 0)
+		// 	background_color = color(255, 0, 0, 0);
+		// else if (offset % 4 == 1)
+		// 	background_color = color(0, 255, 0, 0);
+		// else if (offset % 4 == 2)
+		// 	background_color = color(0, 0, 255, 0);
+		// else
+		// 	background_color = color(0, 0, 0, 255);
 
 		a_vc_gpu.set_triangles(vertices, vertices_size, triangles, triangles_size, background_color);
 		a_vc_gpu.render();
