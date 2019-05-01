@@ -1,8 +1,0 @@
-#!/bin/sh
-
-rootDirectory=$(dirname $(dirname $PWD))
-export PATH=$PATH:$rootDirectory/compiler/bin
-
-make $1
-
-cp kernel8.img /media/tsrapnik/ODESSSA

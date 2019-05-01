@@ -17,5 +17,3 @@ typedef double f64;
 //standard word sizes, in this case for a 64 bit machine.
 typedef u64 usize;
 typedef i64 isize;
-
-constexpr usize word_size = 64;

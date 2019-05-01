@@ -1,8 +1,0 @@
-#!/bin/sh
-
-rootDirectory=$(dirname $(dirname $PWD))
-export PATH=$PATH:$rootDirectory/compiler/bin
-
-cd sample/test
-./build $1 $2 || exit
-cd ..

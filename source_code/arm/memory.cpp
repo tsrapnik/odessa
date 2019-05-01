@@ -86,6 +86,22 @@ void memory::invalidate_l2_unified_cache()
     }
 }
 
+<<<<<<< HEAD
+=======
+void memory::invalidate_virtual_address_range(void* start, usize size)
+{
+    u8* address = reinterpret_cast<u8*>(start);
+    for(u32 index = 0; index < size; size += 64)
+    {
+        asm volatile("dc ivac, %0"
+                        :
+                        : "r"(address)
+                        : "memory");
+        address += 64;
+    }
+}
+
+>>>>>>> include_gpu
 void memory::data_sync_barrier()
 {
     asm volatile("dsb sy"
@@ -180,7 +196,11 @@ memory::level_3_descriptor* __attribute__((optimize(0))) memory::create_level_3_
         descriptor->uxn = 1;
         descriptor->ignored = 0;
 
+<<<<<<< HEAD
         extern u8 _etext;
+=======
+        u8 _etext;
+>>>>>>> include_gpu
         if(base_address >= reinterpret_cast<u64>(&_etext))
         {
             descriptor->pxn = 1;

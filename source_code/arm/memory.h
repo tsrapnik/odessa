@@ -24,6 +24,10 @@ class memory
     static void invalidate_data_cache();
     static void invalidate_l1_data_cache();
     static void invalidate_l2_unified_cache();
+<<<<<<< HEAD
+=======
+    static void invalidate_virtual_address_range(void* start, usize size);
+>>>>>>> include_gpu
     static void data_sync_barrier();
     static void data_memory_barrier();
 
