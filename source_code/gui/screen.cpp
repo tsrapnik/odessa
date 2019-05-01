@@ -12,23 +12,8 @@ screen::~screen()
 }
 
 rectangle* screen::get_footprint()
-<<<<<<< HEAD
 {
     return &footprint;
-}
-
-void screen::refresh()
-=======
->>>>>>> include_gpu
-{
-    u64* source = reinterpret_cast<u64*>(backbuffer);
-    u64* destination = reinterpret_cast<u64*>(displaybuffer);
-    for(u32 i = 0; i < 800 * 480 / 2; i++)
-    {
-        *destination = *source;
-        source++;
-        destination++;
-    }
 }
 
 void screen::clear(color background)
@@ -184,11 +169,7 @@ void screen::draw_text(const char* text, vector_2_u32 position)
         if(*text == '\n' || *text == '\r')
         {
             position.coordinate[0] = original_x;
-<<<<<<< HEAD
-            position.coordinate[1] += font::letter_height + 1;
-=======
             position.coordinate[1] += font::letter_height;
->>>>>>> include_gpu
         }
         else
         {
@@ -196,15 +177,9 @@ void screen::draw_text(const char* text, vector_2_u32 position)
                 for(u32 y = 0; y < font::letter_height; y++)
                 {
                     u8 greyscale = font::monospace[static_cast<u32>(*text)][y][x];
-<<<<<<< HEAD
-                    put_transparent_pixel(vector_2_u32::sum(position, vector_2_u32(x, y)), color(0,0,0,greyscale));
-                }
-            position.coordinate[0] += font::letter_width + 1;
-=======
                     put_transparent_pixel(vector_2_u32::sum(position, vector_2_u32(x, y)), color(0,100,0,greyscale));
                 }
             position.coordinate[0] += font::letter_width;
->>>>>>> include_gpu
         }
         text++;
     }
