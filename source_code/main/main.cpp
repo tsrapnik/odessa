@@ -1,9 +1,9 @@
 #include "buddy_heap.h"
 #include "effect_chorus.h"
 #include "effect_graph.h"
-#include "gpu.h"
-#include "mailbox_framebuffer.h"
-#include "mailbox_property_tags.h"
+#include "vc_gpu.h"
+#include "vc_mailbox_framebuffer.h"
+#include "vc_mailbox_property_tags.h"
 #include "memory.h"
 #include "scratchpad.h"
 #include "screen.h"
@@ -32,68 +32,83 @@ extern "C" i32 main(void)
     //     (**constructor)();
     // }
 
-    mailbox_property_tags& a_mailbox_property_tags = mailbox_property_tags::get_handle();
-    u32 max_clock_rate = a_mailbox_property_tags.get_max_clock_rate(mailbox_property_tags::clock_id::arm);
-    a_mailbox_property_tags.set_clock_rate(mailbox_property_tags::clock_id::arm, max_clock_rate);
-
     // memory::enable_mmu();
-    buddy_heap::initialize();
-    mailbox_framebuffer a_mailbox_framebuffer;
-    color* framebuffer = a_mailbox_framebuffer.get_framebuffer();
-    screen a_screen(vector_2_u32(800, 480), framebuffer);
+    // buddy_heap::initialize();
 
-    a_global_screen = &a_screen;
+    unsigned int max_clockrate = vc_mailbox_property_tags::get_max_clock_rate(vc_mailbox_property_tags::clock_id::arm);
+	vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::arm, max_clockrate);
 
-    effect_graph a_effect_graph(&a_screen);
-    effect_chorus a_effect_chorus(rectangle(vector_2_u32(50, 50), vector_2_u32(100, 50)), color(127, 0, 0, 255));
-    a_effect_graph.add_effect(&a_effect_chorus);
+	vc_mailbox_framebuffer a_vc_mailbox_framebuffer;
+	vc_gpu a_vc_gpu(a_vc_mailbox_framebuffer.get_buffer(), 800, 480);
 
-    u32 vertex_buffer_size = 3;
-    gpu::vertex vertex_buffer[vertex_buffer_size];
-    vertex_buffer[0].x = (0) << 4;
-    vertex_buffer[0].y = (0) << 4;
-    vertex_buffer[0].z = 1.0;
-    vertex_buffer[0].w = 1.0;
-    vertex_buffer[0].r = 1.0;
-    vertex_buffer[0].g = 1.0;
-    vertex_buffer[0].b = 1.0;
+	u16 offset = 0;
+	u32 vertices_size = 4;
+	vc_gpu::vertex vertices[vertices_size];
 
-    vertex_buffer[1].x = (00) << 4;
-    vertex_buffer[1].y = (0) << 4;
-    vertex_buffer[1].z = 1.0;
-    vertex_buffer[1].w = 1.0;
-    vertex_buffer[1].r = 1.0;
-    vertex_buffer[1].g = 1.0;
-    vertex_buffer[1].b = 1.0;
+	vertices[0].xs = 200 << 4;
+	vertices[0].ys = 100 << 4;
+	vertices[0].zs = 1.0f;
+	vertices[0].wc = 1.0f;
+	vertices[0].r = 1.0f;
+	vertices[0].g = 0.0f;
+	vertices[0].b = 0.0f;
 
-    vertex_buffer[2].x = (0) << 4;
-    vertex_buffer[2].y = (0) << 4;
-    vertex_buffer[2].z = 1.0;
-    vertex_buffer[2].w = 1.0;
-    vertex_buffer[2].r = 1.0;
-    vertex_buffer[2].g = 1.0;
-    vertex_buffer[2].b = 1.0;
+	vertices[1].xs = 600 << 4;
+	vertices[1].ys = 100 << 4;
+	vertices[1].zs = 1.0f;
+	vertices[1].wc = 1.0f;
+	vertices[1].r = 0.0f;
+	vertices[1].g = 1.0f;
+	vertices[1].b = 0.0f;
 
-    u32 triangle_buffer_size = 1;
-    gpu::triangle triangle_buffer[triangle_buffer_size];
-    triangle_buffer[0].index_0 = 0;
-    triangle_buffer[0].index_1 = 1;
-    triangle_buffer[0].index_2 = 2;
+	vertices[2].xs = offset << 4;
+	vertices[2].ys = 300 << 4;
+	vertices[2].zs = 1.0f;
+	vertices[2].wc = 1.0f;
+	vertices[2].r = 0.0f;
+	vertices[2].g = 0.0f;
+	vertices[2].b = 1.0f;
 
-    gpu a_gpu(vertex_buffer_size, triangle_buffer_size);
-    a_gpu.a_screen = &a_screen;
-    u32 frame_buffer_handle = static_cast<u32>(reinterpret_cast<u64>(a_mailbox_framebuffer.get_framebuffer()));
-    a_gpu.render(800, 480, frame_buffer_handle, vertex_buffer, triangle_buffer, vertex_buffer_size, triangle_buffer_size);
+	vertices[3].xs = 600 << 4;
+	vertices[3].ys = 300 << 4;
+	vertices[3].zs = 1.0f;
+	vertices[3].wc = 1.0f;
+	vertices[3].r = 1.0f;
+	vertices[3].g = 1.0f;
+	vertices[3].b = 1.0f;
 
-    u32 i = 0;
-    while(true)
-    {
-        // a_gpu.testTriangle(800,480,frame_buffer_handle,i);
-        a_screen.draw_text("x", vector_2_u32(i, 0));
-        i += 60;
-        a_gpu.render(800, 480, frame_buffer_handle, vertex_buffer, triangle_buffer, vertex_buffer_size, triangle_buffer_size);
-    }
-    return 0;
+	u32 triangles_size = 2;
+	vc_gpu::triangle triangles[triangles_size];
+
+	triangles[0].index_0 = 0;
+	triangles[0].index_1 = 1;
+	triangles[0].index_2 = 2;
+
+	triangles[1].index_0 = 3;
+	triangles[1].index_1 = 2;
+	triangles[1].index_2 = 1;
+
+	color background_color(0, 0, 0, 0);
+	while (1)
+	{
+		if (offset % 4 == 0)
+			background_color = color(255, 0, 0, 0);
+		else if (offset % 4 == 1)
+			background_color = color(0, 255, 0, 0);
+		else if (offset % 4 == 2)
+			background_color = color(0, 0, 255, 0);
+		else
+			background_color = color(0, 0, 0, 255);
+
+		a_vc_gpu.set_triangles(vertices, vertices_size, triangles, triangles_size, background_color);
+		a_vc_gpu.render();
+
+		offset++;
+		if (offset >= 800)
+			offset = 0;
+		vertices[2].xs = offset << 4;
+	}
+	return (0);
 }
 
 extern "C" void syn_cur_el0()

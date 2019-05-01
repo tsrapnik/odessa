@@ -9,4 +9,5 @@ public:
 	color();
 	color( u8 red, u8 green, u8 blue, u8 alpha );
 	~color();
+	u32 to_argb_u32();
 };
