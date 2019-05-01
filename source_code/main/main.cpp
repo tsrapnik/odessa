@@ -226,6 +226,27 @@ extern "C" void __cxa_atexit(void)
 {
 }
 
+extern "C" void _exit()
+{
+}
+
+extern "C" void _kill()
+{
+}
+
+extern "C" void _getpid()
+{
+}
+
+extern "C" void __gxx_personality_v0()
+{
+}
+
+extern "C" char* __attribute__((weak)) _sbrk (int incr)
+{
+	return (char*)0;
+}
+
 // extern "C" void memcpy(void* destination, void* source, usize size)
 // {
 // u32 size_u64 = size / 8;

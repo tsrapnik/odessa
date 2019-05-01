@@ -1,5 +1,5 @@
 #this makefile is intended to act as a generic c++ compiler. it will look for all c++ files in the specified
-#source_directory subdirectory and all its subdirectories and compile them to a single image file. the makefile
+#source_z subdirectory and all its subdirectories and compile them to a single image file. the makefile
 #was built specifically for raspberry pi 3, but can be used for different purposes with only a few minor
 #adjustements. adjust the assignments in the ###definitions### part to change compiler, compiler flags and
 #names of the folders that are to be used. the compiler only reads source code from the source_directory and
@@ -16,14 +16,12 @@ prefix = aarch64-elf-
 
 assembler = $(prefix)gcc
 compiler = $(prefix)g++
-linker = $(prefix)ld
+linker = $(prefix)gcc
 object_copier = $(prefix)objcopy
 object_dumper = $(prefix)objdump
 object_mapper = $(prefix)nm
 
-architecture = -march=armv8-a -mtune=cortex-a53 -mlittle-endian -mcmodel=small
-assembler_flags = $(architecture)
-cpp_flags = $(architecture) -Wall -O3 -std=c++17 -fno-exceptions -fno-rtti -fno-builtin -nostdlib -nostdinc -mstrict-align
+compiler_flags = -Wall -O3 -mcpu=cortex-a53+fp+simd -ffreestanding -nostartfiles -std=c++17 -mstrict-align -fno-tree-loop-vectorize -fno-tree-slp-vectorize -Wno-nonnull-compare -fno-exceptions -fno-rtti -fno-builtin -nostdlib -nostdinc
 
 #definitions of the source code directory and the object directory, where all generated files will be stored.
 source_directory = source_code
@@ -73,7 +71,7 @@ $(object_directory_tree):
 #cluttering the object directory.
 $(image): $(linker_description) $(boot_object) $(objects)
 	$(info link all objects and generate the image file: $(image).)
-	$(hide)$(linker) -o $(image_elf) -T $(linker_description) $(boot_object) $(objects)
+	$(hide)$(linker) $(compiler_flags) -o $(image_elf) -T $(linker_description) $(boot_object) $(objects) -Wl,--build-id=none
 	$(hide)$(object_copier) $(image_elf) -O binary $(image)
 	$(hide)$(object_dumper) -d $(image_elf) > $(image_dump)
 	$(hide)$(object_mapper) -n $(image_elf) > $(image_map)
@@ -86,7 +84,7 @@ $(image): $(linker_description) $(boot_object) $(objects)
 #compile the boot file.
 $(boot_object): $(boot_source)
 	$(info compile boot source file: $<.)
-	$(hide)$(assembler) $(assembler_flags) $(include_directories) -c -o $@ $<
+	$(hide)$(assembler) $(compiler_flags) $(include_directories) -c -o $@ $<
 
 #compile all source files in the project.
 #the first rule outputs which file is compiled. if the hide option is active this is the only line that will be
@@ -97,7 +95,7 @@ $(boot_object): $(boot_source)
 #converted to the form "subdirectory/subdirectory/object.o".
 $(object_directory)/%.o: $(source_directory)/%.cpp
 	$(info compile source file: $<.)
-	$(hide)$(compiler) $(cpp_flags) $(include_directories) -c -o $@ $<
+	$(hide)$(compiler) $(compiler_flags) $(include_directories) -c -o $@ $<
 	$(hide)$(compiler) $(include_directories) -MM $(source_directory)/$*.cpp > $(object_directory)/$*.d
 	$(hide)sed -i 's|.*:|$(object_directory)/$*.o:|' $(object_directory)/$*.d
 
