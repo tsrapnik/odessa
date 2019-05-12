@@ -267,7 +267,7 @@ void vc_gpu::set_triangles(vertex* vertices, u32 vertices_size, triangle* triang
     }
 }
 
-void vc_gpu::set_triangles(list<triangle>& triangles, list<vertex>& vertices, color background_color)
+void vc_gpu::set_triangles(list<vertex>& vertices, list<triangle>& triangles, color background_color)
 {
     const vc_mailbox_property_tags::allocate_memory_flag allocate_flags =
         vc_mailbox_property_tags::allocate_memory_flag::coherent | vc_mailbox_property_tags::allocate_memory_flag::zero;

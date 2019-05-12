@@ -575,6 +575,6 @@ class vc_gpu
     ~vc_gpu();
 
     void set_triangles(vertex *vertices, u32 vertices_size, triangle *triangles, u32 triangles_size, color background_color);
-    void set_triangles(list<triangle>& triangles, list<vertex>& vertices, color background_color);
+    void set_triangles(list<vertex>& vertices, list<triangle>& triangles, color background_color);
     void render();
 };

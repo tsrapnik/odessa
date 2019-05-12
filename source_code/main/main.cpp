@@ -98,11 +98,56 @@ extern "C" i32 main(void)
     triangles[1].index_1 = 2;
     triangles[1].index_2 = 1;
 
-    color background_color(100, 0, 0, 255);
+    list<vc_gpu::triangle> triangles_list;
+    for(u32 index = 0; index < triangles_size; index++)
+        triangles_list.append_copy(triangles[index]);
+
+    list<vc_gpu::vertex> vertices_list;
+    for(u32 index = 0; index < vertices_size; index++)
+        vertices_list.append_copy(vertices[index]);
+
+    color background_color(255, 0, 0, 255);
+    bool correct = true;
+    if(!((triangles_list.get_size() == triangles_size) && (vertices_list.get_size() == vertices_size)))
+        correct = false;
+    
+    u32 index = 0;
+    list_iterator<vc_gpu::triangle> triangles_iterator(triangles_list);
+    for(triangles_iterator.to_first(); !triangles_iterator.at_end(); triangles_iterator++)
+    {
+        vc_gpu::triangle& current_triangle = triangles_iterator.get_data_reference();
+        if(triangles[index].index_0 != current_triangle.index_0 ||
+           triangles[index].index_1 != current_triangle.index_1 ||
+           triangles[index].index_2 != current_triangle.index_2)
+            correct = false;
+
+        index++;
+    }
+
+    index = 0;
+    list_iterator<vc_gpu::vertex> vertices_iterator(vertices_list);
+    for(vertices_iterator.to_first(); !vertices_iterator.at_end(); vertices_iterator++)
+    {
+        vc_gpu::vertex& current_vertex = vertices_iterator.get_data_reference();
+        if(vertices[index].xs == current_vertex.xs ||
+           vertices[index].ys == current_vertex.ys ||
+           vertices[index].zs == current_vertex.zs ||
+           vertices[index].wc == current_vertex.wc ||
+           vertices[index].r == current_vertex.r ||
+           vertices[index].g == current_vertex.g ||
+           vertices[index].b == current_vertex.b)
+            correct = false;
+
+        index++;
+    }
+
+    if(correct)
+        background_color = color(0, 255, 0, 255);
 
     while(1)
     {
         a_vc_gpu.set_triangles(vertices, vertices_size, triangles, triangles_size, background_color);
+        // a_vc_gpu.set_triangles(vertices_list, triangles_list, background_color);
         a_vc_gpu.render();
 
         offset++;
