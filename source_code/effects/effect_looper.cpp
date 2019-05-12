@@ -2,7 +2,7 @@
 
 effect_looper::effect_looper(rectangle footprint, color own_color) :
     effect::effect(footprint, own_color),
-    active_channel_pointer(list_iterator<channel*>(&channels))
+    active_channel_pointer(list_iterator<channel*>(channels))
 {
     mono_input = new input(rectangle(vector_2_u32(0, 120), vector_2_u32(30, 40)),
                            color(255, 0, 0, 255));
@@ -50,7 +50,7 @@ void effect_looper::process()
 }
 
 effect_looper::channel::channel() :
-    active_track_pointer(list_iterator<track*>(&tracks))
+    active_track_pointer(list_iterator<track*>(tracks))
 {
 }
 
@@ -59,7 +59,7 @@ f32 effect_looper::channel::play()
 {
     f32 frame = 0.0f;
 
-    list_iterator<track*> current_element(&tracks);
+    list_iterator<track*> current_element(tracks);
     for(current_element.to_first(); !current_element.at_end(); current_element++)
     {
         channel::track* current_track = current_element.get_data_copy();
@@ -90,7 +90,7 @@ void effect_looper::channel::dub(f32 frame)
 //sets all tracks to the first frame.
 void effect_looper::channel::restart()
 {
-    list_iterator<track*> current_element(&tracks);
+    list_iterator<track*> current_element(tracks);
     for(current_element.to_first(); !current_element.at_end(); current_element++)
     {
         track* current_track = current_element.get_data_copy();
@@ -121,7 +121,7 @@ void effect_looper::channel::remove_active_track()
 
 //create empty track with "block_count" blocks.
 effect_looper::channel::track::track(u32 block_count) :
-    block_iterator(&blocks),
+    block_iterator(blocks),
     block_index(0)
 {
     for(u32 i = 0; i < block_count; i++)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "type_definitions.h"
 #include "node.h"
 
 //linked list containing elements of given type. the list has ownership over all its elements and will

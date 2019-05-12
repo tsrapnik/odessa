@@ -7,11 +7,11 @@ template <typename type>
 class list_iterator
 {
     private:
-    list<type>* parent;
+    list<type>& parent;
     node<type>* current;
 
     public:
-    list_iterator(list<type>* parent);
+    list_iterator(list<type>& parent);
     ~list_iterator();
 
     void to_first();
@@ -21,7 +21,7 @@ class list_iterator
     list_iterator<type> operator++(int);
     list_iterator<type> operator--(int);
     type get_data_copy();
-    type* get_data_pointer();
+    type& get_data_reference();
     void delete_current();
     template <typename... arguments>
     void insert_new_before(arguments... init_arguments);
@@ -33,9 +33,9 @@ class list_iterator
 
 //create new iterator which points to the first element of the given parent list.
 template <typename type>
-list_iterator<type>::list_iterator(list<type>* parent) :
+list_iterator<type>::list_iterator(list<type>& parent) :
     parent(parent),
-    current(parent->first)
+    current(parent.first)
 {
 }
 
@@ -48,14 +48,14 @@ list_iterator<type>::~list_iterator()
 template <typename type>
 void list_iterator<type>::to_first()
 {
-    current = parent->first;
+    current = parent.first;
 }
 
 //point iterator to the last element in the list.
 template <typename type>
 void list_iterator<type>::to_last()
 {
-    current = parent->last;
+    current = parent.last;
 }
 
 //check if the iterator is past the first or last element in the list (the iterator then points to a nullpointer).
@@ -90,19 +90,19 @@ type list_iterator<type>::get_data_copy()
 
 //get a pointer to the data of the element the iterator points to.
 template <typename type>
-type* list_iterator<type>::get_data_pointer()
+type& list_iterator<type>::get_data_reference()
 {
-    return &(current->data);
+    return current->data;
 }
 
 //delete the element the iterator points to and point the iterator to the previous element.
 template <typename type>
 void list_iterator<type>::delete_current()
 {
-    if(current == parent->first) //if current is the first in the list, use the appropriate parent function.
-        parent->delete_first();
-    else if(current == parent->last) //if current is the last in the list, use the appropriate parent function.
-        parent->delete_last();
+    if(current == parent.first) //if current is the first in the list, use the appropriate parent function.
+        parent.delete_first();
+    else if(current == parent.last) //if current is the last in the list, use the appropriate parent function.
+        parent.delete_last();
     else
     {
         current->previous->next = current->next; //point previous and next node to each other.
@@ -114,7 +114,7 @@ void list_iterator<type>::delete_current()
 
         delete condemned;
 
-        parent->size--;
+        parent.size--;
     }
 }
 
@@ -124,14 +124,14 @@ template <typename type>
 template <typename... arguments>
 void list_iterator<type>::insert_new_before(arguments... init_arguments)
 {
-    if(current == parent->first) //if current is the first in the list, use the appropriate parent function.
-        parent->prepend(init_arguments...);
+    if(current == parent.first) //if current is the first in the list, use the appropriate parent function.
+        parent.prepend(init_arguments...);
     else
     {
         node<type>* new_node = new node<type>(current->previous, current, init_arguments...); //create new node and put it before the current node.
         current->previous->next = new_node;
         current->previous = new_node;
-        parent->size++;
+        parent.size++;
     }
 }
 
