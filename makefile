@@ -26,8 +26,9 @@ compiler_flags = -Wall -O3 -mcpu=cortex-a53+fp+simd -ffreestanding -nostartfiles
 #definitions of the source code directory and the object directory, where all generated files will be stored.
 source_directory = source_code
 object_directory = compiled_code
-boot_source_directory = $(source_directory)/boot
-boot_object_directory = $(object_directory)/boot
+boot_folder_name = pi_3/boot
+boot_source_directory = $(source_directory)/$(boot_folder_name)
+boot_object_directory = $(object_directory)/$(boot_folder_name)
 
 #naming of some specific source and object files.
 boot_source_name = startup
@@ -49,7 +50,7 @@ objects := $(patsubst $(source_directory)%,$(object_directory)%,$(objects))
 dependencies = $(patsubst %.o,%.d,$(objects))
 boot_source = $(boot_source_directory)/$(boot_source_name).S
 boot_object = $(boot_object_directory)/$(boot_source_name).o
-linker_description = $(boot_source_directory)/$(linker_description_name).ld
+linker_description = $(linker_description_name).ld
 image = $(object_directory)/$(image_name).img
 image_elf = $(object_directory)/$(image_name).elf
 image_dump = $(object_directory)/$(image_name).txt

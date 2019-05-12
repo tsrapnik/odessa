@@ -1,5 +1,15 @@
 #/bin/bash!
 
+#add here the paths to given files and directories.
+#bin folder of compiler.
+compiler_directory=$(dirname $(dirname $PWD))/compilers/gcc-linaro-7.1.1-2017.08-x86_64_aarch64-elf/bin
+#folder containing raspberry pi boot files.
+binary_blob_directory=source_code/pi_3/boot/binary_blob
+#path of image file.
+image_directory=compiled_code/kernel8.img
+#path to copy image file to.
+sd_directory=/media/tsrapnik/ODESSA
+
 #if boot option is given, copy all boot files which load the actual image to the sd card.
 #if clean option is given, remove the entire compiled_code folder.
 #if no option is given, include the compiler path to this shell session. compile the program with make. copy the compiled image
@@ -7,9 +17,9 @@
 
 if [ "$1" = "boot" ]
 then
-    cp source_code/boot/binary_blob/bootcode.bin /media/tsrapnik/ODESSA
-    cp source_code/boot/binary_blob/fixup.dat /media/tsrapnik/ODESSA
-    cp source_code/boot/binary_blob/start.elf /media/tsrapnik/ODESSA
+    cp $binary_blob_directory/bootcode.bin /media/tsrapnik/ODESSA
+    cp $binary_blob_directory/fixup.dat /media/tsrapnik/ODESSA
+    cp $binary_blob_directory/start.elf /media/tsrapnik/ODESSA
     if [ $? -eq 0 ]
     then
         echo "copy boot files to sd card."
@@ -18,9 +28,9 @@ elif [ "$1" = "clean" ]
 then
     make clean
 else
-    export PATH=$PATH:$(dirname $(dirname $PWD))/compilers/gcc-linaro-7.1.1-2017.08-x86_64_aarch64-elf/bin
+    export PATH=$PATH:$compiler_directory
     make
-    cp compiled_code/kernel8.img /media/tsrapnik/ODESSA
+    cp $image_directory $sd_directory
     if [ $? -eq 0 ]
     then
         echo "copy image to sd card."

@@ -45,17 +45,7 @@ exit_el1:
 
     ldr x0, =VectorTable						
     msr vbar_el1,x0
-
-	ldr x3, =__bss_end
-	ldr x0, =__bss_start
-	cmp	x0, x3
-	bcs	.bss_cleared
-.bss_zero_loop:
-	str	wzr, [x0], 4
-	cmp	x3, x0
-	bhi	.bss_zero_loop
-.bss_cleared:
-
+	
 	b main							// Jump out to C kernel 
 
 hang:

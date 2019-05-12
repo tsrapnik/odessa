@@ -3,6 +3,7 @@
 #include "memory_map.h"
 #include "type_definitions.h"
 
+//todo: make nonstatic class, for reusability on different memory regions.
 class buddy_heap
 {
 public:

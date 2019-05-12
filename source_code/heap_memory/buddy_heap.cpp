@@ -8,7 +8,7 @@ void* buddy_heap::heap_base;
 
 usize buddy_heap::get_matching_order( usize size )
 {
-	usize word_size = 64; //todo: make word_size somewhere else defined.
+	usize word_size = sizeof(usize) * 8; //todo: make word_size somewhere else defined.
 	size += word_size / 8 - 1; //the first byte in the memory block is lost for storing the order. this is why word_size in bytes is added.
 	usize zeroes;
     asm("clz %0, %1" //todo: move to arm specific static class.
@@ -60,7 +60,8 @@ buddy_heap::~buddy_heap()
 //initialize memory pool for the block_pointers and make one block_pointer which refers to the full heap.
 void buddy_heap::initialize()
 {
-	buddy_heap::heap_base = my_heap_base;
+	//todo: make class non static. move initialize function to construction and make dependent on parameters in stead of global variables.
+	buddy_heap::heap_base = heap_base;
 	for( usize i = 0; i < 1 << ( order_count - 2 ); i++ ) //assign each block_pointer to an available_block_pointer.
 	{
 		available_block_pointers[ i ] = &block_pointers[ i ];

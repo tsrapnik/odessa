@@ -92,9 +92,9 @@ void memory::invalidate_virtual_address_range(void* start, usize size)
     for(u32 index = 0; index < size; size += 64)
     {
         asm volatile("dc ivac, %0"
-                        :
-                        : "r"(address)
-                        : "memory");
+                     :
+                     : "r"(address)
+                     : "memory");
         address += 64;
     }
 }
@@ -120,8 +120,8 @@ void memory::enable_mmu()
     table = create_level_2_table();
 
     u64 mair_el1 = 0xcc << attrindx_normal * 8 //inner/outer write-back non-transient, non-allocating.
-                    | 0x04 << attrindx_device * 8 //device-nGnRE.
-                    | 0x00 << attrindx_coherent * 8; //device-nGnRnE.
+                   | 0x04 << attrindx_device * 8 //device-nGnRE.
+                   | 0x00 << attrindx_coherent * 8; //device-nGnRnE.
     asm volatile("msr mair_el1, %0"
                  :
                  : "r"(mair_el1));
@@ -243,6 +243,6 @@ memory::level_2_descriptor* __attribute__((optimize(0))) memory::create_level_2_
     }
 
     data_sync_barrier();
-    
+
     return level_2_table;
 }

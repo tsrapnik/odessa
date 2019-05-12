@@ -1,7 +1,9 @@
 SECTIONS
 {
+    /*is start address, where the arm processor will start executing code.*/
 	. = 0x80000;
 
+    /*contains all code.*/
 	.text :
 	{
 		. = ALIGN(4);
@@ -10,6 +12,7 @@ SECTIONS
 		 __text_end = .;
 	}
 
+    /*contains all constant values not included in the text section, for example string literals.*/
 	.rodata :
 	{
        	. = ALIGN(4);
@@ -17,7 +20,16 @@ SECTIONS
         *(.rodata)
         __rodata_end = .;
    	}
+    
+    /*contains pointers to functions that initialize the data in the data section.*/
+	.init_array : {
+       	. = ALIGN(4);
+        __init_start = .;
+		*(.init_array*)
+	    __init_end = .;
+	}
 
+    /*contains static data that is initialized to a specific value.*/
 	.data :
 	{
 		. = ALIGN(4);
@@ -26,6 +38,7 @@ SECTIONS
 		 __data_end = .;
 	}
 
+    /*contains static data that is initialized to zero.*/
 	.bss :
 	{
 		. = ALIGN(4);
@@ -34,6 +47,7 @@ SECTIONS
 		 __bss_end = .;
    	}
 
+    /*stacks for all cores in all exception levels.*/
 	.stack_core_0 :
 	{
         . = ALIGN(16);
@@ -86,6 +100,7 @@ SECTIONS
         __stack_core_3_end = .;    
     }
 
+    /*contains space for all runtime allocatable data.*/
 	.heap :
 	{
      	. = ALIGN(4);
