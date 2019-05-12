@@ -150,6 +150,7 @@ void memory::enable_mmu()
                  : "memory");
 }
 
+//todo: change camel to snake case.
 void* memset(void* pBuffer, u32 nValue, u64 nLength)
 {
     char* p = (char*)pBuffer;

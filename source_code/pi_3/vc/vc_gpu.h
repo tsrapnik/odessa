@@ -3,6 +3,7 @@
 #include "type_definitions.h"
 #include "vc_pointer.h"
 #include "color.h"
+#include "list.h"
 
 class vc_gpu
 {
@@ -574,5 +575,6 @@ class vc_gpu
     ~vc_gpu();
 
     void set_triangles(vertex *vertices, u32 vertices_size, triangle *triangles, u32 triangles_size, color background_color);
+    void set_triangles(const list<triangle>& triangles, const list<vertex>& vertices, color background_color);
     void render();
 };

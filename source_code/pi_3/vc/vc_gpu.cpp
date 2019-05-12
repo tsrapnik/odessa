@@ -223,7 +223,7 @@ void vc_gpu::set_triangles(vertex *vertices, u32 vertices_size, triangle *triang
 			vc_mailbox_property_tags::lock_memory(vertices_handle)
 				.to_arm_pointer());
 
-		a_nv_shader_state_record->shaded_vertex_data_address = vc_pointer::arm_to_vc_pointer(vertices);
+		a_nv_shader_state_record->shaded_vertex_data_address = vc_pointer::arm_to_vc_pointer(this->vertices);
 		a_binning_control_list->a_indexed_primitive_list.maximum_index = vertices_size - 1;
 	}
 
@@ -241,13 +241,12 @@ void vc_gpu::set_triangles(vertex *vertices, u32 vertices_size, triangle *triang
 				.to_arm_pointer());
 
 		a_binning_control_list->a_indexed_primitive_list.length = triangles_size * 3;
-		a_binning_control_list->a_indexed_primitive_list.address_of_indices_list = vc_pointer::arm_to_vc_pointer(triangles);
+		a_binning_control_list->a_indexed_primitive_list.address_of_indices_list = vc_pointer::arm_to_vc_pointer(this->triangles);
 	}
 
 	a_render_control_list->a_clear_colors.clear_color =
 		(static_cast<u64>(background_color.to_argb_u32()) << 32) + static_cast<u64>(background_color.to_argb_u32());
 
-	this->vertices_size = vertices_size;
 	for (u32 index = 0; index < vertices_size; index++)
 	{
 		this->vertices[index].xs = vertices[index].xs;
@@ -259,13 +258,79 @@ void vc_gpu::set_triangles(vertex *vertices, u32 vertices_size, triangle *triang
 		this->vertices[index].b = vertices[index].b;
 	}
 
-	this->triangles_size = triangles_size;
 	for (u32 index = 0; index < triangles_size; index++)
 	{
 		this->triangles[index].index_0 = triangles[index].index_0;
 		this->triangles[index].index_1 = triangles[index].index_1;
 		this->triangles[index].index_2 = triangles[index].index_2;
 	}
+}
+
+void vc_gpu::set_triangles(const list<triangle>& triangles, const list<vertex>& vertices, color background_color)
+{
+	const vc_mailbox_property_tags::allocate_memory_flag allocate_flags =
+		vc_mailbox_property_tags::allocate_memory_flag::coherent | vc_mailbox_property_tags::allocate_memory_flag::zero;
+
+	if (vertices.get_size() != this->vertices_size)
+	{
+		if (!vertices_handle.is_null())
+		{
+			vc_mailbox_property_tags::unlock_memory(vertices_handle);
+			vc_mailbox_property_tags::release_memory(vertices_handle);
+		}
+		this->vertices_size = vertices_size;
+		vertices_handle = vc_mailbox_property_tags::allocate_memory(vertices_size * sizeof(vertex), 0x1000, allocate_flags);
+		this->vertices = reinterpret_cast<volatile vertex *>(
+			vc_mailbox_property_tags::lock_memory(vertices_handle)
+				.to_arm_pointer());
+
+		a_nv_shader_state_record->shaded_vertex_data_address = vc_pointer::arm_to_vc_pointer(this->vertices);
+		a_binning_control_list->a_indexed_primitive_list.maximum_index = vertices_size - 1;
+	}
+
+	if (triangles.get_size() != this->triangles_size)
+	{
+		if (!triangles_handle.is_null())
+		{
+			vc_mailbox_property_tags::unlock_memory(triangles_handle);
+			vc_mailbox_property_tags::release_memory(triangles_handle);
+		}
+		this->triangles_size = triangles_size;
+		triangles_handle = vc_mailbox_property_tags::allocate_memory(triangles_size * sizeof(triangle), 0x1000, allocate_flags);
+		this->triangles = reinterpret_cast<volatile triangle *>(
+			vc_mailbox_property_tags::lock_memory(triangles_handle)
+				.to_arm_pointer());
+
+		a_binning_control_list->a_indexed_primitive_list.length = triangles_size * 3;
+		a_binning_control_list->a_indexed_primitive_list.address_of_indices_list = vc_pointer::arm_to_vc_pointer(this->triangles);
+	}
+
+	a_render_control_list->a_clear_colors.clear_color =
+		(static_cast<u64>(background_color.to_argb_u32()) << 32) + static_cast<u64>(background_color.to_argb_u32());
+
+	// list_iterator<vertex> vertices_iterator(triangles);
+
+    // list_iterator<output*> outputs_iterator(&outputs);
+    // for(outputs_iterator.to_first(); !outputs_iterator.at_end(); outputs_iterator++)
+    //     outputs_iterator.get_data_copy()->move(displacement);
+
+	// for (u32 index = 0; index < vertices_size; index++)
+	// {
+	// 	this->vertices[index].xs = vertices[index].xs;
+	// 	this->vertices[index].ys = vertices[index].ys;
+	// 	this->vertices[index].zs = vertices[index].zs;
+	// 	this->vertices[index].wc = vertices[index].wc;
+	// 	this->vertices[index].r = vertices[index].r;
+	// 	this->vertices[index].g = vertices[index].g;
+	// 	this->vertices[index].b = vertices[index].b;
+	// }
+
+	// for (u32 index = 0; index < triangles_size; index++)
+	// {
+	// 	this->triangles[index].index_0 = triangles[index].index_0;
+	// 	this->triangles[index].index_1 = triangles[index].index_1;
+	// 	this->triangles[index].index_2 = triangles[index].index_2;
+	// }
 }
 
 void vc_gpu::render()

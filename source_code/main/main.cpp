@@ -30,6 +30,7 @@ extern "C" i32 main(void)
         (**constructor)();
     }
 
+    //todo: change adressing to vc_gpu before mmu can be enabled.
     // memory::enable_mmu();
 
     buddy_heap::initialize();
