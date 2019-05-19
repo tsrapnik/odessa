@@ -5,12 +5,19 @@
 #include "scratchpad.h"
 #include "screen.h"
 #include "string.h"
+#include "uart.h"
 #include "vc_gpu.h"
 #include "vc_mailbox_framebuffer.h"
 #include "vc_mailbox_property_tags.h"
 
 //todo: remove and replace with uart logging.
 screen* a_global_screen;
+
+    void delay()
+{
+	for (volatile u32 count = 0; count < 150; count++)
+		;
+}
 
 extern "C" i32 main(void)
 {
@@ -50,6 +57,144 @@ extern "C" i32 main(void)
     // while(true)
     // {
     // }
+
+    // uart* a_uart = uart::create(uart::device::uart0);
+    // a_uart->write("hello", 5);
+
+
+    //////////////gpio
+
+#define ARM_IO_BASE		0x3F000000
+#define ARM_GPIO_BASE (ARM_IO_BASE + 0x200000)
+
+#define ARM_GPIO_GPFSEL0 (ARM_GPIO_BASE + 0x00)
+#define ARM_GPIO_GPPUD (ARM_GPIO_BASE + 0x94)
+#define ARM_GPIO_GPPUDCLK0 (ARM_GPIO_BASE + 0x98)
+
+    ////32////
+    u64 nClkReg = ARM_GPIO_GPPUDCLK0 + (32 / 32) * 4;
+    u32 nShift = 32 % 32;
+
+    *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+    delay();
+    *(u32 volatile*)nClkReg = 1 << nShift;
+    delay();
+    *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+    *(u32 volatile*)nClkReg = 0;
+
+    u64 nSelReg = ARM_GPIO_GPFSEL0 + (32 / 10) * 4;
+    nShift = (32 % 10) * 3;
+
+    u32 nValue = *(u32 volatile*)nSelReg;
+    nValue &= ~(7 << nShift);
+    nValue |= 4 << nShift;
+    *(u32 volatile*)nSelReg = nValue;
+
+    ////33////
+    nClkReg = ARM_GPIO_GPPUDCLK0 + (33 / 32) * 4;
+    nShift = 33 % 32;
+
+    *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+    delay();
+    *(u32 volatile*)nClkReg = 1 << nShift;
+    delay();
+    *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+    *(u32 volatile*)nClkReg = 0;
+
+    nSelReg = ARM_GPIO_GPFSEL0 + (33 / 10) * 4;
+    nShift = (33 % 10) * 3;
+
+    nValue = *(u32 volatile*)nSelReg;
+    nValue &= ~(7 << nShift);
+    nValue |= 4 << nShift;
+    *(u32 volatile*)nSelReg = nValue;
+
+    ////14////
+    nClkReg = ARM_GPIO_GPPUDCLK0 + (14 / 32) * 4;
+    nShift = 14 % 32;
+
+    *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+    delay();
+    *(u32 volatile*)nClkReg = 1 << nShift;
+    delay();
+    *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+    *(u32 volatile*)nClkReg = 0;
+
+    nSelReg = ARM_GPIO_GPFSEL0 + (14 / 10) * 4;
+    nShift = (14 % 10) * 3;
+
+    nValue = *(u32 volatile*)nSelReg;
+    nValue &= ~(7 << nShift);
+    nValue |= 4 << nShift;
+    *(u32 volatile*)nSelReg = nValue;
+
+    ////15////
+    nClkReg = ARM_GPIO_GPPUDCLK0 + (15 / 32) * 4;
+    nShift = 15 % 32;
+
+    *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+    delay();
+    *(u32 volatile*)nClkReg = 1 << nShift;
+    delay();
+    *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+    *(u32 volatile*)nClkReg = 0;
+
+    nSelReg = ARM_GPIO_GPFSEL0 + (15 / 10) * 4;
+    nShift = (15 % 10) * 3;
+
+    nValue = *(u32 volatile*)nSelReg;
+    nValue &= ~(7 << nShift);
+    nValue |= 4 << nShift;
+    *(u32 volatile*)nSelReg = nValue;
+    //////////////
+
+    u32 UART0_CLOCK = 48000000;
+    unsigned nBaud16 = 115200 * 16;
+    unsigned nIntDiv = UART0_CLOCK / nBaud16;
+    unsigned nFractDiv2 = (UART0_CLOCK % nBaud16) * 8 / 115200;
+    unsigned nFractDiv = nFractDiv2 / 2 + nFractDiv2 % 2;
+
+#define ARM_IO_BASE 0x3F000000
+#define ARM_UART0_BASE (ARM_IO_BASE + 0x201000)
+
+#define ARM_UART0_DR (ARM_UART0_BASE + 0x00)
+#define ARM_UART0_FR (ARM_UART0_BASE + 0x18)
+#define ARM_UART0_IBRD (ARM_UART0_BASE + 0x24)
+#define ARM_UART0_FBRD (ARM_UART0_BASE + 0x28)
+#define ARM_UART0_LCRH (ARM_UART0_BASE + 0x2C)
+#define ARM_UART0_CR (ARM_UART0_BASE + 0x30)
+#define ARM_UART0_IFLS (ARM_UART0_BASE + 0x34)
+#define ARM_UART0_IMSC (ARM_UART0_BASE + 0x38)
+#define ARM_UART0_RIS (ARM_UART0_BASE + 0x3C)
+#define ARM_UART0_MIS (ARM_UART0_BASE + 0x40)
+#define ARM_UART0_ICR (ARM_UART0_BASE + 0x44)
+
+#define LCRH_WLEN8_MASK (3 << 5)
+#define CR_RXE_MASK (1 << 9)
+#define CR_TXE_MASK (1 << 8)
+#define CR_UART_EN_MASK (1 << 0)
+
+    *(u32 volatile*)ARM_UART0_IMSC = 0;
+    *(u32 volatile*)ARM_UART0_ICR = 0x7FF;
+    *(u32 volatile*)ARM_UART0_IBRD = nIntDiv;
+    *(u32 volatile*)ARM_UART0_FBRD = nFractDiv;
+    *(u32 volatile*)ARM_UART0_LCRH = LCRH_WLEN8_MASK; // 8N1
+    *(u32 volatile*)ARM_UART0_IFLS = 0;
+    *(u32 volatile*)ARM_UART0_CR = CR_UART_EN_MASK | CR_TXE_MASK | CR_RXE_MASK;
+
+    char nChar = '\0';
+    const char hello[8] = "hellow\n";
+    while(true)
+    {
+        for(int i = 0; i < 8; i++)
+        {
+            nChar = hello[i];
+#define FR_TXFF_MASK (1 << 5)
+            while((*(u32 volatile*)ARM_UART0_FR) & FR_TXFF_MASK)
+                ;
+            *(u32 volatile*)ARM_UART0_DR = nChar;
+        }
+    }
 
     u16 offset = 0;
     u32 vertices_size = 4;
@@ -110,7 +255,7 @@ extern "C" i32 main(void)
     bool correct = true;
     if(!((triangles_list.get_size() == triangles_size) && (vertices_list.get_size() == vertices_size)))
         correct = false;
-    
+
     u32 index = 0;
     list_iterator<vc_gpu::triangle> triangles_iterator(triangles_list);
     for(triangles_iterator.to_first(); !triangles_iterator.at_end(); triangles_iterator++)

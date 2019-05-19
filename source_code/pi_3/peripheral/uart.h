@@ -1,0 +1,74 @@
+#pragma once
+
+#include "type_definitions.h"
+
+class uart
+{
+    public:
+    //represent all available uart devices.
+    enum class device
+    {
+        uart0 = 0
+    };
+
+    private:
+    struct registers
+    {
+        u32 dr; //0x00
+        u32 reserved_0[5]; //0x04-0x14
+        enum class fr : u32 //0x18
+        {
+            txff = 1 << 5
+        } fr;
+        u32 reserved_1[2]; //0x1c-0x20
+        u32 ibrd; //0x24
+        u32 fbrd; //0x28
+        enum class lcrh_options : u32 //0x2c
+        {
+            wlen8 = 3 << 5
+        } lcrh;
+        enum class cr_options : u32 //0x30
+        {
+            uart_enable = 1 << 0,
+            txe = 1 << 8,
+            rxe = 1 << 9
+        } cr;
+        u32 ifls; //0x34
+        u32 imsc; //0x38
+        u32 ris; //0x3c
+        u32 mis; //0x40
+        u32 icr; //0x44
+    } __attribute__((packed));
+
+    //keeps track of which devices are already used, so only
+    //one instance of each can be created.
+    static bool device_used[1];
+
+    //base addresses of the different uart device registers.
+    static constexpr registers* registers_base_address[1] = {reinterpret_cast<registers*>(0x3f201000)};
+
+    private:
+    //remembers which uart device this is.
+    device device_id;
+
+    //pointer to the actual registers of this device.
+    volatile registers* this_registers;
+
+    //constructor is private, all objects should be created with
+    //the create function, to avoid making multiple instances of
+    //the same uart device.
+    uart(device device_id);
+
+    public:
+    //destructor.
+    ~uart();
+
+    //returns a pointer to a new device and initialises it. the
+    //user should specify which device it should be, by passing
+    //the correct device enum class. if the device is already in use
+    //a nullptr will be returned.
+    static uart* create(device device_id);
+
+    //todo: use string class. provide byte array alternative also.
+    void write(char* string, u32 size);
+};
