@@ -1,10 +1,14 @@
 #include "uart.h"
 #include "enum_flags.h"
 
-bool uart::device_used[1] = {false};
-constexpr uart::registers* uart::registers_base_address[1];
+bool uart::device_used[device_count] = {false};
+constexpr uart::registers* uart::registers_base_address[device_count];
 
-uart::uart(device device_id)
+uart::uart(device device_id, gpio* gpio_32, gpio* gpio_33, gpio* tx_pin, gpio* rx_pin) :
+    gpio_32(gpio_32),
+    gpio_33(gpio_33),
+    tx_pin(tx_pin),
+    rx_pin(rx_pin)
 {
     //mark the device as used to avoid another instance of this device can be made.
     device_used[static_cast<u32>(device_id)] = true;
@@ -32,27 +36,51 @@ uart::uart(device device_id)
 uart::~uart()
 {
     //unmark the device as used, so it can be created again when needed.
-    device_used[(u32)device_id] = false;
+    device_used[static_cast<u32>(device_id)] = false;
 
     //todo: make sure device gets destroyed.
+    //todo: destroy created gpio's.
 }
 
 uart* uart::create(device device_id)
 {
     //check if the device isn't already used, if so return a nullptr.
     //else create the device and return its pointer.
-    if(device_used[(u32)device_id])
+    if(device_used[static_cast<u32>(device_id)])
         return nullptr;
     else
     {
-        uart* new_device = new uart(device_id);
-        return new_device;
+        //try to create the necessary gpio's first.
+        gpio* gpio_32 = gpio::create(gpio::device::gpio_32,
+                                     gpio::pull_up_down_state::disable_pull_up_or_down,
+                                     gpio::function::input);
+        gpio* gpio_33 = gpio::create(gpio::device::gpio_33,
+                                     gpio::pull_up_down_state::disable_pull_up_or_down,
+                                     gpio::function::input);
+        gpio* tx_pin = gpio::create(gpio::device::gpio_14,
+                                    gpio::pull_up_down_state::disable_pull_up_or_down,
+                                    gpio::function::alternate_function_0);
+        gpio* rx_pin = gpio::create(gpio::device::gpio_15,
+                                    gpio::pull_up_down_state::disable_pull_up_or_down,
+                                    gpio::function::alternate_function_0);
+        
+        if(gpio_32 == nullptr || gpio_33 == nullptr || tx_pin == nullptr || rx_pin == nullptr)
+        {
+            //todo: destroy created gpio's first.
+            return nullptr;
+        }
+        else
+        {
+            uart* new_device = new uart(device_id, gpio_32, gpio_33, tx_pin, rx_pin);
+            // uart* new_device = new uart(device_id, nullptr, nullptr, nullptr, nullptr);
+            return new_device;
+        }
     }
 }
 
 void uart::write(char* string, u32 size)
 {
-    for(u32 index = 0; index < 8; index++)
+    for(u32 index = 0; index < size; index++)
     {
         while(static_cast<bool>(this_registers->fr & registers::fr::txff))
         {

@@ -15,6 +15,6 @@ static constexpr u32 order_count = heap_max_order - heap_min_order + 1; //the am
 // static void* const heap_base = reinterpret_cast<void*>(d);
 
 //set the heap_base to a the correct alignment.
-static void* const heap_base = reinterpret_cast<void*>(
+static void* const global_heap_base = reinterpret_cast<void*>(
     (reinterpret_cast<usize>(&__heap_start) + (1l << static_cast<usize>(heap_max_order)) - 1l) &
     ~((1l << static_cast<usize>(heap_max_order)) - 1l));

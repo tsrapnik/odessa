@@ -61,7 +61,7 @@ buddy_heap::~buddy_heap()
 void buddy_heap::initialize()
 {
 	//todo: make class non static. move initialize function to construction and make dependent on parameters in stead of global variables.
-	buddy_heap::heap_base = heap_base;
+	buddy_heap::heap_base = global_heap_base;
 	for( usize i = 0; i < 1 << ( order_count - 2 ); i++ ) //assign each block_pointer to an available_block_pointer.
 	{
 		available_block_pointers[ i ] = &block_pointers[ i ];

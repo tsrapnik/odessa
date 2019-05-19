@@ -1,9 +1,12 @@
 #pragma once
 
 #include "type_definitions.h"
+#include "gpio.h"
 
 class uart
 {
+    private:
+    static constexpr u32 device_count = 1;
     public:
     //represent all available uart devices.
     enum class device
@@ -42,10 +45,10 @@ class uart
 
     //keeps track of which devices are already used, so only
     //one instance of each can be created.
-    static bool device_used[1];
+    static bool device_used[device_count];
 
     //base addresses of the different uart device registers.
-    static constexpr registers* registers_base_address[1] = {reinterpret_cast<registers*>(0x3f201000)};
+    static constexpr registers* registers_base_address[device_count] = {reinterpret_cast<registers*>(0x3f201000)};
 
     private:
     //remembers which uart device this is.
@@ -54,10 +57,15 @@ class uart
     //pointer to the actual registers of this device.
     volatile registers* this_registers;
 
+    gpio* gpio_32;
+    gpio* gpio_33;
+    gpio* tx_pin;
+    gpio* rx_pin;
+
     //constructor is private, all objects should be created with
     //the create function, to avoid making multiple instances of
     //the same uart device.
-    uart(device device_id);
+    uart(device device_id, gpio* gpio_32, gpio* gpio_33, gpio* tx_pin, gpio* rx_pin);
 
     public:
     //destructor.

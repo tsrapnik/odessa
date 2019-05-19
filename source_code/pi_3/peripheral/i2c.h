@@ -4,10 +4,11 @@
 
 class i2c
 {
-public:
-    ///
+    private:
+    static constexpr u32 device_count = 3;
+
+    public:
     ///represent all available i2c devices.
-    ///
     enum class device
     {
         i2c0 = 0,
@@ -15,16 +16,16 @@ public:
         i2c2 = 2
     };
 
-private:
+    private:
     ///
     ///available registers for each i2c device.
     ///
     struct registers
-    {        
+    {
         ///
         ///control register options.
         ///
-        enum class control_options: u32
+        enum class control_options : u32
         {
             i2c_enable = 1 << 15,
             interrupt_on_rx = 1 << 10,
@@ -38,7 +39,7 @@ private:
         ///
         ///status register options.
         ///
-        enum class status_options: u32
+        enum class status_options : u32
         {
             clock_stretch_timeout = 1 << 9,
             acknowledge_error = 1 << 8,
@@ -51,11 +52,11 @@ private:
             transfer_done = 1 << 1,
             transfer_active = 1 << 0
         };
-        
+
         ///
         ///data_length register options.
         ///
-        enum class data_length_options: u32
+        enum class data_length_options : u32
         {
             data_length_mask = 0xffff,
             data_length_offset = 0
@@ -64,7 +65,7 @@ private:
         ///
         ///slave_address register options.
         ///
-        enum class slave_address_options: u32
+        enum class slave_address_options : u32
         {
             slave_address_mask = 0x7f,
             slave_address_offset = 0
@@ -73,7 +74,7 @@ private:
         ///
         ///data_fifo register options.
         ///
-        enum class data_fifo_options: u32
+        enum class data_fifo_options : u32
         {
             data_mask = 0xff,
             data_offset = 0
@@ -82,7 +83,7 @@ private:
         ///
         ///clock_divider register options.
         ///
-        enum class clock_divider_options: u32
+        enum class clock_divider_options : u32
         {
             clock_divider_mask = 0xffff,
             clock_divider_offset = 0
@@ -91,7 +92,7 @@ private:
         ///
         ///data_delay register options.
         ///
-        enum class data_delay_options: u32
+        enum class data_delay_options : u32
         {
             falling_edge_delay_mask = 0xffff0000,
             falling_edge_delay_offset = 16,
@@ -102,7 +103,7 @@ private:
         ///
         ///clock_stretch_timeout register options.
         ///
-        enum class clock_stretch_timeout_options: u32
+        enum class clock_stretch_timeout_options : u32
         {
             clock_stretch_timeout_value_mask = 0xffff,
             clock_stretch_timeout_value_offset = 0
@@ -116,21 +117,21 @@ private:
         volatile data_delay_options data_delay; //0x18
         volatile clock_stretch_timeout_options clock_stretch_timeout; //0x1c
     };
-    
+
     ///
     ///keeps track of which devices are already used, so only
     ///one instance of each can be created.
     ///
-    static bool device_used[ 3 ];
+    static bool device_used[device_count];
 
     ///
     ///base addresses of the different i2c device registers.
     ///
-    static constexpr registers* registers_base_address[ 3 ] = {   reinterpret_cast< registers* >( 0x7e205000 ),
-                                                                reinterpret_cast< registers* >( 0x7e804000 ),
-                                                                reinterpret_cast< registers* >( 0x7e805000 ) };
+    static constexpr registers* registers_base_address[device_count] = {reinterpret_cast<registers*>(0x7e205000),
+                                                                        reinterpret_cast<registers*>(0x7e804000),
+                                                                        reinterpret_cast<registers*>(0x7e805000)};
 
-private:
+    private:
     ///
     ///remembers which i2c device this is.
     ///
@@ -146,9 +147,9 @@ private:
     ///the create function, to avoid making multiple instances of
     ///the same i2c device.
     ///
-    i2c( device device_id );
+    i2c(device device_id);
 
-public:
+    public:
     ///
     ///destructor.
     ///
@@ -156,9 +157,9 @@ public:
 
     ///
     ///returns a pointer to a new device and initialises it. the
-    ///user should specify which device it should be, by passing 
+    ///user should specify which device it should be, by passing
     ///the correct device enum class. if the device is already in use
     ///a nullptr will be returned.
     ///
-    i2c* create( device device_id );
+    i2c* create(device device_id);
 };

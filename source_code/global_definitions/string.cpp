@@ -1,6 +1,13 @@
 #include "string.h"
 
-//caller of this function has ownership over the returned char[].
+//todo: change to string constructor.
+char* string::to_string(u64 number)
+{
+    char* a_string = new char[19];
+    return to_string(number, a_string);
+}
+
+//todo: deprecate in favor of other to string function.
 char* string::to_string(u64 number, char* a_string)
 {
     // char* a_string = new char[19];
