@@ -12,6 +12,7 @@
 
 //todo: remove and replace with uart logging.
 screen* a_global_screen;
+uart* a_uart;
 
 // void delay()
 // {
@@ -60,105 +61,134 @@ extern "C" i32 main(void)
 
     //////////////gpio
 
-#define ARM_IO_BASE 0x3F000000
-#define ARM_GPIO_BASE (ARM_IO_BASE + 0x200000)
+// #define ARM_IO_BASE 0x3F000000
+// #define ARM_GPIO_BASE (ARM_IO_BASE + 0x200000)
 
-#define ARM_GPIO_GPFSEL0 (ARM_GPIO_BASE + 0x00)
-#define ARM_GPIO_GPPUD (ARM_GPIO_BASE + 0x94)
-#define ARM_GPIO_GPPUDCLK0 (ARM_GPIO_BASE + 0x98)
+// #define ARM_GPIO_GPFSEL0 (ARM_GPIO_BASE + 0x00)
+// #define ARM_GPIO_GPPUD (ARM_GPIO_BASE + 0x94)
+// #define ARM_GPIO_GPPUDCLK0 (ARM_GPIO_BASE + 0x98)
 
-    ////32////
-    // u64 nClkReg = ARM_GPIO_GPPUDCLK0 + (32 / 32) * 4;
-    // u32 nShift = 32 % 32;
+//     //32////
+//     u64 nClkReg = ARM_GPIO_GPPUDCLK0 + (32 / 32) * 4;
+//     u32 nShift = 32 % 32;
 
-    // *(u32 volatile*)ARM_GPIO_GPPUD = 0;
-    // // delay();
-    // *(u32 volatile*)nClkReg = 1 << nShift;
-    // // delay();
-    // *(u32 volatile*)ARM_GPIO_GPPUD = 0;
-    // *(u32 volatile*)nClkReg = 0;
+//     *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+//     // delay();
+//     *(u32 volatile*)nClkReg = 1 << nShift;
+//     // delay();
+//     *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+//     *(u32 volatile*)nClkReg = 0;
 
-    // u64 nSelReg = ARM_GPIO_GPFSEL0 + (32 / 10) * 4;
-    // nShift = (32 % 10) * 3;
+//     u64 nSelReg = ARM_GPIO_GPFSEL0 + (32 / 10) * 4;
+//     nShift = (32 % 10) * 3;
 
-    // u32 nValue = *(u32 volatile*)nSelReg;
-    // nValue &= ~(7 << nShift);
-    // nValue |= 4 << nShift;
-    // *(u32 volatile*)nSelReg = nValue;
+//     u32 nValue = *(u32 volatile*)nSelReg;
+//     nValue &= ~(7 << nShift);
+//     nValue |= 0 << nShift;
+//     *(u32 volatile*)nSelReg = nValue;
 
-    // ////33////
-    // nClkReg = ARM_GPIO_GPPUDCLK0 + (33 / 32) * 4;
-    // nShift = 33 % 32;
+//     ////33////
+//     nClkReg = ARM_GPIO_GPPUDCLK0 + (33 / 32) * 4;
+//     nShift = 33 % 32;
 
-    // *(u32 volatile*)ARM_GPIO_GPPUD = 0;
-    // // delay();
-    // *(u32 volatile*)nClkReg = 1 << nShift;
-    // // delay();
-    // *(u32 volatile*)ARM_GPIO_GPPUD = 0;
-    // *(u32 volatile*)nClkReg = 0;
+//     *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+//     // delay();
+//     *(u32 volatile*)nClkReg = 1 << nShift;
+//     // delay();
+//     *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+//     *(u32 volatile*)nClkReg = 0;
 
-    // nSelReg = ARM_GPIO_GPFSEL0 + (33 / 10) * 4;
-    // nShift = (33 % 10) * 3;
+//     nSelReg = ARM_GPIO_GPFSEL0 + (33 / 10) * 4;
+//     nShift = (33 % 10) * 3;
 
-    // nValue = *(u32 volatile*)nSelReg;
-    // nValue &= ~(7 << nShift);
-    // nValue |= 4 << nShift;
-    // *(u32 volatile*)nSelReg = nValue;
+//     nValue = *(u32 volatile*)nSelReg;
+//     nValue &= ~(7 << nShift);
+//     nValue |= 0 << nShift;
+//     *(u32 volatile*)nSelReg = nValue;
 
-    // ////14////
-    // nClkReg = ARM_GPIO_GPPUDCLK0 + (14 / 32) * 4;
-    // nShift = 14 % 32;
+//     ////14////
+//     nClkReg = ARM_GPIO_GPPUDCLK0 + (14 / 32) * 4;
+//     nShift = 14 % 32;
 
-    // *(u32 volatile*)ARM_GPIO_GPPUD = 0;
-    // // delay();
-    // *(u32 volatile*)nClkReg = 1 << nShift;
-    // // delay();
-    // *(u32 volatile*)ARM_GPIO_GPPUD = 0;
-    // *(u32 volatile*)nClkReg = 0;
+//     *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+//     // delay();
+//     *(u32 volatile*)nClkReg = 1 << nShift;
+//     // delay();
+//     *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+//     *(u32 volatile*)nClkReg = 0;
 
-    // nSelReg = ARM_GPIO_GPFSEL0 + (14 / 10) * 4;
-    // nShift = (14 % 10) * 3;
+//     nSelReg = ARM_GPIO_GPFSEL0 + (14 / 10) * 4;
+//     nShift = (14 % 10) * 3;
 
-    // nValue = *(u32 volatile*)nSelReg;
-    // nValue &= ~(7 << nShift);
-    // nValue |= 4 << nShift;
-    // *(u32 volatile*)nSelReg = nValue;
+//     nValue = *(u32 volatile*)nSelReg;
+//     nValue &= ~(7 << nShift);
+//     nValue |= 4 << nShift;
+//     *(u32 volatile*)nSelReg = nValue;
 
-    // ////15////
-    // nClkReg = ARM_GPIO_GPPUDCLK0 + (15 / 32) * 4;
-    // nShift = 15 % 32;
+//     u32 val14 = nValue;
+//     u64 add14 = nSelReg;
 
-    // *(u32 volatile*)ARM_GPIO_GPPUD = 0;
-    // // delay();
-    // *(u32 volatile*)nClkReg = 1 << nShift;
-    // // delay();
-    // *(u32 volatile*)ARM_GPIO_GPPUD = 0;
-    // *(u32 volatile*)nClkReg = 0;
+//     ////15////
+//     nClkReg = ARM_GPIO_GPPUDCLK0 + (15 / 32) * 4;
+//     nShift = 15 % 32;
 
-    // nSelReg = ARM_GPIO_GPFSEL0 + (15 / 10) * 4;
-    // nShift = (15 % 10) * 3;
+//     *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+//     // delay();
+//     *(u32 volatile*)nClkReg = 1 << nShift;
+//     // delay();
+//     *(u32 volatile*)ARM_GPIO_GPPUD = 0;
+//     *(u32 volatile*)nClkReg = 0;
 
-    // nValue = *(u32 volatile*)nSelReg;
-    // nValue &= ~(7 << nShift);
-    // nValue |= 4 << nShift;
-    // *(u32 volatile*)nSelReg = nValue;
+//     nSelReg = ARM_GPIO_GPFSEL0 + (15 / 10) * 4;
+//     nShift = (15 % 10) * 3;
+
+//     nValue = *(u32 volatile*)nSelReg;
+//     nValue &= ~(7 << nShift);
+//     nValue |= 4 << nShift;
+//     *(u32 volatile*)nSelReg = nValue;
+
+//     u32 val15 = nValue;
+//     u64 add15 = nSelReg;
     //////////////
 
-    uart* a_uart = uart::create(uart::device::uart0);
+    a_uart = uart::create(uart::device::uart0);
+    a_uart->write("\r\n", 2);
+    a_uart->write("\r\n", 2);
+    a_uart->write("all done bitches1.\r\n", 19);
+    a_uart->write("\r\n", 2);
+    // a_uart->write(string::to_string(add14), 19);
+    // a_uart->write("\r\n", 2);
+    // a_uart->write(string::to_string(*(u32 volatile*)add14), 19);
+    // a_uart->write("\r\n", 2);
+    // a_uart->write(string::to_string(val14), 19);
+    // a_uart->write("\r\n", 2);
+    // a_uart->write(string::to_string(add15), 19);
+    // a_uart->write("\r\n", 2);
+    // a_uart->write(string::to_string(*(u32 volatile*)add15), 19);
+    // a_uart->write("\r\n", 2);
+    // a_uart->write(string::to_string(val15), 19);
+    // a_uart->write("\r\n", 2);
+    // a_uart->write("\r\n", 2);
+    // a_uart->write("\r\n", 2);
 
-    // gpio* gpio_32 = gpio::create(gpio::device::gpio_32,
-    //                              gpio::pull_up_down_state::disable_pull_up_or_down,
-    //                              gpio::function::input);
-    // gpio* gpio_33 = gpio::create(gpio::device::gpio_33,
-    //                              gpio::pull_up_down_state::disable_pull_up_or_down,
-    //                              gpio::function::input);
-    // gpio* tx_pin = gpio::create(gpio::device::gpio_14,
-    //                             gpio::pull_up_down_state::disable_pull_up_or_down,
-    //                             gpio::function::alternate_function_0);
-    // gpio* rx_pin = gpio::create(gpio::device::gpio_15,
-    //                             gpio::pull_up_down_state::disable_pull_up_or_down,
-    //                             gpio::function::alternate_function_0);
-    a_uart->write("all done bitches.\r\n", 19);
+    gpio* gpio_32 = gpio::create(gpio::device::gpio_32,
+                                 gpio::pull_up_down_state::disable_pull_up_or_down,
+                                 gpio::function::input);
+    gpio* gpio_33 = gpio::create(gpio::device::gpio_33,
+                                 gpio::pull_up_down_state::disable_pull_up_or_down,
+                                 gpio::function::input);
+    gpio* tx_pin = gpio::create(gpio::device::gpio_14,
+                                gpio::pull_up_down_state::disable_pull_up_or_down,
+                                gpio::function::alternate_function_0);
+    gpio* rx_pin = gpio::create(gpio::device::gpio_15,
+                                gpio::pull_up_down_state::disable_pull_up_or_down,
+                                gpio::function::alternate_function_0);
+
+    
+    a_uart->write("\r\n", 2);
+    a_uart->write("\r\n", 2);
+    a_uart->write("all done bitches2.\r\n", 19);
+    a_uart->write("\r\n", 2);
     while(true)
         ;
 
