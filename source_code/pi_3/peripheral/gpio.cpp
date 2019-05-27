@@ -73,14 +73,3 @@ gpio* gpio::create(device device_id, pull_up_down_state the_pull_up_down_state, 
         return new_device;
     }
 }
-
-void gpio::write(char* string, u32 size)
-{
-    for(u32 index = 0; index < 8; index++)
-    {
-        // while(static_cast<bool>(the_registers->fr & registers::fr::txff))
-        // {
-        // }
-        // the_registers->dr = string[index];
-    }
-}

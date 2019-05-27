@@ -51,10 +51,8 @@ extern "C" i32 main(void)
 
     a_uart = uart::create(uart::device::uart0);
     a_uart->write("\r\n", 2);
-    a_uart->write("uart created.\r\n", 19);
+    a_uart->write("uart created.\r\n", 15);
     a_uart->write("\r\n", 2);
-    while(true)
-        ;
 
     u16 offset = 0;
     u32 vertices_size = 4;
@@ -151,6 +149,9 @@ extern "C" i32 main(void)
 
     while(1)
     {
+        a_uart->write("offset = ", 9);
+        a_uart->write(string::to_string(offset), 19);
+        a_uart->write(".\r\n", 3);
         a_vc_gpu.set_triangles(vertices, vertices_size, triangles, triangles_size, background_color);
         // a_vc_gpu.set_triangles(vertices_list, triangles_list, background_color);
         a_vc_gpu.render();

@@ -101,7 +101,4 @@ class gpio
     //the correct device enum class. if the device is already in use
     //a nullptr will be returned.
     static gpio* create(device device_id, pull_up_down_state the_pull_up_down_state, function the_function);
-
-    //todo: use string class. provide byte array alternative also.
-    void write(char* string, u32 size);
 };
