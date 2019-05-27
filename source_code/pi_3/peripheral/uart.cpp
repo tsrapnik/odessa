@@ -88,3 +88,15 @@ void uart::write(char* string, u32 size)
         this_registers->dr = string[index];
     }
 }
+
+char* uart::read(u32& size)
+{
+    u32 index = 0;
+    char* a_string = new char[size];
+    while (!static_cast<bool>(this_registers->fr & registers::fr::rxfe) and index < size)
+    {
+        a_string[index] = this_registers->dr;
+        size++;
+    }
+    size = index;
+}

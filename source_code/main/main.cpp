@@ -152,6 +152,13 @@ extern "C" i32 main(void)
         a_uart->write("offset = ", 9);
         a_uart->write(string::to_string(offset), 19);
         a_uart->write(".\r\n", 3);
+
+        // u32 received_string_size = 10;
+        // char* received_string = a_uart->read(received_string_size);
+        // a_uart->write(received_string,received_string_size);
+        // a_uart->write(string::to_string(received_string_size),19);
+        // a_uart->write("\r\n", 2);
+
         a_vc_gpu.set_triangles(vertices, vertices_size, triangles, triangles_size, background_color);
         // a_vc_gpu.set_triangles(vertices_list, triangles_list, background_color);
         a_vc_gpu.render();

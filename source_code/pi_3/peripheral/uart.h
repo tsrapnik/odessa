@@ -21,6 +21,7 @@ class uart
         u32 reserved_0[5]; //0x04-0x14
         enum class fr : u32 //0x18
         {
+            rxfe = 1 << 4,
             txff = 1 << 5
         } fr;
         u32 reserved_1[2]; //0x1c-0x20
@@ -79,4 +80,7 @@ class uart
 
     //todo: use string class. provide byte array alternative also.
     void write(char* string, u32 size);
+
+    //todo: set size automatically.
+    char* read(u32& size);
 };
