@@ -36,18 +36,8 @@ void gpio::set_pull_up_down()
     volatile registers::gppudclk_options* a_gppudclk_pointer = &the_registers->gppudclk[static_cast<u32>(device_id) / 32];
 
     the_registers->gppud = the_pull_up_down_state;
-    // // a_uart->write("set pud.\r\n", 10);
-    // // a_uart->write(string::to_string(reinterpret_cast<usize>(&the_registers->gppud)), 19);
-    // // a_uart->write("\r\n", 2);
-    // // a_uart->write(string::to_string(static_cast<usize>(the_pull_up_down_state)), 19);
-    // // a_uart->write("\r\n", 2);
     delay();
     *a_gppudclk_pointer = registers::gppudclk_options::assert_clock_on_pin_x << (static_cast<u32>(device_id) % 32);
-    // // a_uart->write("set gpud.\r\n", 11);
-    // // a_uart->write(string::to_string(reinterpret_cast<usize>(a_gppudclk_pointer)), 19);
-    // // a_uart->write("\r\n", 2);
-    // // a_uart->write(string::to_string(static_cast<usize>(registers::gppudclk_options::assert_clock_on_pin_x << (static_cast<u32>(device_id) % 32))), 19);
-    // // a_uart->write("\r\n", 2);
     delay();
     the_registers->gppud = pull_up_down_state::disable_pull_up_or_down;
     *a_gppudclk_pointer = registers::gppudclk_options::clear;
@@ -55,46 +45,12 @@ void gpio::set_pull_up_down()
 
 void gpio::set_function()
 {
-    // nSelReg = ARM_GPIO_GPFSEL0 + (15 / 10) * 4;
-    // nShift = (15 % 10) * 3;
-
-    // nValue = *(u32 volatile*)nSelReg;
-    // nValue &= ~(7 << nShift);
-    // nValue |= 4 << nShift;
-    // *(u32 volatile*)nSelReg = nValue;
     u32 shift = (static_cast<u32>(device_id) % 10) * 3;
     volatile function* a_function_pointer = &(the_registers->gpfsel[static_cast<u32>(device_id) / 10]);
-
-    // a_uart->write("red fun.\r\n", 10);
-    // a_uart->write("set fun.\r\n", 10);
-    a_uart->write(string::to_string(reinterpret_cast<usize>(a_function_pointer)), 19);
-    a_uart->write(string::to_string(static_cast<usize>(*a_function_pointer)), 19);
-    // a_uart->write("\r\n", 2);
-
-    // a_function_pointer = (volatile function*)0x3f200004;
-    // a_uart->write(string::to_string(reinterpret_cast<usize>(a_function_pointer)), 19);
-    // a_uart->write("\r\n", 2);
-
-    // a_uart->write("\r\n", 2);
-    // a_uart->write("\r\n", 2);
     function a_function = *a_function_pointer;
-    // a_uart->write(string::to_string(static_cast<usize>(*a_function_pointer)), 19);
-    // a_uart->write("\r\n", 2);
     a_function &= ~(function::alternate_function_3 << shift);
-    // // a_uart->write(string::to_string(static_cast<usize>(a_function)), 19);
-    // // a_uart->write("\r\n", 2);
     a_function |= the_function << shift;
-    // // a_uart->write(string::to_string(static_cast<usize>(a_function)), 19);
-    // // a_uart->write("\r\n", 2);
-    // // a_uart->write("\r\n", 2);
-
     *a_function_pointer = a_function;
-    // a_uart->write("set fun.\r\n", 10);
-    // a_uart->write(string::to_string(reinterpret_cast<usize>(a_function_pointer)), 19);
-    // a_uart->write("\r\n", 2);
-    // a_uart->write(string::to_string(static_cast<usize>(a_function)), 19);
-    // a_uart->write("\r\n", 2);
-    // a_uart->write("\r\n", 2);
 }
 
 gpio::~gpio()
@@ -102,7 +58,7 @@ gpio::~gpio()
     //unmark the device as used, so it can be created again when needed.
     device_used[static_cast<u32>(device_id)] = false;
 
-    //todo: make sure device gets destroyed.
+    //todo: make sure device and dependencies get destroyed.
 }
 
 gpio* gpio::create(device device_id, pull_up_down_state the_pull_up_down_state, function the_function)

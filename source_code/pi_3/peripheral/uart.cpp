@@ -51,28 +51,28 @@ uart* uart::create(device device_id)
     else
     {
         //try to create the necessary gpio's first.
-        // gpio* gpio_32 = gpio::create(gpio::device::gpio_32,
-        //                              gpio::pull_up_down_state::disable_pull_up_or_down,
-        //                              gpio::function::input);
-        // gpio* gpio_33 = gpio::create(gpio::device::gpio_33,
-        //                              gpio::pull_up_down_state::disable_pull_up_or_down,
-        //                              gpio::function::input);
-        // gpio* tx_pin = gpio::create(gpio::device::gpio_14,
-        //                             gpio::pull_up_down_state::disable_pull_up_or_down,
-        //                             gpio::function::alternate_function_0);
-        // gpio* rx_pin = gpio::create(gpio::device::gpio_15,
-        //                             gpio::pull_up_down_state::disable_pull_up_or_down,
-        //                             gpio::function::alternate_function_0);
-        
-        // if(gpio_32 == nullptr || gpio_33 == nullptr || tx_pin == nullptr || rx_pin == nullptr)
-        // {
-        //     //todo: destroy created gpio's first.
-        //     return nullptr;
-        // }
-        // else
+        gpio* gpio_32 = gpio::create(gpio::device::gpio_32,
+                                     gpio::pull_up_down_state::disable_pull_up_or_down,
+                                     gpio::function::input);
+        gpio* gpio_33 = gpio::create(gpio::device::gpio_33,
+                                     gpio::pull_up_down_state::disable_pull_up_or_down,
+                                     gpio::function::input);
+        gpio* tx_pin = gpio::create(gpio::device::gpio_14,
+                                    gpio::pull_up_down_state::disable_pull_up_or_down,
+                                    gpio::function::alternate_function_0);
+        gpio* rx_pin = gpio::create(gpio::device::gpio_15,
+                                    gpio::pull_up_down_state::disable_pull_up_or_down,
+                                    gpio::function::alternate_function_0);
+
+        if(gpio_32 == nullptr || gpio_33 == nullptr || tx_pin == nullptr || rx_pin == nullptr)
         {
-            // uart* new_device = new uart(device_id, gpio_32, gpio_33, tx_pin, rx_pin);
-            uart* new_device = new uart(device_id, nullptr, nullptr, nullptr, nullptr);
+            //todo: destroy created gpio's first.
+            return nullptr;
+        }
+        else
+        {
+            uart* new_device = new uart(device_id, gpio_32, gpio_33, tx_pin, rx_pin);
+            // uart* new_device = new uart(device_id, nullptr, nullptr, nullptr, nullptr);
             return new_device;
         }
     }

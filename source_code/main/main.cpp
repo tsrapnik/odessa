@@ -68,7 +68,7 @@ extern "C" i32 main(void)
 // #define ARM_GPIO_GPPUD (ARM_GPIO_BASE + 0x94)
 // #define ARM_GPIO_GPPUDCLK0 (ARM_GPIO_BASE + 0x98)
 
-//     //32////
+    //32////
 //     u64 nClkReg = ARM_GPIO_GPPUDCLK0 + (32 / 32) * 4;
 //     u32 nShift = 32 % 32;
 
@@ -169,25 +169,25 @@ extern "C" i32 main(void)
     // a_uart->write(string::to_string(val15), 19);
     // a_uart->write("\r\n", 2);
     // a_uart->write("\r\n", 2);
-    // a_uart->write("\r\n", 2);
+    // // a_uart->write("\r\n", 2);
 
-    gpio* gpio_32 = gpio::create(gpio::device::gpio_32,
-                                 gpio::pull_up_down_state::disable_pull_up_or_down,
-                                 gpio::function::input);
-    gpio* gpio_33 = gpio::create(gpio::device::gpio_33,
-                                 gpio::pull_up_down_state::disable_pull_up_or_down,
-                                 gpio::function::input);
-    gpio* tx_pin = gpio::create(gpio::device::gpio_14,
-                                gpio::pull_up_down_state::disable_pull_up_or_down,
-                                gpio::function::alternate_function_0);
-    gpio* rx_pin = gpio::create(gpio::device::gpio_15,
-                                gpio::pull_up_down_state::disable_pull_up_or_down,
-                                gpio::function::alternate_function_0);
+    // gpio* gpio_32 = gpio::create(gpio::device::gpio_32,
+    //                              gpio::pull_up_down_state::disable_pull_up_or_down,
+    //                              gpio::function::input);
+    // gpio* gpio_33 = gpio::create(gpio::device::gpio_33,
+    //                              gpio::pull_up_down_state::disable_pull_up_or_down,
+    //                              gpio::function::input);
+    // gpio* tx_pin = gpio::create(gpio::device::gpio_14,
+    //                             gpio::pull_up_down_state::disable_pull_up_or_down,
+    //                             gpio::function::alternate_function_0);
+    // gpio* rx_pin = gpio::create(gpio::device::gpio_15,
+    //                             gpio::pull_up_down_state::disable_pull_up_or_down,
+    //                             gpio::function::alternate_function_0);
 
     
     a_uart->write("\r\n", 2);
     a_uart->write("\r\n", 2);
-    a_uart->write("all done bitches2.\r\n", 19);
+    a_uart->write("all done bitches3.\r\n", 19);
     a_uart->write("\r\n", 2);
     while(true)
         ;
