@@ -5,6 +5,8 @@
 //todo: remove.
 #include "screen.h"
 #include "string.h"
+#include "uart.h"
+extern uart* a_uart;
 
 vc_gpu::v3d_registers* const vc_gpu::v3d = reinterpret_cast<v3d_registers* const>(0x3fc00000);
 
@@ -206,44 +208,53 @@ vc_gpu::vc_gpu(vc_pointer framebuffer, u16 framebuffer_width, u16 framebuffer_he
     }
 }
 
-void vc_gpu::set_triangles(vertex* vertices, u32 vertices_size, triangle* triangles, u32 triangles_size, color background_color)
+void vc_gpu::resize_vertices(u32 vertices_size)
 {
     const vc_mailbox_property_tags::allocate_memory_flag allocate_flags =
         vc_mailbox_property_tags::allocate_memory_flag::coherent | vc_mailbox_property_tags::allocate_memory_flag::zero;
 
-    if(vertices_size != this->vertices_size)
+    if(!vertices_handle.is_null())
     {
-        if(!vertices_handle.is_null())
-        {
-            vc_mailbox_property_tags::unlock_memory(vertices_handle);
-            vc_mailbox_property_tags::release_memory(vertices_handle);
-        }
-        this->vertices_size = vertices_size;
-        vertices_handle = vc_mailbox_property_tags::allocate_memory(vertices_size * sizeof(vertex), 0x1000, allocate_flags);
-        this->vertices = reinterpret_cast<volatile vertex*>(
-            vc_mailbox_property_tags::lock_memory(vertices_handle)
-                .to_arm_pointer());
-
-        a_nv_shader_state_record->shaded_vertex_data_address = vc_pointer::arm_to_vc_pointer(this->vertices);
-        a_binning_control_list->a_indexed_primitive_list.maximum_index = vertices_size - 1;
+        vc_mailbox_property_tags::unlock_memory(vertices_handle);
+        vc_mailbox_property_tags::release_memory(vertices_handle);
     }
+    this->vertices_size = vertices_size;
+    vertices_handle = vc_mailbox_property_tags::allocate_memory(vertices_size * sizeof(vertex), 0x1000, allocate_flags);
+    this->vertices = reinterpret_cast<volatile vertex*>(
+        vc_mailbox_property_tags::lock_memory(vertices_handle)
+            .to_arm_pointer());
+
+    a_nv_shader_state_record->shaded_vertex_data_address = vc_pointer::arm_to_vc_pointer(this->vertices);
+    a_binning_control_list->a_indexed_primitive_list.maximum_index = vertices_size - 1;
+}
+
+void vc_gpu::resize_triangles(u32 triangles_size)
+{
+    const vc_mailbox_property_tags::allocate_memory_flag allocate_flags =
+        vc_mailbox_property_tags::allocate_memory_flag::coherent | vc_mailbox_property_tags::allocate_memory_flag::zero;
+
+    if(!triangles_handle.is_null())
+    {
+        vc_mailbox_property_tags::unlock_memory(triangles_handle);
+        vc_mailbox_property_tags::release_memory(triangles_handle);
+    }
+    this->triangles_size = triangles_size;
+    triangles_handle = vc_mailbox_property_tags::allocate_memory(triangles_size * sizeof(triangle), 0x1000, allocate_flags);
+    this->triangles = reinterpret_cast<volatile triangle*>(
+        vc_mailbox_property_tags::lock_memory(triangles_handle)
+            .to_arm_pointer());
+
+    a_binning_control_list->a_indexed_primitive_list.length = triangles_size * 3;
+    a_binning_control_list->a_indexed_primitive_list.address_of_indices_list = vc_pointer::arm_to_vc_pointer(this->triangles);
+}
+
+void vc_gpu::set_triangles(vertex* vertices, u32 vertices_size, triangle* triangles, u32 triangles_size, color background_color)
+{
+    if(vertices_size != this->vertices_size)
+        resize_vertices(vertices_size);
 
     if(triangles_size != this->triangles_size)
-    {
-        if(!triangles_handle.is_null())
-        {
-            vc_mailbox_property_tags::unlock_memory(triangles_handle);
-            vc_mailbox_property_tags::release_memory(triangles_handle);
-        }
-        this->triangles_size = triangles_size;
-        triangles_handle = vc_mailbox_property_tags::allocate_memory(triangles_size * sizeof(triangle), 0x1000, allocate_flags);
-        this->triangles = reinterpret_cast<volatile triangle*>(
-            vc_mailbox_property_tags::lock_memory(triangles_handle)
-                .to_arm_pointer());
-
-        a_binning_control_list->a_indexed_primitive_list.length = triangles_size * 3;
-        a_binning_control_list->a_indexed_primitive_list.address_of_indices_list = vc_pointer::arm_to_vc_pointer(this->triangles);
-    }
+        resize_triangles(triangles_size);
 
     a_render_control_list->a_clear_colors.clear_color =
         (static_cast<u64>(background_color.to_argb_u32()) << 32) + static_cast<u64>(background_color.to_argb_u32());
@@ -269,48 +280,28 @@ void vc_gpu::set_triangles(vertex* vertices, u32 vertices_size, triangle* triang
 
 void vc_gpu::set_triangles(list<vertex>& vertices, list<triangle>& triangles, color background_color)
 {
-    const vc_mailbox_property_tags::allocate_memory_flag allocate_flags =
-        vc_mailbox_property_tags::allocate_memory_flag::coherent | vc_mailbox_property_tags::allocate_memory_flag::zero;
-
+    a_uart->write("vertices: ", 10);
+    a_uart->write(string::to_string(vertices.get_size()), 18);
+    a_uart->write("\r\n", 2);
+    a_uart->write("triangles: ", 11);
+    a_uart->write(string::to_string(triangles.get_size()), 18);
+    a_uart->write("\r\n", 2);
     if(vertices.get_size() != this->vertices_size)
-    {
-        if(!vertices_handle.is_null())
-        {
-            vc_mailbox_property_tags::unlock_memory(vertices_handle);
-            vc_mailbox_property_tags::release_memory(vertices_handle);
-        }
-        this->vertices_size = vertices_size;
-        vertices_handle = vc_mailbox_property_tags::allocate_memory(vertices_size * sizeof(vertex), 0x1000, allocate_flags);
-        this->vertices = reinterpret_cast<volatile vertex*>(
-            vc_mailbox_property_tags::lock_memory(vertices_handle)
-                .to_arm_pointer());
-
-        a_nv_shader_state_record->shaded_vertex_data_address = vc_pointer::arm_to_vc_pointer(this->vertices);
-        a_binning_control_list->a_indexed_primitive_list.maximum_index = vertices_size - 1;
-    }
+        resize_vertices(vertices.get_size());
 
     if(triangles.get_size() != this->triangles_size)
-    {
-        if(!triangles_handle.is_null())
-        {
-            vc_mailbox_property_tags::unlock_memory(triangles_handle);
-            vc_mailbox_property_tags::release_memory(triangles_handle);
-        }
-        this->triangles_size = triangles_size;
-        triangles_handle = vc_mailbox_property_tags::allocate_memory(triangles_size * sizeof(triangle), 0x1000, allocate_flags);
-        this->triangles = reinterpret_cast<volatile triangle*>(
-            vc_mailbox_property_tags::lock_memory(triangles_handle)
-                .to_arm_pointer());
-
-        a_binning_control_list->a_indexed_primitive_list.length = triangles_size * 3;
-        a_binning_control_list->a_indexed_primitive_list.address_of_indices_list = vc_pointer::arm_to_vc_pointer(this->triangles);
-    }
+        resize_triangles(triangles.get_size());
 
     a_render_control_list->a_clear_colors.clear_color =
         (static_cast<u64>(background_color.to_argb_u32()) << 32) + static_cast<u64>(background_color.to_argb_u32());
 
     u32 index = 0;
     list_iterator<vertex> vertices_iterator(vertices);
+    //todo: remove.
+    // a_uart->write("\r\n", 2);
+    // a_uart->write("\r\n", 2);
+    // a_uart->write("\r\n", 2);
+    // a_uart->write("\r\n", 2);
     for(vertices_iterator.to_first(); !vertices_iterator.at_end(); vertices_iterator++)
     {
         vertex& current_vertex = vertices_iterator.get_data_reference();
@@ -322,6 +313,46 @@ void vc_gpu::set_triangles(list<vertex>& vertices, list<triangle>& triangles, co
         this->vertices[index].g = current_vertex.g;
         this->vertices[index].b = current_vertex.b;
 
+        //todo: remove.
+        // a_uart->write(string::to_string(index), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(current_vertex.xs), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(this->vertices[index].xs), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(current_vertex.ys), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(this->vertices[index].ys), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(current_vertex.zs), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(this->vertices[index].zs), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(current_vertex.wc), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(this->vertices[index].wc), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(current_vertex.r), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(this->vertices[index].r), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(current_vertex.g), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(this->vertices[index].g), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(current_vertex.b), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(this->vertices[index].b), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write("\r\n", 2);
+
         index++;
     }
 
@@ -330,9 +361,29 @@ void vc_gpu::set_triangles(list<vertex>& vertices, list<triangle>& triangles, co
     for(triangles_iterator.to_first(); !triangles_iterator.at_end(); triangles_iterator++)
     {
         triangle& current_triangle = triangles_iterator.get_data_reference();
-    	this->triangles[index].index_0 = current_triangle.index_0;
-    	this->triangles[index].index_1 = current_triangle.index_1;
-    	this->triangles[index].index_2 = current_triangle.index_2;
+        this->triangles[index].index_0 = current_triangle.index_0;
+        this->triangles[index].index_1 = current_triangle.index_1;
+        this->triangles[index].index_2 = current_triangle.index_2;
+
+        //todo: remove.
+        // a_uart->write(string::to_string(index), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(current_triangle.index_0), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(this->triangles[index].index_0), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(current_triangle.index_1), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(this->triangles[index].index_1), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(current_triangle.index_2), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write(string::to_string(this->triangles[index].index_2), 18);
+        // a_uart->write("\r\n", 2);
+        // a_uart->write("\r\n", 2);
 
         index++;
     }

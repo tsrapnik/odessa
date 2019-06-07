@@ -8,12 +8,14 @@ binary_blob_directory=source_code/pi_3/boot/binary_blob
 #path of image file.
 image_directory=compiled_code/kernel8.img
 #path to copy image file to.
-sd_directory=/media/tsrapnik/ODESSA
+sd_directory=/home/tsrapnik/tftp_root/8f3e7b47
+#sd_directory=/media/tsrapnik/ODESSA
 
 #if boot option is given, copy all boot files which load the actual image to the sd card.
 #if clean option is given, remove the entire compiled_code folder.
 #if no option is given, include the compiler path to this shell session. compile the program with make. copy the compiled image
 #immediately to an sd card so it is ready for testing.
+#todo: make possible to switch between sd card and tftp option.
 
 if [ "$1" = "boot" ]
 then

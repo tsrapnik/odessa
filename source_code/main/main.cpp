@@ -62,7 +62,7 @@ extern "C" i32 main(void)
     vertices[0].ys = 100 << 4;
     vertices[0].zs = 1.0f;
     vertices[0].wc = 1.0f;
-    vertices[0].r = 1.0f;
+    vertices[0].r = 0.0f;
     vertices[0].g = 0.0f;
     vertices[0].b = 0.0f;
 
@@ -122,8 +122,9 @@ extern "C" i32 main(void)
         if(triangles[index].index_0 != current_triangle.index_0 ||
            triangles[index].index_1 != current_triangle.index_1 ||
            triangles[index].index_2 != current_triangle.index_2)
-            correct = false;
-
+        {
+            a_uart->write("fail 0.\r\n", 9);
+        }
         index++;
     }
 
@@ -132,26 +133,32 @@ extern "C" i32 main(void)
     for(vertices_iterator.to_first(); !vertices_iterator.at_end(); vertices_iterator++)
     {
         vc_gpu::vertex& current_vertex = vertices_iterator.get_data_reference();
-        if(vertices[index].xs == current_vertex.xs ||
-           vertices[index].ys == current_vertex.ys ||
-           vertices[index].zs == current_vertex.zs ||
-           vertices[index].wc == current_vertex.wc ||
-           vertices[index].r == current_vertex.r ||
-           vertices[index].g == current_vertex.g ||
-           vertices[index].b == current_vertex.b)
-            correct = false;
-
+        if(vertices[index].xs != current_vertex.xs ||
+           vertices[index].ys != current_vertex.ys ||
+           vertices[index].zs != current_vertex.zs ||
+           vertices[index].wc != current_vertex.wc ||
+           vertices[index].r != current_vertex.r ||
+           vertices[index].g != current_vertex.g ||
+           vertices[index].b != current_vertex.b)
+        {
+            a_uart->write("fail 1.\r\n", 9);
+        }
         index++;
     }
 
     if(correct)
         background_color = color(0, 255, 0, 255);
+    
+    vertices_iterator.to_first();
+    vertices_iterator++;
+    vertices_iterator++;
+    vc_gpu::vertex& moving_vertex = vertices_iterator.get_data_reference();
 
     while(1)
     {
-        a_uart->write("offset = ", 9);
-        a_uart->write(string::to_string(offset), 19);
-        a_uart->write(".\r\n", 3);
+        // a_uart->write("offset = ", 9);
+        // a_uart->write(string::to_string(offset), 19);
+        // a_uart->write(".\r\n", 3);
 
         // u32 received_string_size = 10;
         // char* received_string = a_uart->read(received_string_size);
@@ -159,13 +166,14 @@ extern "C" i32 main(void)
         // a_uart->write(string::to_string(received_string_size),19);
         // a_uart->write("\r\n", 2);
 
-        a_vc_gpu.set_triangles(vertices, vertices_size, triangles, triangles_size, background_color);
-        // a_vc_gpu.set_triangles(vertices_list, triangles_list, background_color);
+        // a_vc_gpu.set_triangles(vertices, vertices_size, triangles, triangles_size, background_color);
+        a_vc_gpu.set_triangles(vertices_list, triangles_list, background_color);
         a_vc_gpu.render();
 
         offset++;
         if(offset >= 800)
             offset = 0;
+        moving_vertex.xs = offset << 4;
         vertices[2].xs = offset << 4;
     }
     return (0);

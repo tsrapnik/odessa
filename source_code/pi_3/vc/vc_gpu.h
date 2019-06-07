@@ -570,6 +570,9 @@ class vc_gpu
     u32 triangles_size;
     volatile render_control_list *a_render_control_list;
 
+    void resize_vertices(u32 vertices_size);
+    void resize_triangles(u32 triangles_size);
+
   public:
     vc_gpu(vc_pointer framebuffer, u16 framebuffer_width, u16 framebuffer_height);
     ~vc_gpu();
