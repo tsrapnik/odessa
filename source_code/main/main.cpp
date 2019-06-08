@@ -14,13 +14,7 @@
 screen* a_global_screen;
 uart* a_uart;
 
-// void delay()
-// {
-//     for(volatile u32 count = 0; count < 150; count++)
-//         ;
-// }
-
-extern "C" i32 main(void)
+void initialize_cpp_runtime()
 {
     //clear bss.
     extern u8 __bss_start;
@@ -37,7 +31,12 @@ extern "C" i32 main(void)
     {
         (**constructor)();
     }
+}
 
+extern "C" i32 main(void)
+{
+    initialize_cpp_runtime();
+    
     //todo: change adressing to vc_gpu before mmu can be enabled.
     // memory::enable_mmu();
 
@@ -110,45 +109,8 @@ extern "C" i32 main(void)
         vertices_list.append_copy(vertices[index]);
 
     color background_color(255, 0, 0, 255);
-    bool correct = true;
-    if(!((triangles_list.get_size() == triangles_size) && (vertices_list.get_size() == vertices_size)))
-        correct = false;
 
-    u32 index = 0;
-    list_iterator<vc_gpu::triangle> triangles_iterator(triangles_list);
-    for(triangles_iterator.to_first(); !triangles_iterator.at_end(); triangles_iterator++)
-    {
-        vc_gpu::triangle& current_triangle = triangles_iterator.get_data_reference();
-        if(triangles[index].index_0 != current_triangle.index_0 ||
-           triangles[index].index_1 != current_triangle.index_1 ||
-           triangles[index].index_2 != current_triangle.index_2)
-        {
-            a_uart->write("fail 0.\r\n", 9);
-        }
-        index++;
-    }
-
-    index = 0;
     list_iterator<vc_gpu::vertex> vertices_iterator(vertices_list);
-    for(vertices_iterator.to_first(); !vertices_iterator.at_end(); vertices_iterator++)
-    {
-        vc_gpu::vertex& current_vertex = vertices_iterator.get_data_reference();
-        if(vertices[index].xs != current_vertex.xs ||
-           vertices[index].ys != current_vertex.ys ||
-           vertices[index].zs != current_vertex.zs ||
-           vertices[index].wc != current_vertex.wc ||
-           vertices[index].r != current_vertex.r ||
-           vertices[index].g != current_vertex.g ||
-           vertices[index].b != current_vertex.b)
-        {
-            a_uart->write("fail 1.\r\n", 9);
-        }
-        index++;
-    }
-
-    if(correct)
-        background_color = color(0, 255, 0, 255);
-    
     vertices_iterator.to_first();
     vertices_iterator++;
     vertices_iterator++;
@@ -156,17 +118,6 @@ extern "C" i32 main(void)
 
     while(1)
     {
-        // a_uart->write("offset = ", 9);
-        // a_uart->write(string::to_string(offset), 19);
-        // a_uart->write(".\r\n", 3);
-
-        // u32 received_string_size = 10;
-        // char* received_string = a_uart->read(received_string_size);
-        // a_uart->write(received_string,received_string_size);
-        // a_uart->write(string::to_string(received_string_size),19);
-        // a_uart->write("\r\n", 2);
-
-        // a_vc_gpu.set_triangles(vertices, vertices_size, triangles, triangles_size, background_color);
         a_vc_gpu.set_triangles(vertices_list, triangles_list, background_color);
         a_vc_gpu.render();
 
@@ -174,7 +125,6 @@ extern "C" i32 main(void)
         if(offset >= 800)
             offset = 0;
         moving_vertex.xs = offset << 4;
-        vertices[2].xs = offset << 4;
     }
     return (0);
 }

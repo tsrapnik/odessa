@@ -35,7 +35,7 @@ authoritative;
 log-facility local7;
 subnet 192.168.1.0 netmask 255.255.255.0 {
   range 192.168.1.211 192.168.1.212;
-  option routers 192.168.97.1;
+  option routers 192.168.1.1;
   option domain-name-servers 8.8.8.8, 8.8.4.4;
   option tftp-server-name "192.168.1.37";
 }
