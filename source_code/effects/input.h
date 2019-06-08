@@ -3,7 +3,7 @@
 #include "output.h"
 
 class input:
-	public graphic_object
+	public drawable
 {
 private:
 	output* source;

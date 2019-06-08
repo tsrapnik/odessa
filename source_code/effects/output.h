@@ -3,7 +3,7 @@
 #include "button.h"
 
 class output:
-	public graphic_object
+	public drawable
 {
 private:
 	f64 frame;

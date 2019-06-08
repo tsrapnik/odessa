@@ -3,7 +3,7 @@
 #include "analog_button.h"
 
 effect::effect(rectangle footprint, color own_color) :
-    graphic_object(footprint, own_color)
+    drawable(footprint, own_color)
 {
 }
 
@@ -13,7 +13,7 @@ effect::~effect()
 
 void effect::set_own_screen(screen* own_screen)
 {
-    graphic_object::set_own_screen(own_screen);
+    drawable::set_own_screen(own_screen);
 
     list_iterator<input*> inputs_iterator(inputs);
     for(inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++)
@@ -63,7 +63,7 @@ bool effect::update()
 
 void effect::draw()
 {
-    graphic_object::draw();
+    drawable::draw();
 
     list_iterator<input*> inputs_iterator(inputs);
     for(inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++)
@@ -87,7 +87,7 @@ void effect::draw_connections()
 
 vector_2_u32 effect::move(vector_2_u32 displacement)
 {
-    displacement = graphic_object::move(displacement);
+    displacement = drawable::move(displacement);
 
     list_iterator<input*> inputs_iterator(inputs);
     for(inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++)
@@ -104,12 +104,12 @@ vector_2_u32 effect::move(vector_2_u32 displacement)
     return displacement;
 }
 
-graphic_object* effect::select_button(vector_2_u32 mouse_pointer)
+drawable* effect::select_button(vector_2_u32 mouse_pointer)
 {
     list_iterator<input*> inputs_iterator(inputs);
     for(inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++)
     {
-        graphic_object* selection = inputs_iterator.get_data_copy()->is_selected(mouse_pointer);
+        drawable* selection = inputs_iterator.get_data_copy()->is_selected(mouse_pointer);
         if(selection != nullptr)
             return selection;
     }
@@ -117,7 +117,7 @@ graphic_object* effect::select_button(vector_2_u32 mouse_pointer)
     list_iterator<output*> outputs_iterator(outputs);
     for(outputs_iterator.to_first(); !outputs_iterator.at_end(); outputs_iterator++)
     {
-        graphic_object* selection = outputs_iterator.get_data_copy()->is_selected(mouse_pointer);
+        drawable* selection = outputs_iterator.get_data_copy()->is_selected(mouse_pointer);
         if(selection != nullptr)
             return selection;
     }
@@ -125,7 +125,7 @@ graphic_object* effect::select_button(vector_2_u32 mouse_pointer)
     list_iterator<button*> buttons_iterator(buttons);
     for(buttons_iterator.to_first(); !buttons_iterator.at_end(); buttons_iterator++)
     {
-        graphic_object* selection = buttons_iterator.get_data_copy()->is_selected(mouse_pointer);
+        drawable* selection = buttons_iterator.get_data_copy()->is_selected(mouse_pointer);
         if(selection != nullptr)
             return selection;
     }

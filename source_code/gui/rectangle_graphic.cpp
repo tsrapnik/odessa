@@ -1,6 +1,6 @@
-#include "graphic_object.h"
+#include "rectangle_graphic.h"
 
-graphic_object::graphic_object(rectangle footprint, color own_color)
+rectangle_graphic::rectangle_graphic(rectangle footprint, color own_color)
 {
     this->footprint = footprint;
     this->boundaries = nullptr;
@@ -8,7 +8,7 @@ graphic_object::graphic_object(rectangle footprint, color own_color)
     this->own_color = own_color;
 }
 
-void graphic_object::set_boundaries(rectangle* boundaries)
+void rectangle_graphic::set_boundaries(rectangle* boundaries)
 {
     if(footprint.origin.coordinate[0] < 0)
         footprint.origin.coordinate[0] = 0;
@@ -23,38 +23,38 @@ void graphic_object::set_boundaries(rectangle* boundaries)
     this->boundaries = boundaries;
 }
 
-void graphic_object::set_own_screen(screen* own_screen)
+void rectangle_graphic::set_own_screen(screen* own_screen)
 {
     this->own_screen = own_screen;
 }
 
-rectangle graphic_object::get_footprint()
+rectangle rectangle_graphic::get_footprint()
 {
     return footprint;
 }
 
-void graphic_object::set_footprint(rectangle new_footprint)
+void rectangle_graphic::set_footprint(rectangle new_footprint)
 {
     footprint = new_footprint;
 }
 
-color graphic_object::get_color()
+color rectangle_graphic::get_color()
 {
     return own_color;
 }
 
-graphic_object::~graphic_object()
+rectangle_graphic::~rectangle_graphic()
 {
 }
 
-void graphic_object::draw()
+void rectangle_graphic::draw()
 {
     for(u32 x = footprint.origin.coordinate[0]; x < footprint.origin.coordinate[0] + footprint.size.coordinate[0]; x++)
         for(u32 y = footprint.origin.coordinate[1]; y < footprint.origin.coordinate[1] + footprint.size.coordinate[1]; y++)
             own_screen->put_transparent_pixel(vector_2_u32(x, y), own_color);
 }
 
-vector_2_u32 graphic_object::move(vector_2_u32 displacement)
+vector_2_u32 rectangle_graphic::move(vector_2_u32 displacement)
 {
     if(footprint.origin.coordinate[0] + displacement.coordinate[0] < boundaries->origin.coordinate[0])
         displacement.coordinate[0] = boundaries->origin.coordinate[0] - footprint.origin.coordinate[0];
@@ -70,7 +70,7 @@ vector_2_u32 graphic_object::move(vector_2_u32 displacement)
     return displacement;
 }
 
-graphic_object* graphic_object::is_selected(vector_2_u32 mouse_pointer)
+rectangle_graphic* rectangle_graphic::is_selected(vector_2_u32 mouse_pointer)
 {
     if(mouse_pointer.coordinate[0] >= footprint.origin.coordinate[0] &&
        mouse_pointer.coordinate[0] < footprint.origin.coordinate[0] + footprint.size.coordinate[0] &&

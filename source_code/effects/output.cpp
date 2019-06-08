@@ -1,7 +1,7 @@
 #include "output.h"
 
 output::output( rectangle footprint, color own_color ):
-	graphic_object( footprint, own_color )
+	drawable( footprint, own_color )
 {}
 
 output::~output()

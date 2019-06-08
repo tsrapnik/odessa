@@ -56,12 +56,12 @@ effect* effect_graph::select_effect(vector_2_u32 mouse_pointer)
     return nullptr;
 }
 
-graphic_object* effect_graph::select_button(vector_2_u32 mouse_pointer)
+drawable* effect_graph::select_button(vector_2_u32 mouse_pointer)
 {
     list_iterator<effect*> current_effect(effects);
     for(current_effect.to_first(); !current_effect.at_end(); current_effect++)
     {
-        graphic_object* selection = current_effect.get_data_copy()->select_button(mouse_pointer);
+        drawable* selection = current_effect.get_data_copy()->select_button(mouse_pointer);
         if(selection != nullptr)
         {
             return selection;

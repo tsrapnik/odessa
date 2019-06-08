@@ -1,13 +1,13 @@
 #pragma once
 
 #include "button.h"
-#include "graphic_object.h"
+#include "drawable.h"
 #include "input.h"
 #include "list.h"
 #include "list_iterator.h"
 #include "output.h"
 
-class effect : public graphic_object
+class effect : public drawable
 {
     private:
     list<button*> buttons;
@@ -28,7 +28,7 @@ class effect : public graphic_object
     void draw();
     void draw_connections();
     vector_2_u32 move(vector_2_u32 displacement);
-    graphic_object* select_button(vector_2_u32 mouse_pointer);
+    drawable* select_button(vector_2_u32 mouse_pointer);
     output* select_output(vector_2_u32 mouse_pointer);
     input* select_input(vector_2_u32 mouse_pointer);
 };

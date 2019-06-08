@@ -1,7 +1,7 @@
 #include "input.h"
 
 input::input( rectangle footprint, color own_color ):
-	graphic_object( footprint, own_color ),
+	drawable( footprint, own_color ),
 	source( nullptr )
 {}
 
