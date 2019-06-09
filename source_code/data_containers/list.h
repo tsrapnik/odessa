@@ -142,19 +142,28 @@ void list<type>::append_copy(type new_element)
 {
     if(last == nullptr) //check if the list is empty.
     {
+        //todo: fix bug in this line.
+		a_uart->write("before new node.\r\n");
         node<type>* new_node = new node<type>(nullptr, nullptr, new_element); //create the first element.
-
+		a_uart->write("after new node.\r\n");
+        
         first = new_node; //this element is the first and the last.
         last = new_node;
     }
     else
     {
+		a_uart->write("before second new node.\r\n"); //todo: remove.
         node<type>* new_node = new node<type>(last, nullptr, new_element); //create new element and put it after the last element.
+		a_uart->write("before second new node.\r\n");
         last->next = new_node;
 
         last = new_node; //set new element as last.
     }
     size++;
+	a_uart->write("size:");
+    // a_uart->write(string::to_string(size),18);
+	a_uart->write(".\r\n");
+
 }
 
 //delete the first element of the list.
@@ -186,15 +195,19 @@ void list<type>::delete_last()
 
     if(second_last != nullptr) //check if the last element isn't the only element in the list.
     {
-        last->previous->next = nullptr; //make sure the second last element points to no next element.
-        node<type>* condemned = first; //remember the element that should be deleted.
-        last = last->previous; //set second last element as new last.
+        a_uart->write("before delete not yet last.\r\n"); //todo: remove.
+        second_last->next = nullptr; //make sure the second last element points to no next element.
+        node<type>* condemned = last; //remember the element that should be deleted.
+        last = second_last; //set second last element as new last.
         delete condemned;
+        a_uart->write("after delete not yet last.\r\n");
     }
     else //if it is the only element delete it and make first and last element nullpointers.
     {
+        a_uart->write("before delete last.\r\n");
         delete last;
         first = last = nullptr;
+        a_uart->write("after delete last.\r\n");
     }
     size--;
 }

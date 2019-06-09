@@ -10,9 +10,9 @@ class effect_source : public effect
 
     output* mono_output;
 
-    virtual void process();
+    void process() override;
 
     public:
-    effect_source(i32* source, rectangle footprint, color own_color);
+    effect_source(i32* source, rectangle bounding_box, color the_color);
     ~effect_source();
 };

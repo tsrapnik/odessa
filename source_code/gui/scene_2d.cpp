@@ -27,3 +27,13 @@ void scene_2d::append_line(vector_2_f32 vertex_0, vector_2_f32 vertex_1, color a
     this->vertices.append_copy({vector_2_f32::difference(vertex_1, half_thickness_vector), a_color});
     this->vertices.append_copy({vector_2_f32::difference(vertex_0, half_thickness_vector), a_color});
 }
+
+void scene_2d::clear()
+{
+    a_uart->write("before delete all triangles.\r\n"); //todo: remove.
+    triangles.delete_all();
+    a_uart->write("after delete all triangles.\r\n");
+    a_uart->write("before delete all vertices.\r\n");
+    vertices.delete_all();
+    a_uart->write("after delete all vertices.\r\n");
+}

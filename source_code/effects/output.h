@@ -10,7 +10,7 @@ class output
     bool ready;
 
     public:
-    output(rectangle footprint, color own_color);
+    output(rectangle bounding_box, color the_color);
     ~output();
 
     f32 get_frame();

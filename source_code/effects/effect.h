@@ -21,7 +21,7 @@ class effect
     void add_output(output* new_output);
 
     public:
-    effect(rectangle footprint, color own_color);
+    effect(rectangle bounding_box, color the_color);
     ~effect();
     bool process_with_success();
     void draw(scene_2d& scene);

@@ -7,10 +7,10 @@ class graphic_rectangle: public graphic
 {
     protected:
     rectangle bounding_box;
-    color own_color;
+    color the_color;
 
     public:
-    graphic_rectangle(rectangle bounding_box, color own_color);
+    graphic_rectangle(rectangle bounding_box, color the_color);
     virtual ~graphic_rectangle();
 
     void set_bounding_box(rectangle new_bounding_box);

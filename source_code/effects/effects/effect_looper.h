@@ -66,9 +66,10 @@ class effect_looper : public effect
     list_iterator<channel*> active_channel_pointer;
 
     looper_state current_state;
+    
+    void process() override;
 
     public:
-    effect_looper(rectangle footprint, color own_color);
+    effect_looper(rectangle bounding_box, color the_color);
     ~effect_looper();
-    virtual void process();
 };

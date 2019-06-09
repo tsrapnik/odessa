@@ -2,8 +2,8 @@
 
 #include "graphic_rectangle.h"
 
-input::input(rectangle footprint, color own_color) :
-    the_graphic(new graphic_rectangle(footprint, own_color)),
+input::input(rectangle bounding_box, color the_color) :
+    the_graphic(new graphic_rectangle(bounding_box, the_color)),
     source(nullptr)
 {
 }

@@ -8,7 +8,7 @@ class button
     private:
         graphic* the_graphic;
     public:
-    button(rectangle footprint, color own_color);
+    button(rectangle bounding_box, color the_color);
     virtual ~button();
 
     rectangle get_bounding_box();

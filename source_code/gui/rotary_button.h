@@ -9,15 +9,15 @@ class rotary_button : public button
     type value;
 
     public:
-    rotary_button(rectangle footprint, color own_color);
+    rotary_button(rectangle bounding_box, color the_color);
     virtual ~rotary_button();
     type get_value();
     void set_value(type value);
 };
 
 template <typename type>
-rotary_button<type>::rotary_button(rectangle footprint, color own_color) :
-    button(footprint, own_color)
+rotary_button<type>::rotary_button(rectangle bounding_box, color the_color) :
+    button(bounding_box, the_color)
 {
 }
 

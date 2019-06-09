@@ -15,8 +15,8 @@ void effect_chorus::process()
     mono_output->update_frame(frame);
 }
 
-effect_chorus::effect_chorus(rectangle footprint, color own_color) :
-    effect(footprint, own_color),
+effect_chorus::effect_chorus(rectangle bounding_box, color the_color) :
+    effect(bounding_box, the_color),
     delay(12000)
 {
     mono_input = new input(rectangle(vector_2_f32(0, 120), vector_2_f32(30, 40)),

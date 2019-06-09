@@ -13,8 +13,9 @@ private:
 
 	buffer_delay delay;
 
-	void process();
+	void process() override;
+	
 public:
-	effect_delay( rectangle footprint, color own_color );
+	effect_delay( rectangle bounding_box, color the_color );
 	~effect_delay();
 };

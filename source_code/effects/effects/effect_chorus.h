@@ -13,9 +13,9 @@ class effect_chorus : public effect
 
 	buffer_delay delay;
 
-	void process();
+	void process() override;
 
   public:
-	effect_chorus(rectangle footprint, color own_color);
+	effect_chorus(rectangle bounding_box, color the_color);
 	~effect_chorus();
 };

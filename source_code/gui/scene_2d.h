@@ -26,4 +26,5 @@ public:
     
 	void append_triangle(vector_2_f32 vertex_0, vector_2_f32 vertex_1, vector_2_f32 vertex_3, color a_color);
     void append_line(vector_2_f32 vertex_0, vector_2_f32 vertex_1, color a_color, f32 thickness = 1.0f);
+    void clear();
 };

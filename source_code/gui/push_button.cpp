@@ -1,7 +1,7 @@
 #include "push_button.h"
 
-push_button::push_button(rectangle footprint, color own_color) :
-    button(footprint, own_color)
+push_button::push_button(rectangle bounding_box, color the_color) :
+    button(bounding_box, the_color)
 {
 }
 

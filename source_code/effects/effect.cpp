@@ -1,8 +1,10 @@
 #include "effect.h"
 
 #include "rotary_button.h"
+#include "graphic_rectangle.h"
 
-effect::effect(rectangle footprint, color own_color)
+effect::effect(rectangle bounding_box, color the_color):
+    the_graphic(new graphic_rectangle(bounding_box, the_color))
 {
 }
 

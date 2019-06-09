@@ -2,8 +2,8 @@
 
 #include "graphic_rectangle.h"
 
-output::output(rectangle footprint, color own_color) :
-    the_graphic(new graphic_rectangle(footprint, own_color)),
+output::output(rectangle bounding_box, color the_color) :
+    the_graphic(new graphic_rectangle(bounding_box, the_color)),
     frame(0.0f),
     ready(false)
 {

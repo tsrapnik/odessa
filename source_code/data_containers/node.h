@@ -1,5 +1,8 @@
 #pragma once
 
+#include "uart.h"
+extern uart* a_uart;
+
 template <typename type>
 struct node
 {
@@ -19,5 +22,6 @@ struct node
 													  previous(previous),
 													  next(next)
 	{
+		a_uart->write("in new node.\r\n"); //todo: remove.
 	}
 };

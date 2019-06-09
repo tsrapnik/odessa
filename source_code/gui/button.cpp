@@ -2,8 +2,8 @@
 
 #include "graphic_rectangle.h"
 
-button::button(rectangle footprint, color own_color) :
-    the_graphic(new graphic_rectangle(footprint, own_color))
+button::button(rectangle bounding_box, color the_color) :
+    the_graphic(new graphic_rectangle(bounding_box, the_color))
 {
 }
 

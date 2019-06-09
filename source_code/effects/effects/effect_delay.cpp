@@ -16,8 +16,8 @@ void effect_delay::process()
     mono_output->update_frame(frame);
 }
 
-effect_delay::effect_delay(rectangle footprint, color own_color) :
-    effect(footprint, own_color),
+effect_delay::effect_delay(rectangle bounding_box, color the_color) :
+    effect(bounding_box, the_color),
     delay(12000)
 {
     mono_input = new input(rectangle(vector_2_f32(0, 120), vector_2_f32(30, 40)),

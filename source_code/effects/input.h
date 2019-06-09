@@ -10,7 +10,7 @@ class input
     output* source;
 
     public:
-    input(rectangle footprint, color own_color);
+    input(rectangle bounding_box, color the_color);
     ~input();
 
     void connect_output(output* source);

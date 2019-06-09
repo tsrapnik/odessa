@@ -1,7 +1,7 @@
 #include "effect_looper.h"
 
-effect_looper::effect_looper(rectangle footprint, color own_color) :
-    effect::effect(footprint, own_color),
+effect_looper::effect_looper(rectangle bounding_box, color the_color) :
+    effect::effect(bounding_box, the_color),
     active_channel_pointer(list_iterator<channel*>(channels))
 {
     mono_input = new input(rectangle(vector_2_f32(0, 120), vector_2_f32(30, 40)),

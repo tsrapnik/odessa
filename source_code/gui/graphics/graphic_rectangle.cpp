@@ -1,9 +1,9 @@
 #include "graphic_rectangle.h"
 
-graphic_rectangle::graphic_rectangle(rectangle bounding_box, color own_color)
+graphic_rectangle::graphic_rectangle(rectangle bounding_box, color the_color)
 {
     this->bounding_box = bounding_box;
-    this->own_color = own_color;
+    this->the_color = the_color;
 }
 
 void graphic_rectangle::set_bounding_box(rectangle new_bounding_box)
@@ -13,12 +13,12 @@ void graphic_rectangle::set_bounding_box(rectangle new_bounding_box)
 
 color graphic_rectangle::get_color()
 {
-    return this->own_color;
+    return this->the_color;
 }
 
 void graphic_rectangle::set_color(color new_color)
 {
-    this->own_color = new_color;
+    this->the_color = new_color;
 }
 
 graphic_rectangle::~graphic_rectangle()
@@ -30,12 +30,12 @@ void graphic_rectangle::draw(scene_2d& scene)
     scene.append_triangle(bounding_box.origin,
                           vector_2_f32(bounding_box.origin.coordinate[0] + bounding_box.size.coordinate[0], bounding_box.origin.coordinate[1]),
                           vector_2_f32::sum(bounding_box.origin, bounding_box.size),
-                          own_color);
+                          the_color);
 
     scene.append_triangle(vector_2_f32::sum(bounding_box.origin, bounding_box.size),
                           vector_2_f32(bounding_box.origin.coordinate[0], bounding_box.origin.coordinate[1] + bounding_box.size.coordinate[1]),
                           bounding_box.origin,
-                          own_color);
+                          the_color);
 }
 
 bool graphic_rectangle::is_selected(vector_2_f32 mouse_position)

@@ -10,9 +10,9 @@ class effect_sink : public effect
 
     input* mono_input;
 
-    virtual void process();
+    void process() override;
 
     public:
-    effect_sink(i32* sink, rectangle footprint, color own_color);
+    effect_sink(i32* sink, rectangle bounding_box, color the_color);
     ~effect_sink();
 };

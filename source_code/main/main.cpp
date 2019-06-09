@@ -51,28 +51,31 @@ extern "C" i32 main(void)
     a_uart->write("uart created.\r\n");
     a_uart->write("\r\n");
 
-    a_uart->write(string::to_string(math::leading_zeroes(0x00fffffffffffffful)), 18);
-    a_uart->write("\r\n");
-    a_uart->write(string::to_string(math::leading_zeroes(0x00ffffffu)), 18);
-    a_uart->write("\r\n");
-    a_uart->write(string::to_string(static_cast<u64>(math::sqrt(16.0f))), 18);
-    a_uart->write("\r\n");
-    a_uart->write(string::to_string(static_cast<u64>(math::sqrt(16.0))), 18);
-    a_uart->write("\r\n");
-
     scene_2d a_scene;
-    a_scene.append_triangle(vector_2_f32(100.0f, 100.0f),
-                            vector_2_f32(400.0f, 100.0f),
-                            vector_2_f32(100.0f, 400.0f),
-                            color(255, 255, 255, 255));
-    a_scene.append_line(vector_2_f32(100.0f, 100.0f),
-                        vector_2_f32(500.0f, 20.0f),
-                        color(0, 255, 255, 255),
-                        1.0f);
+
+    a_uart->write("before a_effect_graph.\r\n");
+    effect_graph a_effect_graph;
+    a_uart->write("after a_effect_graph.\r\n");
+    a_uart->write("before a_effect_chorus.\r\n");
+    effect_chorus a_effect_chorus(rectangle(vector_2_f32(100.0f, 100.0f), vector_2_f32(200.0f, 100.0f)),
+                                    color(255,100,0,255));
+    a_uart->write("after a_effect_chorus.\r\n");
+
+    a_uart->write("before add effect.\r\n");
+    a_effect_graph.add_effect(&a_effect_chorus);
+    a_uart->write("after add effect.\r\n");
 
     while(true)
     {
-        a_vc_gpu.set_triangles(a_scene, color(0, 0, 0, 255));
+        a_uart->write("before draw.\r\n");
+        a_effect_graph.draw(a_scene);
+        a_uart->write("after draw.\r\n");
+        a_uart->write("before set_triangles.\r\n");
+        a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
+        a_uart->write("after set_triangles.\r\n");
+        a_uart->write("before clear.\r\n");
+        a_scene.clear();
+        a_uart->write("after clear.\r\n");
         a_vc_gpu.render();
 
         a_scene.vertices.get_reference_first().a_color.red++;
@@ -83,86 +86,86 @@ extern "C" i32 main(void)
 
 extern "C" void syn_cur_el0()
 {
-    while(true)
-        a_uart->write("syn_cur_el0\r\n");
+    a_uart->write("syn_cur_el0\r\n");
+    while(true);
 }
 extern "C" void irq_cur_el0()
 {
-    while(true)
-        a_uart->write("irq_cur_el0\r\n");
+    a_uart->write("irq_cur_el0\r\n");
+    while(true);
 }
 extern "C" void fiq_cur_el0()
 {
-    while(true)
-        a_uart->write("fiq_cur_el0\r\n");
+    a_uart->write("fiq_cur_el0\r\n");
+    while(true);
 }
 extern "C" void err_cur_el0()
 {
-    while(true)
-        a_uart->write("err_cur_el0\r\n");
+    a_uart->write("err_cur_el0\r\n");
+    while(true);
 }
 
 extern "C" void syn_cur_elx()
 {
-    while(true)
-        a_uart->write("syn_cur_elx\r\n");
+    a_uart->write("syn_cur_elx\r\n");
+    while(true);
 }
 extern "C" void irq_cur_elx()
 {
-    while(true)
-        a_uart->write("irq_cur_elx\r\n");
+    a_uart->write("irq_cur_elx\r\n");
+    while(true);
 }
 extern "C" void fiq_cur_elx()
 {
-    while(true)
-        a_uart->write("fiq_cur_elx\r\n");
+    a_uart->write("fiq_cur_elx\r\n");
+    while(true);
 }
 extern "C" void err_cur_elx()
 {
-    while(true)
-        a_uart->write("err_cur_elx\r\n");
+    a_uart->write("err_cur_elx\r\n");
+    while(true);
 }
 
 extern "C" void syn_low64_elx()
 {
-    while(true)
-        a_uart->write("csyn_low64_elx\r\n");
+    a_uart->write("csyn_low64_elx\r\n");
+    while(true);
 }
 extern "C" void irq_low64_elx()
 {
-    while(true)
-        a_uart->write("irq_low64_elx\r\n");
+    a_uart->write("irq_low64_elx\r\n");
+    while(true);
 }
 extern "C" void fiq_low64_elx()
 {
-    while(true)
-        a_uart->write("fiq_low64_elx\r\n");
+    a_uart->write("fiq_low64_elx\r\n");
+    while(true);
 }
 extern "C" void err_low64_elx()
 {
-    while(true)
-        a_uart->write("err_low64_elx\r\n");
+    a_uart->write("err_low64_elx\r\n");
+    while(true);
 }
 
 extern "C" void syn_low32_elx()
 {
-    while(true)
-        a_uart->write("syn_low32_elx\r\n");
+    a_uart->write("syn_low32_elx\r\n");
+    while(true);
 }
 extern "C" void irq_low32_elx()
 {
-    while(true)
-        a_uart->write("irq_low32_elx\r\n");
+    a_uart->write("irq_low32_elx\r\n");
+    while(true);
 }
 extern "C" void fiq_low32_elx()
 {
-    while(true)
-        a_uart->write("fiq_low32_elx\r\n");
+    a_uart->write("fiq_low32_elx\r\n");
+    while(true);
 }
 extern "C" void err_low32_elx()
 {
-    while(true)
-        a_uart->write("err_low32_elx\r\n");
+    a_uart->write("err_low32_elx\r\n");
+    while(true);
 }
 
 //dummy functions to avoid linker complaints.
@@ -217,34 +220,26 @@ extern "C" char* __attribute__((weak)) _sbrk(int incr)
     return (char*)0;
 }
 
-// extern "C" void memcpy(void* destination, void* source, usize size)
-// {
-// u32 size_u64 = size / 8;
-// u32 size_u8 = size % 8;
+extern "C" void memcpy(void* destination, void* source, usize size)
+{
+    u32 size_u64 = size / 8;
+    u32 size_u8 = size % 8;
 
-// u64* destination_u64 = reinterpret_cast<u64*>(destination);
-// u64* source_u64 = reinterpret_cast<u64*>(source);
-// for(u32 i = 0; i < size_u64; i++)
-// {
-//     *destination_u64 = *source_u64;
-//     destination_u64++;
-//     source_u64++;
-// }
+    u64* destination_u64 = reinterpret_cast<u64*>(destination);
+    u64* source_u64 = reinterpret_cast<u64*>(source);
+    for(u32 i = 0; i < size_u64; i++)
+    {
+        *destination_u64 = *source_u64;
+        destination_u64++;
+        source_u64++;
+    }
 
-// u8* destination_u8 = reinterpret_cast<u8*>(destination_u64);
-// u8* source_u8 = reinterpret_cast<u8*>(source_u64);
-// for(u32 i = 0; i < size_u8; i++)
-// {
-//      *destination_u8 = *source_u8;
-//      destination_u8++;
-//      source_u8++;
-// }
-// u8* destination_u8 = reinterpret_cast<u8*>(destination);
-// u8* source_u8 = reinterpret_cast<u8*>(source);
-// for(u32 i = 0; i < size; i++)
-// {
-//      *destination_u8 = *source_u8;
-//      destination_u8++;
-//      source_u8++;
-// }
-// }
+    u8* destination_u8 = reinterpret_cast<u8*>(destination_u64);
+    u8* source_u8 = reinterpret_cast<u8*>(source_u64);
+    for(u32 i = 0; i < size_u8; i++)
+    {
+        *destination_u8 = *source_u8;
+        destination_u8++;
+        source_u8++;
+    }
+}
