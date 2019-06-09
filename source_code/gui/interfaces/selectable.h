@@ -1,9 +1,7 @@
 #pragma once
 
-#include "vc_gpu.h"
-
-class drawable
+class selectable
 {
 public:
-	virtual bool is_selected() = 0;
+	virtual bool is_selected(vector_2_f32 position) = 0;
 };

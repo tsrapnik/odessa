@@ -1,31 +1,13 @@
 #include "effect.h"
 
-#include "analog_button.h"
+#include "rotary_button.h"
 
-effect::effect(rectangle footprint, color own_color) :
-    drawable(footprint, own_color)
+effect::effect(rectangle footprint, color own_color)
 {
 }
 
 effect::~effect()
 {
-}
-
-void effect::set_own_screen(screen* own_screen)
-{
-    drawable::set_own_screen(own_screen);
-
-    list_iterator<input*> inputs_iterator(inputs);
-    for(inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++)
-        inputs_iterator.get_data_copy()->set_own_screen(own_screen);
-
-    list_iterator<output*> outputs_iterator(outputs);
-    for(outputs_iterator.to_first(); !outputs_iterator.at_end(); outputs_iterator++)
-        outputs_iterator.get_data_copy()->set_own_screen(own_screen);
-
-    list_iterator<button*> buttons_iterator(buttons);
-    for(buttons_iterator.to_first(); !buttons_iterator.at_end(); buttons_iterator++)
-        buttons_iterator.get_data_copy()->set_own_screen(own_screen);
 }
 
 void effect::add_button(button* new_button)

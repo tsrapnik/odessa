@@ -122,7 +122,7 @@ extern "C" i32 main(void)
         a_vc_gpu.render();
 
         offset++;
-        if(offset >= 800)
+        if(offset >= 900)
             offset = 0;
         moving_vertex.xs = offset << 4;
     }

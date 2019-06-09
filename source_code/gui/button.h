@@ -1,10 +1,13 @@
 #pragma once
 
-#include "drawable.h"
+#include "graphic.h"
+#include "rectangle.h"
 
-class button : public drawable
+class button
 {
+    private:
+        graphic* the_graphic;
     public:
     button(rectangle footprint, color own_color);
-    ~button();
+    virtual ~button();
 };

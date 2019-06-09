@@ -1,9 +1,9 @@
 #pragma once
 
-#include "vc_gpu.h"
+#include "scene_2d.h"
 
 class drawable
 {
 public:
-	virtual void draw(vc_gpu& a_vc_gpu) = 0;
+	virtual void draw(scene_2d& scene) = 0;
 };

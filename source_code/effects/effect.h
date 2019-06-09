@@ -1,15 +1,15 @@
 #pragma once
 
 #include "button.h"
-#include "drawable.h"
 #include "input.h"
+#include "output.h"
 #include "list.h"
 #include "list_iterator.h"
-#include "output.h"
 
-class effect : public drawable
+class effect
 {
     private:
+    graphic* the_graphic;
     list<button*> buttons;
     list<input*> inputs;
     list<output*> outputs;
@@ -23,12 +23,11 @@ class effect : public drawable
     public:
     effect(rectangle footprint, color own_color);
     ~effect();
-    void set_own_screen(screen* own_screen);
     bool update();
-    void draw();
-    void draw_connections();
+    void draw(scene_2d scene);
+    void draw_connections(scene_2d scene);
     vector_2_u32 move(vector_2_u32 displacement);
-    drawable* select_button(vector_2_u32 mouse_pointer);
-    output* select_output(vector_2_u32 mouse_pointer);
-    input* select_input(vector_2_u32 mouse_pointer);
+    drawable* get_selected_button(vector_2_u32 mouse_pointer);
+    output* get_selected_output(vector_2_u32 mouse_pointer);
+    input* get_selected_input(vector_2_u32 mouse_pointer);
 };

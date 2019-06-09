@@ -11,6 +11,7 @@ push_button::~push_button()
 
 void push_button::set_pushed()
 {
+    pushed = true;
 }
 
 //check if a positive edge was triggered, reset after read.

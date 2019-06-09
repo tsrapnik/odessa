@@ -1,9 +1,9 @@
 #pragma once
 
-#include "color.h"
+#include "graphic.h"
 #include "rectangle.h"
 
-class rectangle_graphic
+class rectangle_graphic: public graphic
 {
     protected:
     rectangle footprint;
@@ -11,11 +11,14 @@ class rectangle_graphic
 
     public:
     rectangle_graphic(rectangle footprint, color own_color);
+    virtual ~rectangle_graphic();
+
     rectangle get_footprint();
     void set_footprint(rectangle new_footprint);
     color get_color();
-    virtual ~rectangle_graphic() = 0;
-    void draw();
-    virtual vector_2_u32 move(vector_2_u32 displacement);
-    rectangle_graphic* is_selected(vector_2_u32 mouse_pointer);
+    void set_color(color new_color);
+
+	void draw(scene_2d& scene) override;
+	bool is_selected(vector_2_f32 position) override;
+	void move(vector_2_f32 movement) override;
 };

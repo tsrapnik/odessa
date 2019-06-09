@@ -24,9 +24,9 @@ effect_delay::effect_delay( rectangle footprint, color own_color ):
 						   color( 255, 0, 0, 255 ) );
 	mono_output = new output( rectangle( vector_2_u32( 170, 120 ), vector_2_u32( 30, 40 ) ),
 						   color( 0, 255, 0, 255 ) );
-	feedback_button = new analog_button( rectangle( vector_2_u32( 80, 80 ), vector_2_u32( 30, 40 ) ),
+	feedback_button = new rotary_button( rectangle( vector_2_u32( 80, 80 ), vector_2_u32( 30, 40 ) ),
 							   color( 0, 0, 255, 255 ) );
-	delay_time_button = new analog_button( rectangle( vector_2_u32( 80, 130 ), vector_2_u32( 30, 40 ) ),
+	delay_time_button = new rotary_button( rectangle( vector_2_u32( 80, 130 ), vector_2_u32( 30, 40 ) ),
 								 color( 0, 0, 255, 255 ) );
 	add_input( mono_input );
 	add_output( mono_output );
