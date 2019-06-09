@@ -1,5 +1,7 @@
 #include "buddy_heap.h"
 
+#include "math.h"
+
 buddy_heap::block_pointer buddy_heap::block_pointers[ 1 << ( order_count - 2 ) ];
 buddy_heap::block_pointer* buddy_heap::available_block_pointers[ 1 << ( order_count - 2 ) ];
 buddy_heap::block_pointer** buddy_heap::last_available_block_pointer;
@@ -8,7 +10,7 @@ void* buddy_heap::heap_base;
 
 usize buddy_heap::get_matching_order( usize size )
 {
-	usize word_size = sizeof(usize) * 8; //todo: make word_size somewhere else defined.
+	usize word_size = sizeof(usize) * 8;
 	size += word_size / 8 - 1; //the first byte in the memory block is lost for storing the order. this is why word_size in bytes is added.
 	usize zeroes;
     asm("clz %0, %1" //todo: move to arm specific static class.

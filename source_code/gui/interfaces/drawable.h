@@ -6,4 +6,5 @@ class drawable
 {
 public:
 	virtual void draw(scene_2d& scene) = 0;
+	virtual ~drawable(){}
 };

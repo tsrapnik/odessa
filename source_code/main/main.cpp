@@ -3,15 +3,13 @@
 #include "effect_graph.h"
 #include "memory.h"
 #include "scratchpad.h"
-#include "screen.h"
 #include "string.h"
 #include "uart.h"
 #include "vc_gpu.h"
 #include "vc_mailbox_framebuffer.h"
 #include "vc_mailbox_property_tags.h"
 
-//todo: remove and replace with uart logging.
-screen* a_global_screen;
+//todo: make uart singleton like device.
 uart* a_uart;
 
 void initialize_cpp_runtime()
@@ -36,7 +34,7 @@ void initialize_cpp_runtime()
 extern "C" i32 main(void)
 {
     initialize_cpp_runtime();
-    
+
     //todo: change adressing to vc_gpu before mmu can be enabled.
     // memory::enable_mmu();
 
@@ -49,9 +47,9 @@ extern "C" i32 main(void)
     vc_gpu a_vc_gpu(a_vc_mailbox_framebuffer.get_buffer(), 800, 480);
 
     a_uart = uart::create(uart::device::uart0);
-    a_uart->write("\r\n", 2);
-    a_uart->write("uart created.\r\n", 15);
-    a_uart->write("\r\n", 2);
+    a_uart->write("\r\n");
+    a_uart->write("uart created.\r\n");
+    a_uart->write("\r\n");
 
     u16 offset = 0;
     u32 vertices_size = 4;
@@ -108,17 +106,26 @@ extern "C" i32 main(void)
     for(u32 index = 0; index < vertices_size; index++)
         vertices_list.append_copy(vertices[index]);
 
-    color background_color(255, 0, 0, 255);
-
     list_iterator<vc_gpu::vertex> vertices_iterator(vertices_list);
     vertices_iterator.to_first();
     vertices_iterator++;
     vertices_iterator++;
     vc_gpu::vertex& moving_vertex = vertices_iterator.get_data_reference();
 
+    scene_2d a_scene;
+    a_scene.append_triangle(vector_2_f32(100.0f, 100.0f),
+                            vector_2_f32(400.0f, 100.0f),
+                            vector_2_f32(100.0f, 400.0f),
+                            color(255, 255, 255, 255));
+    a_scene.append_line(vector_2_f32(100.0f, 480.0f),
+                        vector_2_f32(500.0f, 20.0f),
+                        color(0, 255, 255, 255),
+                        5.0f);
+
     while(1)
     {
-        a_vc_gpu.set_triangles(vertices_list, triangles_list, background_color);
+        // a_vc_gpu.set_triangles(vertices_list, triangles_list, color(0, 0, 0, 255));
+        a_vc_gpu.set_triangles(a_scene, color(0, 0, 0, 255));
         a_vc_gpu.render();
 
         offset++;
@@ -132,85 +139,85 @@ extern "C" i32 main(void)
 extern "C" void syn_cur_el0()
 {
     while(true)
-        a_global_screen->draw_text("syn_cur_el0", vector_2_u32(0, 0));
+        a_uart->write("syn_cur_el0\r\n");
 }
 extern "C" void irq_cur_el0()
 {
     while(true)
-        a_global_screen->draw_text("irq_cur_el0", vector_2_u32(0, 0));
+        a_uart->write("irq_cur_el0\r\n");
 }
 extern "C" void fiq_cur_el0()
 {
     while(true)
-        a_global_screen->draw_text("fiq_cur_el0", vector_2_u32(0, 0));
+        a_uart->write("fiq_cur_el0\r\n");
 }
 extern "C" void err_cur_el0()
 {
     while(true)
-        a_global_screen->draw_text("err_cur_el0", vector_2_u32(0, 0));
+        a_uart->write("err_cur_el0\r\n");
 }
 
 extern "C" void syn_cur_elx()
 {
     while(true)
-        a_global_screen->draw_text("syn_cur_elx", vector_2_u32(0, 0));
+        a_uart->write("syn_cur_elx\r\n");
 }
 extern "C" void irq_cur_elx()
 {
     while(true)
-        a_global_screen->draw_text("irq_cur_elx", vector_2_u32(0, 0));
+        a_uart->write("irq_cur_elx\r\n");
 }
 extern "C" void fiq_cur_elx()
 {
     while(true)
-        a_global_screen->draw_text("fiq_cur_elx", vector_2_u32(0, 0));
+        a_uart->write("fiq_cur_elx\r\n");
 }
 extern "C" void err_cur_elx()
 {
     while(true)
-        a_global_screen->draw_text("err_cur_elx", vector_2_u32(0, 0));
+        a_uart->write("err_cur_elx\r\n");
 }
 
 extern "C" void syn_low64_elx()
 {
     while(true)
-        a_global_screen->draw_text("csyn_low64_elx", vector_2_u32(0, 0));
+        a_uart->write("csyn_low64_elx\r\n");
 }
 extern "C" void irq_low64_elx()
 {
     while(true)
-        a_global_screen->draw_text("irq_low64_elx", vector_2_u32(0, 0));
+        a_uart->write("irq_low64_elx\r\n");
 }
 extern "C" void fiq_low64_elx()
 {
     while(true)
-        a_global_screen->draw_text("fiq_low64_elx", vector_2_u32(0, 0));
+        a_uart->write("fiq_low64_elx\r\n");
 }
 extern "C" void err_low64_elx()
 {
     while(true)
-        a_global_screen->draw_text("err_low64_elx", vector_2_u32(0, 0));
+        a_uart->write("err_low64_elx\r\n");
 }
 
 extern "C" void syn_low32_elx()
 {
     while(true)
-        a_global_screen->draw_text("syn_low32_elx", vector_2_u32(0, 0));
+        a_uart->write("syn_low32_elx\r\n");
 }
 extern "C" void irq_low32_elx()
 {
     while(true)
-        a_global_screen->draw_text("irq_low32_elx", vector_2_u32(0, 0));
+        a_uart->write("irq_low32_elx\r\n");
 }
 extern "C" void fiq_low32_elx()
 {
     while(true)
-        a_global_screen->draw_text("fiq_low32_elx", vector_2_u32(0, 0));
+        a_uart->write("fiq_low32_elx\r\n");
 }
 extern "C" void err_low32_elx()
 {
     while(true)
-        a_global_screen->draw_text("err_low32_elx", vector_2_u32(0, 0));
+        a_uart->write("err_low32_elx\r\n");
 }
 
 //dummy functions to avoid linker complaints.

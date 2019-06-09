@@ -33,6 +33,11 @@ class list
     void delete_first();
     void delete_last();
     void delete_all();
+
+    type get_copy_first();
+    type& get_reference_first();
+    type get_copy_last();
+    type& get_reference_last();
 };
 
 //todo: check if comment below is still valid and if so fix it.
@@ -202,4 +207,32 @@ void list<type>::delete_all()
     {
         delete_last();
     }
+}
+
+//get a copy of the first element.
+template <typename type>
+type list<type>::get_copy_first()
+{
+    return first->data;
+}
+
+//get a reference of the first element.
+template <typename type>
+type& list<type>::get_reference_first()
+{
+    return first->data;
+}
+
+//get a copy of the last element.
+template <typename type>
+type list<type>::get_copy_last()
+{
+    return last->data;
+}
+
+//get a reference of the last element.
+template <typename type>
+type& list<type>::get_reference_last()
+{
+    return last->data;
 }

@@ -11,7 +11,7 @@ buffer_fifo::~buffer_fifo()
 {
 }
 
-void buffer_fifo::push(f64 value)
+void buffer_fifo::push(f32 value)
 {
 	if (queue_length <= max_length_mask)
 	{
@@ -22,11 +22,11 @@ void buffer_fifo::push(f64 value)
 	}
 }
 
-f64 buffer_fifo::pop()
+f32 buffer_fifo::pop()
 {
 	if (queue_length > 0)
 	{
-		f64 value = data[end_position];
+		f32 value = data[end_position];
 		end_position++;
 		end_position &= max_length_mask;
 		queue_length--;

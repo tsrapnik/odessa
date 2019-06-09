@@ -13,12 +13,12 @@ buffer_delay::~buffer_delay()
 
 
 
-f64 buffer_delay::get_previous(u32 position)
+f32 buffer_delay::get_previous(u32 position)
 {
     return data[(current_position + position) & max_length_mask];
 }
 
-void buffer_delay::update_current(f64 value)
+void buffer_delay::update_current(f32 value)
 {
     data[current_position] = value;
     current_position++;

@@ -10,4 +10,6 @@ public:
 	rectangle( vector_2_f32 origin, vector_2_f32 size );
 	rectangle();
 	~rectangle();
+
+	vector_2_f32 get_center();
 };

@@ -12,30 +12,28 @@ effect::~effect()
 
 void effect::add_button(button* new_button)
 {
-    new_button->set_boundaries(&this->footprint);
     buttons.append_copy(new_button);
 }
 
 void effect::add_input(input* new_input)
 {
-    new_input->set_boundaries(&this->footprint);
     inputs.append_copy(new_input);
 }
 
 void effect::add_output(output* new_output)
 {
-    new_output->set_boundaries(&this->footprint);
     outputs.append_copy(new_output);
 }
 
-//calculates all outputs and marks them as ready. returns false when the inputs weren't ready yet.
-bool effect::update()
+//process all outputs and marks them as ready. returns false when the inputs weren't ready yet.
+bool effect::process_with_success()
 {
     list_iterator<input*> inputs_iterator(inputs);
     for(inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++)
     {
         if(!inputs_iterator.get_data_copy()->frame_ready())
-            return false; //return false when one of the inputs is not ready, so no processing is done.
+            //return false when one of the inputs is not ready, so no processing is done.
+            return false;
     }
 
     process();
@@ -43,33 +41,38 @@ bool effect::update()
     return true;
 }
 
-void effect::draw()
+void effect::draw(scene_2d& scene)
 {
-    drawable::draw();
+    the_graphic->draw(scene);
 
     list_iterator<input*> inputs_iterator(inputs);
     for(inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++)
-        inputs_iterator.get_data_copy()->draw();
+        inputs_iterator.get_data_copy()->draw(scene);
 
     list_iterator<output*> outputs_iterator(outputs);
     for(outputs_iterator.to_first(); !outputs_iterator.at_end(); outputs_iterator++)
-        outputs_iterator.get_data_copy()->draw();
+        outputs_iterator.get_data_copy()->draw(scene);
 
     list_iterator<button*> buttons_iterator(buttons);
     for(buttons_iterator.to_first(); !buttons_iterator.at_end(); buttons_iterator++)
-        buttons_iterator.get_data_copy()->draw();
+        buttons_iterator.get_data_copy()->draw(scene);
 }
 
-void effect::draw_connections()
+void effect::draw_connections(scene_2d& scene)
 {
     list_iterator<input*> inputs_iterator(inputs);
     for(inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++)
-        inputs_iterator.get_data_copy()->draw_connection();
+        inputs_iterator.get_data_copy()->draw_connection(scene);
 }
 
-vector_2_u32 effect::move(vector_2_u32 displacement)
+bool effect::is_selected(vector_2_f32 mouse_position)
 {
-    displacement = drawable::move(displacement);
+    return this->the_graphic->is_selected(mouse_position);
+}
+
+void effect::move(vector_2_f32 displacement)
+{
+    the_graphic->move(displacement);
 
     list_iterator<input*> inputs_iterator(inputs);
     for(inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++)
@@ -82,61 +85,37 @@ vector_2_u32 effect::move(vector_2_u32 displacement)
     list_iterator<button*> buttons_iterator(buttons);
     for(buttons_iterator.to_first(); !buttons_iterator.at_end(); buttons_iterator++)
         buttons_iterator.get_data_copy()->move(displacement);
-
-    return displacement;
 }
 
-drawable* effect::select_button(vector_2_u32 mouse_pointer)
+button* effect::get_selected_button(vector_2_f32 mouse_position)
 {
-    list_iterator<input*> inputs_iterator(inputs);
-    for(inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++)
+    list_iterator<button*> current_button(this->buttons);
+    for(current_button.to_first(); !current_button.at_end(); current_button++)
     {
-        drawable* selection = inputs_iterator.get_data_copy()->is_selected(mouse_pointer);
-        if(selection != nullptr)
-            return selection;
+        if(current_button.get_data_copy()->is_selected(mouse_position))
+            return current_button.get_data_copy();
     }
-
-    list_iterator<output*> outputs_iterator(outputs);
-    for(outputs_iterator.to_first(); !outputs_iterator.at_end(); outputs_iterator++)
-    {
-        drawable* selection = outputs_iterator.get_data_copy()->is_selected(mouse_pointer);
-        if(selection != nullptr)
-            return selection;
-    }
-
-    list_iterator<button*> buttons_iterator(buttons);
-    for(buttons_iterator.to_first(); !buttons_iterator.at_end(); buttons_iterator++)
-    {
-        drawable* selection = buttons_iterator.get_data_copy()->is_selected(mouse_pointer);
-        if(selection != nullptr)
-            return selection;
-    }
-
     return nullptr;
 }
 
-output* effect::select_output(vector_2_u32 mouse_pointer)
+output* effect::get_selected_output(vector_2_f32 mouse_position)
 {
-    list_iterator<output*> outputs_iterator(outputs);
-    for(outputs_iterator.to_first(); !outputs_iterator.at_end(); outputs_iterator++)
+    list_iterator<output*> current_output(this->outputs);
+    for(current_output.to_first(); !current_output.at_end(); current_output++)
     {
-        output* selection = (output*)outputs_iterator.get_data_copy()->is_selected(mouse_pointer);
-        if(selection != nullptr)
-            return selection;
+        if(current_output.get_data_copy()->is_selected(mouse_position))
+            return current_output.get_data_copy();
     }
-
     return nullptr;
 }
 
-input* effect::select_input(vector_2_u32 mouse_pointer)
+input* effect::get_selected_input(vector_2_f32 mouse_position)
 {
-    list_iterator<input*> inputs_iterator(inputs);
-    for(inputs_iterator.to_first(); !inputs_iterator.at_end(); inputs_iterator++)
+    list_iterator<input*> current_input(this->inputs);
+    for(current_input.to_first(); !current_input.at_end(); current_input++)
     {
-        input* selection = (input*)inputs_iterator.get_data_copy()->is_selected(mouse_pointer);
-        if(selection != nullptr)
-            return selection;
+        if(current_input.get_data_copy()->is_selected(mouse_position))
+            return current_input.get_data_copy();
     }
-
     return nullptr;
 }

@@ -81,6 +81,7 @@ list_iterator<type> list_iterator<type>::operator--(int)
     return *this;
 }
 
+//todo: can dereference nullpointer.
 //get a copy of the data of the element the iterator points to.
 template <typename type>
 type list_iterator<type>::get_data_copy()
@@ -88,7 +89,7 @@ type list_iterator<type>::get_data_copy()
     return current->data;
 }
 
-//get a pointer to the data of the element the iterator points to.
+//get a reference to the data of the element the iterator points to.
 template <typename type>
 type& list_iterator<type>::get_data_reference()
 {

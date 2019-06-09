@@ -6,7 +6,7 @@ class buffer
 {
   protected:
 	u32 max_length_mask;
-	f64 *data;
+	f32 *data;
 
   public:
 	buffer(u32 max_length);

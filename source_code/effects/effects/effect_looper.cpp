@@ -4,9 +4,9 @@ effect_looper::effect_looper(rectangle footprint, color own_color) :
     effect::effect(footprint, own_color),
     active_channel_pointer(list_iterator<channel*>(channels))
 {
-    mono_input = new input(rectangle(vector_2_u32(0, 120), vector_2_u32(30, 40)),
+    mono_input = new input(rectangle(vector_2_f32(0, 120), vector_2_f32(30, 40)),
                            color(255, 0, 0, 255));
-    mono_output = new output(rectangle(vector_2_u32(170, 120), vector_2_u32(30, 40)),
+    mono_output = new output(rectangle(vector_2_f32(170, 120), vector_2_f32(30, 40)),
                              color(0, 255, 0, 255));
     add_input(mono_input);
     add_output(mono_output);

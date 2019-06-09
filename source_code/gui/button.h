@@ -10,4 +10,9 @@ class button
     public:
     button(rectangle footprint, color own_color);
     virtual ~button();
+
+    rectangle get_bounding_box();
+    void draw(scene_2d& scene);
+    bool is_selected(vector_2_f32 mouse_position);
+    void move(vector_2_f32 displacement);
 };

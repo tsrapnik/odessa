@@ -78,6 +78,18 @@ uart* uart::create(device device_id)
     }
 }
 
+void uart::write(const char* string)
+{
+    for(u32 index = 0; string[index] != '\0'; index++)
+    {
+        while(static_cast<bool>(this_registers->fr & registers::fr::txff))
+        {
+        }
+        this_registers->dr = string[index];
+    }
+}
+
+//todo: make real string input.
 void uart::write(char* string, u32 size)
 {
     for(u32 index = 0; index < size; index++)
@@ -99,4 +111,5 @@ char* uart::read(u32& size)
         size++;
     }
     size = index;
+    return a_string;
 }

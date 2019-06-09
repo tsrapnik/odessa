@@ -10,6 +10,6 @@ class buffer_delay: public buffer {
 
     ~buffer_delay();
 
-    f64 get_previous(u32 position);
-    void update_current(f64 value );
+    f32 get_previous(u32 position);
+    void update_current(f32 value );
 };

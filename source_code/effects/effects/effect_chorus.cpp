@@ -2,14 +2,14 @@
 
 void effect_chorus::process()
 {
-    f64 frame = mono_input->get_frame();
-    f64 feedback = feedback_button->get_value();
-    f64 wet = wet_button->get_value();
+    f32 frame = mono_input->get_frame();
+    f32 feedback = feedback_button->get_value();
+    f32 wet = wet_button->get_value();
 
-    f64 delay_output = delay.get_previous(-12000);
+    f32 delay_output = delay.get_previous(-12000);
     frame = (1.0f - wet) * frame + wet * delay_output;
 
-    f64 delay_input = (1.0f - feedback) * frame + feedback * delay_output;
+    f32 delay_input = (1.0f - feedback) * frame + feedback * delay_output;
     delay.update_current(delay_input);
 
     mono_output->update_frame(frame);
@@ -19,13 +19,13 @@ effect_chorus::effect_chorus(rectangle footprint, color own_color) :
     effect(footprint, own_color),
     delay(12000)
 {
-    mono_input = new input(rectangle(vector_2_u32(0, 120), vector_2_u32(30, 40)),
+    mono_input = new input(rectangle(vector_2_f32(0, 120), vector_2_f32(30, 40)),
                            color(255, 0, 0, 255));
-    mono_output = new output(rectangle(vector_2_u32(170, 120), vector_2_u32(30, 40)),
+    mono_output = new output(rectangle(vector_2_f32(170, 120), vector_2_f32(30, 40)),
                              color(0, 255, 0, 255));
-    feedback_button = new rotary_button(rectangle(vector_2_u32(80, 80), vector_2_u32(30, 40)),
+    feedback_button = new rotary_button<f32>(rectangle(vector_2_f32(80, 80), vector_2_f32(30, 40)),
                                         color(0, 0, 255, 255));
-    wet_button = new rotary_button(rectangle(vector_2_u32(80, 130), vector_2_u32(30, 40)),
+    wet_button = new rotary_button<f32>(rectangle(vector_2_f32(80, 130), vector_2_f32(30, 40)),
                                    color(0, 0, 255, 255));
     add_input(mono_input);
     add_output(mono_output);

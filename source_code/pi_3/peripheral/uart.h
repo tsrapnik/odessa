@@ -78,6 +78,8 @@ class uart
     //a nullptr will be returned.
     static uart* create(device device_id);
 
+    void write(const char* string);
+
     //todo: use string class. provide byte array alternative also.
     void write(char* string, u32 size);
 

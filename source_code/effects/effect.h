@@ -23,11 +23,12 @@ class effect
     public:
     effect(rectangle footprint, color own_color);
     ~effect();
-    bool update();
-    void draw(scene_2d scene);
-    void draw_connections(scene_2d scene);
-    vector_2_u32 move(vector_2_u32 displacement);
-    drawable* get_selected_button(vector_2_u32 mouse_pointer);
-    output* get_selected_output(vector_2_u32 mouse_pointer);
-    input* get_selected_input(vector_2_u32 mouse_pointer);
+    bool process_with_success();
+    void draw(scene_2d& scene);
+    void draw_connections(scene_2d& scene);
+    bool is_selected(vector_2_f32 mouse_position);
+    void move(vector_2_f32 displacement);
+    button* get_selected_button(vector_2_f32 mouse_position);
+    output* get_selected_output(vector_2_f32 mouse_position);
+    input* get_selected_input(vector_2_f32 mouse_position);
 };

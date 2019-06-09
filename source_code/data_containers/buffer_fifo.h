@@ -9,7 +9,7 @@ class buffer_fifo : public buffer
   public:
 	buffer_fifo(u32 max_length);
 	~buffer_fifo();
-	void push(f64);
-	f64 pop();
+	void push(f32);
+	f32 pop();
 	u32 get_queue_length();
 };
