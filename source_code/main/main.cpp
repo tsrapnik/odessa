@@ -8,6 +8,7 @@
 #include "vc_gpu.h"
 #include "vc_mailbox_framebuffer.h"
 #include "vc_mailbox_property_tags.h"
+#include "math.h"
 
 //todo: make uart singleton like device.
 uart* a_uart;
@@ -47,91 +48,35 @@ extern "C" i32 main(void)
     vc_gpu a_vc_gpu(a_vc_mailbox_framebuffer.get_buffer(), 800, 480);
 
     a_uart = uart::create(uart::device::uart0);
-    a_uart->write("\r\n");
     a_uart->write("uart created.\r\n");
     a_uart->write("\r\n");
 
-    u16 offset = 0;
-    u32 vertices_size = 4;
-    vc_gpu::vertex vertices[vertices_size];
-
-    vertices[0].xs = 200 << 4;
-    vertices[0].ys = 100 << 4;
-    vertices[0].zs = 1.0f;
-    vertices[0].wc = 1.0f;
-    vertices[0].r = 0.0f;
-    vertices[0].g = 0.0f;
-    vertices[0].b = 0.0f;
-
-    vertices[1].xs = 600 << 4;
-    vertices[1].ys = 100 << 4;
-    vertices[1].zs = 1.0f;
-    vertices[1].wc = 1.0f;
-    vertices[1].r = 0.0f;
-    vertices[1].g = 1.0f;
-    vertices[1].b = 0.0f;
-
-    vertices[2].xs = offset << 4;
-    vertices[2].ys = 300 << 4;
-    vertices[2].zs = 1.0f;
-    vertices[2].wc = 1.0f;
-    vertices[2].r = 0.0f;
-    vertices[2].g = 0.0f;
-    vertices[2].b = 1.0f;
-
-    vertices[3].xs = 600 << 4;
-    vertices[3].ys = 300 << 4;
-    vertices[3].zs = 1.0f;
-    vertices[3].wc = 1.0f;
-    vertices[3].r = 1.0f;
-    vertices[3].g = 1.0f;
-    vertices[3].b = 1.0f;
-
-    u32 triangles_size = 2;
-    vc_gpu::triangle triangles[triangles_size];
-
-    triangles[0].index_0 = 0;
-    triangles[0].index_1 = 1;
-    triangles[0].index_2 = 2;
-
-    triangles[1].index_0 = 3;
-    triangles[1].index_1 = 2;
-    triangles[1].index_2 = 1;
-
-    list<vc_gpu::triangle> triangles_list;
-    for(u32 index = 0; index < triangles_size; index++)
-        triangles_list.append_copy(triangles[index]);
-
-    list<vc_gpu::vertex> vertices_list;
-    for(u32 index = 0; index < vertices_size; index++)
-        vertices_list.append_copy(vertices[index]);
-
-    list_iterator<vc_gpu::vertex> vertices_iterator(vertices_list);
-    vertices_iterator.to_first();
-    vertices_iterator++;
-    vertices_iterator++;
-    vc_gpu::vertex& moving_vertex = vertices_iterator.get_data_reference();
+    a_uart->write(string::to_string(math::leading_zeroes(0x00fffffffffffffful)), 18);
+    a_uart->write("\r\n");
+    a_uart->write(string::to_string(math::leading_zeroes(0x00ffffffu)), 18);
+    a_uart->write("\r\n");
+    a_uart->write(string::to_string(static_cast<u64>(math::sqrt(16.0f))), 18);
+    a_uart->write("\r\n");
+    a_uart->write(string::to_string(static_cast<u64>(math::sqrt(16.0))), 18);
+    a_uart->write("\r\n");
 
     scene_2d a_scene;
     a_scene.append_triangle(vector_2_f32(100.0f, 100.0f),
                             vector_2_f32(400.0f, 100.0f),
                             vector_2_f32(100.0f, 400.0f),
                             color(255, 255, 255, 255));
-    a_scene.append_line(vector_2_f32(100.0f, 480.0f),
+    a_scene.append_line(vector_2_f32(100.0f, 100.0f),
                         vector_2_f32(500.0f, 20.0f),
                         color(0, 255, 255, 255),
-                        5.0f);
+                        1.0f);
 
-    while(1)
+    while(true)
     {
-        // a_vc_gpu.set_triangles(vertices_list, triangles_list, color(0, 0, 0, 255));
         a_vc_gpu.set_triangles(a_scene, color(0, 0, 0, 255));
         a_vc_gpu.render();
 
-        offset++;
-        if(offset >= 900)
-            offset = 0;
-        moving_vertex.xs = offset << 4;
+        a_scene.vertices.get_reference_first().a_color.red++;
+        a_scene.vertices.get_reference_first().position.coordinate[0]++;
     }
     return (0);
 }
