@@ -44,52 +44,29 @@ extern "C" i32 main(void)
     //should be created as soon as possible to enable debugging.
     a_uart = uart::create(uart::device::uart0);
     a_uart->write("uart created.\r\n");
-    a_uart->write("\r\n");
-
-    // buddy_heap::print();
-
-    // extern void* const global_heap_base;
-    // a_uart->write(string::to_string(reinterpret_cast<usize>(global_heap_base)));
-    // a_uart->write(" = heap base\r\n");
 
     unsigned int max_clockrate = vc_mailbox_property_tags::get_max_clock_rate(vc_mailbox_property_tags::clock_id::arm);
-    a_uart->write("a.\r\n");
     vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::arm, max_clockrate);
-    a_uart->write("b.\r\n");
 
     vc_mailbox_framebuffer a_vc_mailbox_framebuffer;
-    a_uart->write("c.\r\n");
     vc_gpu a_vc_gpu(a_vc_mailbox_framebuffer.get_buffer(), 800, 480);
-    a_uart->write("d.\r\n");
 
     scene_2d a_scene;
-    a_uart->write("e.\r\n");
 
     effect_graph a_effect_graph;
-    a_uart->write("f.\r\n");
     effect_chorus a_effect_chorus(rectangle(vector_2_f32(100.0f, 100.0f), vector_2_f32(200.0f, 100.0f)),
                                   color(255, 100, 0, 255));
-    a_uart->write("g.\r\n");
 
     a_effect_graph.add_effect(&a_effect_chorus);
-    a_uart->write("h.\r\n");
 
-    // buddy_heap::print();
-    extern u32 assignment_count;
     while(true)
     {
         //todo: to string is memory leak.
-        // char buffer[19];
-        // a_uart->write(string::to_string(assignment_count, buffer));
-        // a_uart->write("\r\n");
         a_scene.clear();
-        // buddy_heap::print();
-
         a_effect_graph.draw(a_scene);
-        // buddy_heap::print();
-
         a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
         a_vc_gpu.render();
+        buddy_heap::print();
 
         a_scene.vertices.get_reference_first().a_color.red++;
         a_scene.vertices.get_reference_first().position.coordinate[0]++;

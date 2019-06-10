@@ -3,10 +3,6 @@
 #include "memory_map.h"
 #include "type_definitions.h"
 
-//todo: remove.
-#include "uart.h"
-#include "string.h"
-
 //todo: make nonstatic class, for reusability on different memory regions.
 class buddy_heap
 {
@@ -31,7 +27,7 @@ class buddy_heap
     static block_pointer* free_block_lists[heap_max_order + 1]; //points to the linked list of block_pointers pointing to the free memory blocks for each order.
 
     static usize get_matching_order(usize size); //return the order number of the memory block that has a sufficient size.
-    static bool removed_from_free_block_list(block* this_block, usize order); //return true en frees the associated block_pointer when the block is in the list of free blocks of the given order.
+    static bool removed_from_free_block_list(block* this_block, u32 order); //return true and remove associated block_pointer, when the block is in the list of free blocks of the given order.
 
     buddy_heap(); //the class is static. no objects of this type can be made.
     ~buddy_heap();

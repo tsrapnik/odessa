@@ -2,6 +2,10 @@
 
 #include "math.h"
 
+//todo: remove.
+#include "string.h"
+#include "uart.h"
+
 buddy_heap::block_pointer buddy_heap::block_pointers[1 << (order_count - 2)];
 buddy_heap::block_pointer* buddy_heap::available_block_pointers[1 << (order_count - 2)];
 buddy_heap::block_pointer** buddy_heap::last_available_block_pointer;
@@ -15,7 +19,7 @@ usize buddy_heap::get_matching_order(usize size)
     return word_size - math::leading_zeroes(size);
 }
 
-bool buddy_heap::removed_from_free_block_list(block* this_block, usize order)
+bool buddy_heap::removed_from_free_block_list(block* this_block, u32 order)
 {
     block_pointer* free_block_iterator = free_block_lists[order];
     block_pointer* next_free_block_iterator = nullptr;
@@ -35,6 +39,8 @@ bool buddy_heap::removed_from_free_block_list(block* this_block, usize order)
             *last_available_block_pointer = free_block_iterator;
             return true;
         }
+        next_free_block_iterator = free_block_iterator;
+        free_block_iterator = free_block_iterator->previous;
     }
     //return false if the block was not in the list.
     return false;
