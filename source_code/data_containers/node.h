@@ -22,6 +22,5 @@ struct node
 													  previous(previous),
 													  next(next)
 	{
-		a_uart->write("in new node.\r\n"); //todo: remove.
 	}
 };

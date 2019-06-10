@@ -1,6 +1,7 @@
 #include "buddy_heap.h"
 #include "effect_chorus.h"
 #include "effect_graph.h"
+#include "math.h"
 #include "memory.h"
 #include "scratchpad.h"
 #include "string.h"
@@ -8,7 +9,6 @@
 #include "vc_gpu.h"
 #include "vc_mailbox_framebuffer.h"
 #include "vc_mailbox_property_tags.h"
-#include "math.h"
 
 //todo: make uart singleton like device.
 uart* a_uart;
@@ -41,41 +41,54 @@ extern "C" i32 main(void)
 
     buddy_heap::initialize();
 
-    unsigned int max_clockrate = vc_mailbox_property_tags::get_max_clock_rate(vc_mailbox_property_tags::clock_id::arm);
-    vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::arm, max_clockrate);
-
-    vc_mailbox_framebuffer a_vc_mailbox_framebuffer;
-    vc_gpu a_vc_gpu(a_vc_mailbox_framebuffer.get_buffer(), 800, 480);
-
+    //should be created as soon as possible to enable debugging.
     a_uart = uart::create(uart::device::uart0);
     a_uart->write("uart created.\r\n");
     a_uart->write("\r\n");
 
+    // buddy_heap::print();
+
+    // extern void* const global_heap_base;
+    // a_uart->write(string::to_string(reinterpret_cast<usize>(global_heap_base)));
+    // a_uart->write(" = heap base\r\n");
+
+    unsigned int max_clockrate = vc_mailbox_property_tags::get_max_clock_rate(vc_mailbox_property_tags::clock_id::arm);
+    a_uart->write("a.\r\n");
+    vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::arm, max_clockrate);
+    a_uart->write("b.\r\n");
+
+    vc_mailbox_framebuffer a_vc_mailbox_framebuffer;
+    a_uart->write("c.\r\n");
+    vc_gpu a_vc_gpu(a_vc_mailbox_framebuffer.get_buffer(), 800, 480);
+    a_uart->write("d.\r\n");
+
     scene_2d a_scene;
+    a_uart->write("e.\r\n");
 
-    a_uart->write("before a_effect_graph.\r\n");
     effect_graph a_effect_graph;
-    a_uart->write("after a_effect_graph.\r\n");
-    a_uart->write("before a_effect_chorus.\r\n");
+    a_uart->write("f.\r\n");
     effect_chorus a_effect_chorus(rectangle(vector_2_f32(100.0f, 100.0f), vector_2_f32(200.0f, 100.0f)),
-                                    color(255,100,0,255));
-    a_uart->write("after a_effect_chorus.\r\n");
+                                  color(255, 100, 0, 255));
+    a_uart->write("g.\r\n");
 
-    a_uart->write("before add effect.\r\n");
     a_effect_graph.add_effect(&a_effect_chorus);
-    a_uart->write("after add effect.\r\n");
+    a_uart->write("h.\r\n");
 
+    // buddy_heap::print();
+    extern u32 assignment_count;
     while(true)
     {
-        a_uart->write("before draw.\r\n");
-        a_effect_graph.draw(a_scene);
-        a_uart->write("after draw.\r\n");
-        a_uart->write("before set_triangles.\r\n");
-        a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
-        a_uart->write("after set_triangles.\r\n");
-        a_uart->write("before clear.\r\n");
+        //todo: to string is memory leak.
+        // char buffer[19];
+        // a_uart->write(string::to_string(assignment_count, buffer));
+        // a_uart->write("\r\n");
         a_scene.clear();
-        a_uart->write("after clear.\r\n");
+        // buddy_heap::print();
+
+        a_effect_graph.draw(a_scene);
+        // buddy_heap::print();
+
+        a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
         a_vc_gpu.render();
 
         a_scene.vertices.get_reference_first().a_color.red++;
@@ -87,85 +100,101 @@ extern "C" i32 main(void)
 extern "C" void syn_cur_el0()
 {
     a_uart->write("syn_cur_el0\r\n");
-    while(true);
+    while(true)
+        ;
 }
 extern "C" void irq_cur_el0()
 {
     a_uart->write("irq_cur_el0\r\n");
-    while(true);
+    while(true)
+        ;
 }
 extern "C" void fiq_cur_el0()
 {
     a_uart->write("fiq_cur_el0\r\n");
-    while(true);
+    while(true)
+        ;
 }
 extern "C" void err_cur_el0()
 {
     a_uart->write("err_cur_el0\r\n");
-    while(true);
+    while(true)
+        ;
 }
 
 extern "C" void syn_cur_elx()
 {
     a_uart->write("syn_cur_elx\r\n");
-    while(true);
+    while(true)
+        ;
 }
 extern "C" void irq_cur_elx()
 {
     a_uart->write("irq_cur_elx\r\n");
-    while(true);
+    while(true)
+        ;
 }
 extern "C" void fiq_cur_elx()
 {
     a_uart->write("fiq_cur_elx\r\n");
-    while(true);
+    while(true)
+        ;
 }
 extern "C" void err_cur_elx()
 {
     a_uart->write("err_cur_elx\r\n");
-    while(true);
+    while(true)
+        ;
 }
 
 extern "C" void syn_low64_elx()
 {
     a_uart->write("csyn_low64_elx\r\n");
-    while(true);
+    while(true)
+        ;
 }
 extern "C" void irq_low64_elx()
 {
     a_uart->write("irq_low64_elx\r\n");
-    while(true);
+    while(true)
+        ;
 }
 extern "C" void fiq_low64_elx()
 {
     a_uart->write("fiq_low64_elx\r\n");
-    while(true);
+    while(true)
+        ;
 }
 extern "C" void err_low64_elx()
 {
     a_uart->write("err_low64_elx\r\n");
-    while(true);
+    while(true)
+        ;
 }
 
 extern "C" void syn_low32_elx()
 {
     a_uart->write("syn_low32_elx\r\n");
-    while(true);
+    while(true)
+        ;
 }
 extern "C" void irq_low32_elx()
 {
     a_uart->write("irq_low32_elx\r\n");
-    while(true);
+    while(true)
+        ;
 }
 extern "C" void fiq_low32_elx()
 {
     a_uart->write("fiq_low32_elx\r\n");
-    while(true);
+    while(true)
+        ;
 }
 extern "C" void err_low32_elx()
 {
     a_uart->write("err_low32_elx\r\n");
-    while(true);
+    while(true)
+        ;
 }
 
 //dummy functions to avoid linker complaints.

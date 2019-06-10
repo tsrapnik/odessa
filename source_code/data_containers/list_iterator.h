@@ -2,6 +2,8 @@
 
 #include "list.h"
 
+//todo: also make a read only iterator.
+
 //creates an iterator which can iterate through a specified list and access its elements.
 template <typename type>
 class list_iterator

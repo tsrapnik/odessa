@@ -8,7 +8,7 @@ class effect_sink : public effect
     ///points to the actual 32 bit value that is sent to the audio output, e.g. dac.
     i32* sink;
 
-    input* mono_input;
+    input* the_input;
 
     void process() override;
 

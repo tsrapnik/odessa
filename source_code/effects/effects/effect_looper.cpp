@@ -4,12 +4,12 @@ effect_looper::effect_looper(rectangle bounding_box, color the_color) :
     effect::effect(bounding_box, the_color),
     active_channel_pointer(list_iterator<channel*>(channels))
 {
-    mono_input = new input(rectangle(vector_2_f32(0, 120), vector_2_f32(30, 40)),
+    the_input = new input(rectangle(vector_2_f32(0, 120), vector_2_f32(30, 40)),
                            color(255, 0, 0, 255));
-    mono_output = new output(rectangle(vector_2_f32(170, 120), vector_2_f32(30, 40)),
+    the_output = new output(rectangle(vector_2_f32(170, 120), vector_2_f32(30, 40)),
                              color(0, 255, 0, 255));
-    add_input(mono_input);
-    add_output(mono_output);
+    add_input(the_input);
+    add_output(the_output);
 }
 
 effect_looper::~effect_looper()
@@ -30,7 +30,7 @@ void effect_looper::process()
         case looper_state::recording:
         {
             //clear all current tracks of the channel, restart channel and add a first track (and point active_track_pointer to it) before activating this state.
-            active_channel->record(mono_input->get_frame());
+            active_channel->record(the_input->get_frame());
             break;
         }
         case looper_state::playing:
@@ -43,7 +43,7 @@ void effect_looper::process()
         {
             //if there are tracks they should not be empty.
             frame += active_channel->play();
-            active_channel->dub(mono_input->get_frame());
+            active_channel->dub(the_input->get_frame());
             break;
         }
     }

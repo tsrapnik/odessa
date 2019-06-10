@@ -1,9 +1,5 @@
 #include "effect_graph.h"
 
-//todo: remove.
-#include "uart.h"
-#include "string.h"
-
 effect_graph::effect_graph()
 {
 }
@@ -42,20 +38,10 @@ void effect_graph::draw(scene_2d& scene)
 {
     list_iterator<effect*> current_effect(effects);
     for(current_effect.to_first(); !current_effect.at_end(); current_effect++)
-    {
-        a_uart->write("before draw effect.\r\n");
-        a_uart->write(string::to_string(reinterpret_cast<usize>(current_effect.get_data_copy())), 18);
-        a_uart->write("\r\n");
         current_effect.get_data_copy()->draw(scene);
-        a_uart->write("after draw effect.\r\n");
-    }
 
     for(current_effect.to_first(); !current_effect.at_end(); current_effect++)
-    {
-        a_uart->write("before draw connections.\r\n");
         current_effect.get_data_copy()->draw_connections(scene);
-        a_uart->write("after draw connections.\r\n");
-    }
 }
 
 void effect_graph::add_effect(effect* new_effect)

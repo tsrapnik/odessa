@@ -8,7 +8,7 @@ class effect_source : public effect
     ///points to the actual 32 bit value that is received from the audio intput, e.g. adc.
     i32* source;
 
-    output* mono_output;
+    output* the_output;
 
     void process() override;
 

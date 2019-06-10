@@ -72,7 +72,6 @@ uart* uart::create(device device_id)
         else
         {
             uart* new_device = new uart(device_id, gpio_32, gpio_33, tx_pin, rx_pin);
-            // uart* new_device = new uart(device_id, nullptr, nullptr, nullptr, nullptr);
             return new_device;
         }
     }

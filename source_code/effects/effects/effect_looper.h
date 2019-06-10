@@ -59,8 +59,8 @@ class effect_looper : public effect
         void remove_active_track();
     };
 
-    input* mono_input;
-    output* mono_output;
+    input* the_input;
+    output* the_output;
 
     list<channel*> channels;
     list_iterator<channel*> active_channel_pointer;
