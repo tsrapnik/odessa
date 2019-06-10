@@ -19,9 +19,9 @@ usize buddy_heap::get_matching_order(usize size)
     return word_size - math::leading_zeroes(size);
 }
 
-bool buddy_heap::removed_from_free_block_list(block* this_block, u32 order)
+bool buddy_heap::removed_from_free_block_list(block* this_block)
 {
-    block_pointer* free_block_iterator = free_block_lists[order];
+    block_pointer* free_block_iterator = free_block_lists[this_block->order];
     block_pointer* next_free_block_iterator = nullptr;
 
     while(free_block_iterator != nullptr)
@@ -30,7 +30,7 @@ bool buddy_heap::removed_from_free_block_list(block* this_block, u32 order)
         {
             //if found, remove block pointer from the list.
             if(next_free_block_iterator == nullptr)
-                free_block_lists[order] = free_block_iterator->previous;
+                free_block_lists[this_block->order] = free_block_iterator->previous;
             else
                 next_free_block_iterator->previous = free_block_iterator->previous;
 
@@ -150,7 +150,7 @@ void buddy_heap::free(void* pointer)
 
     block* buddy_block = reinterpret_cast<block*>(reinterpret_cast<usize>(freed_block) ^ (1 << order)); //find the buddy of the block.
 
-    while(removed_from_free_block_list(buddy_block, order)) //every time the buddy_block is found to be free, increase the order and check again for the buddy block.
+    while(removed_from_free_block_list(buddy_block)) //every time the buddy_block is found to be free, increase the order and check again for the buddy block.
     {
         freed_block = reinterpret_cast<block*>(reinterpret_cast<usize>(freed_block) & ~(1 << order)); //find the first of the free_block and the buddy_block.
         order++; //increase the order
@@ -165,32 +165,4 @@ void buddy_heap::free(void* pointer)
 
     freed_block_pointer->previous = free_block_lists[order]; //add the free_block to the free list.
     free_block_lists[order] = freed_block_pointer;
-}
-
-//todo: remove.
-void buddy_heap::print()
-{
-    extern uart* a_uart;
-    char buffer[19];
-    u32 available_memory = 0;
-    for(u32 order = heap_min_order; order < heap_max_order + 1; order++)
-    {
-        u32 count = 0;
-        block_pointer* a_block_pointer = free_block_lists[order];
-        while(a_block_pointer != nullptr)
-        {
-            count++;
-            // a_uart->write(string::to_string(reinterpret_cast<usize>(a_block_pointer), buffer));
-            // a_uart->write(".\r\n");
-            a_block_pointer = a_block_pointer->previous;
-        }
-        // a_uart->write("order ");
-        // a_uart->write(string::to_string(order, buffer));
-        // a_uart->write(": ");
-        // a_uart->write(string::to_string(count, buffer));
-        // a_uart->write(".\r\n");
-        available_memory += count << order;
-    }
-    a_uart->write(string::to_string(available_memory, buffer));
-    a_uart->write(".\r\n");
 }

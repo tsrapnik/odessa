@@ -27,7 +27,7 @@ class buddy_heap
     static block_pointer* free_block_lists[heap_max_order + 1]; //points to the linked list of block_pointers pointing to the free memory blocks for each order.
 
     static usize get_matching_order(usize size); //return the order number of the memory block that has a sufficient size.
-    static bool removed_from_free_block_list(block* this_block, u32 order); //return true and remove associated block_pointer, when the block is in the list of free blocks of the given order.
+    static bool removed_from_free_block_list(block* this_block); //return true and remove associated block_pointer, when the block is in the list of free blocks of the given order.
 
     buddy_heap(); //the class is static. no objects of this type can be made.
     ~buddy_heap();
@@ -38,7 +38,4 @@ class buddy_heap
 
     static void* allocate(usize size);
     static void free(void* pointer);
-
-    //todo: remove.
-    static void print();
 };

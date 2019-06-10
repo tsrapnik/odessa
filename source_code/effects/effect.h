@@ -28,6 +28,7 @@ class effect
     void draw_connections(scene_2d& scene);
     bool is_selected(vector_2_f32 mouse_position);
     void move(vector_2_f32 displacement);
+    rectangle get_bounding_box();
     button* get_selected_button(vector_2_f32 mouse_position);
     output* get_selected_output(vector_2_f32 mouse_position);
     input* get_selected_input(vector_2_f32 mouse_position);

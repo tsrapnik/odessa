@@ -59,6 +59,9 @@ extern "C" i32 main(void)
 
     a_effect_graph.add_effect(&a_effect_chorus);
 
+    constexpr f32 speed = 0.2f;
+    f32 dx = speed;
+    f32 dy = speed;
     while(true)
     {
         //todo: to string is memory leak.
@@ -66,10 +69,28 @@ extern "C" i32 main(void)
         a_effect_graph.draw(a_scene);
         a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
         a_vc_gpu.render();
-        buddy_heap::print();
 
-        a_scene.vertices.get_reference_first().a_color.red++;
-        a_scene.vertices.get_reference_first().position.coordinate[0]++;
+        a_effect_chorus.move(vector_2_f32(dx, dy));
+        if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] > 800.0f)
+        {
+            dx = -speed;
+            a_uart->write("hit right.\r\n");
+        }
+        if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] < 0.0f)
+        {
+            dx = speed;
+            a_uart->write("hit left.\r\n");
+        }
+        if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] > 480.0f)
+        {
+            dy = -speed;
+            a_uart->write("hit bottom.\r\n");
+        }
+        if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] < 0.0f)
+        {
+            dy = speed;
+            a_uart->write("hit top.\r\n");
+        }
     }
     return (0);
 }

@@ -89,6 +89,11 @@ void effect::move(vector_2_f32 displacement)
         buttons_iterator.get_data_copy()->move(displacement);
 }
 
+rectangle effect::get_bounding_box()
+{
+    return this->the_graphic->get_bounding_box();
+}
+
 button* effect::get_selected_button(vector_2_f32 mouse_position)
 {
     list_iterator<button*> current_button(this->buttons);
