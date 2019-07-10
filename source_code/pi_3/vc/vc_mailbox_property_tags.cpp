@@ -122,3 +122,13 @@ bool vc_mailbox_property_tags::execute_qpu(u32 num_qpus, u32 control, u32 noflus
         return true;
     return a_tag_execute_qpu.a_tag_header.value_buffer_size;
 }
+
+bool vc_mailbox_property_tags::set_touch_buffer(touch_buffer* a_touch_buffer)
+{
+    tag_set_touch_buffer a_tag_set_touch_buffer;
+    a_tag_set_touch_buffer.request.touch_buffer_address = vc_pointer::arm_to_vc_pointer(a_touch_buffer).get_raw_value(); //static_cast<u32>(reinterpret_cast<usize>(a_touch_buffer));
+
+    vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_set_touch_buffer).get_raw_value(),
+                           vc_mailbox::channel::property_tags_arm_to_vc);
+    return (a_tag_set_touch_buffer.a_buffer_header.a_request_response_code == request_response_code::request_succesful);
+}

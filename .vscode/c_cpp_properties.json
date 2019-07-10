@@ -1,0 +1,65 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/source_code",
+                "${workspaceFolder}/source_code/boot",
+                "${workspaceFolder}/source_code/data_containers",
+                "${workspaceFolder}/source_code/effects",
+                "${workspaceFolder}/source_code/global_definitions",
+                "${workspaceFolder}/source_code/gui",
+                "${workspaceFolder}/source_code/main",
+                "${workspaceFolder}/source_code/math_objects",
+                "${workspaceFolder}/source_code/pi_3",
+                "${workspaceFolder}/source_code/pi_3/devices"
+            ],
+            "defines": [],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/source_code"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ]
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/source_code/**"
+            ],
+            "defines": [],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/source_code"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/source_code/**"
+            ],
+            "defines": [],
+            "intelliSenseMode": "msvc-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/source_code"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        }
+    ],
+    "version": 4
+}

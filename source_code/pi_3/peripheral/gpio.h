@@ -5,6 +5,10 @@
 class gpio
 {
     public:
+    //todo: move the enum to another file and maybe lose the singleton to get a more reusable design.
+    //todo: maybe make a gpio interface that the real devices inherit, that way you can make some virtual gpio's just for testing stuff etc,
+    //or to make sure code does not break when porting to another platform (raspberry pi 4?).
+    //todo: do the same for all other devices.
     //represent all available gpio's.
     enum class device : u32
     {

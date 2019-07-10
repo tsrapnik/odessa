@@ -1,12 +1,12 @@
 #pragma once
 
-#include "type_definitions.h"
 #include "enum_flags.h"
+#include "type_definitions.h"
 #include "vc_pointer.h"
 
 class vc_mailbox_property_tags
 {
-  public:
+    public:
     enum class clock_id : u32
     {
         emmc = 0x1,
@@ -40,7 +40,7 @@ class vc_mailbox_property_tags
         ccp2tx = 0x8,
     };
 
-  private:
+    private:
     //todo: put tag id's directly in structs with single value enums.
     enum class tag_id : u32
     {
@@ -109,6 +109,8 @@ class vc_mailbox_property_tags
         set_pallette = 0x0004800b,
         set_cursor_info = 0x00008010,
         set_cursor_state = 0x00008011,
+        set_touch_buffer = 0x0004801f,
+        get_touch_buffer = 0x0004000f,
     };
     enum class request_response_code : u32
     {
@@ -136,14 +138,14 @@ class vc_mailbox_property_tags
         } volatile response_request_code;
     } __attribute__((packed));
 
-  private:
+    private:
     //static class
     vc_mailbox_property_tags() = delete;
-    vc_mailbox_property_tags(const vc_mailbox_property_tags &) = delete;
-    vc_mailbox_property_tags &operator=(const vc_mailbox_property_tags &) = delete;
+    vc_mailbox_property_tags(const vc_mailbox_property_tags&) = delete;
+    vc_mailbox_property_tags& operator=(const vc_mailbox_property_tags&) = delete;
     ~vc_mailbox_property_tags() = delete;
 
-  private:
+    private:
     struct tag_set_clock_rate
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_set_clock_rate),
@@ -167,11 +169,11 @@ class vc_mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //set clock with given id to given rate in Hz. returns true on success.
     static bool set_clock_rate(clock_id a_clock_id, u32 rate);
 
-  private:
+    private:
     struct tag_get_max_clock_rate
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_get_max_clock_rate),
@@ -193,11 +195,11 @@ class vc_mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //get maximum frequency in Hz of clock with given id.
     static u32 get_max_clock_rate(clock_id a_clock_id);
 
-  private:
+    private:
     struct tag_enable_qpu
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_enable_qpu),
@@ -217,24 +219,24 @@ class vc_mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns true on success.
     static bool enable_qpu(bool enable);
 
-  public:
+    public:
     enum class allocate_memory_flag
     {
-        discardable = 1 << 0,                   //can be resized to 0 at any time. use for cached data.
-        normal = 0 << 2,                        //normal allocating alias. don't use from arm.
-        direct = 1 << 2,                        //0xc alias uncached.
-        coherent = 2 << 2,                      //0x8 alias. non-allocating in l2 but coherent.
+        discardable = 1 << 0, //can be resized to 0 at any time. use for cached data.
+        normal = 0 << 2, //normal allocating alias. don't use from arm.
+        direct = 1 << 2, //0xc alias uncached.
+        coherent = 2 << 2, //0x8 alias. non-allocating in l2 but coherent.
         l1_nonallocating = (direct | coherent), //allocating in l2.
-        zero = 1 << 4,                          //initialise buffer to all zeros.
-        no_init = 1 << 5,                       //don't initialise (default is initialise to all ones).
-        hint_permalock = 1 << 6,                //likely to be locked for long periods of time.
+        zero = 1 << 4, //initialise buffer to all zeros.
+        no_init = 1 << 5, //don't initialise (default is initialise to all ones).
+        hint_permalock = 1 << 6, //likely to be locked for long periods of time.
     };
 
-  private:
+    private:
     struct tag_allocate_memory
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_allocate_memory),
@@ -257,11 +259,11 @@ class vc_mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns handle on success, returns zero on failure.
     static vc_handle allocate_memory(u32 size, u32 alignment, allocate_memory_flag flag);
 
-  private:
+    private:
     struct tag_release_memory
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_release_memory),
@@ -282,11 +284,11 @@ class vc_mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns true on success.
     static bool release_memory(vc_handle handle);
 
-  private:
+    private:
     struct tag_lock_memory
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_lock_memory),
@@ -307,11 +309,11 @@ class vc_mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns bus address on success, returns zero on failure.
     static vc_pointer lock_memory(vc_handle handle);
 
-  private:
+    private:
     struct tag_unlock_memory
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_unlock_memory),
@@ -332,11 +334,11 @@ class vc_mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns true on success.
     static bool unlock_memory(vc_handle handle);
 
-  private:
+    private:
     struct tag_execute_code
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_execute_code),
@@ -364,11 +366,11 @@ class vc_mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns true on success.
     static bool execute_code(u32 function_pointer, u32 r0, u32 r1, u32 r2, u32 r3, u32 r4, u32 r5);
 
-  private:
+    private:
     struct tag_execute_qpu
     {
         buffer_header a_buffer_header = {.size = sizeof(tag_execute_qpu),
@@ -392,7 +394,48 @@ class vc_mailbox_property_tags
         u32 end_tag = 0; //indicates end of the tag.
     } __attribute__((packed, aligned(16)));
 
-  public:
+    public:
     //returns true on success.
     static bool execute_qpu(u32 num_qpus, u32 control, u32 noflush, u32 timeout);
+
+    public:
+    static constexpr u32 maximum_touch_points = 10;
+    struct touch_buffer
+    {
+        u8 device_mode;
+        u8 gesture_id;
+        u8 points_size;
+        struct
+        {
+            u8 x_high_word;
+            u8 x_low_word;
+            u8 y_high_word;
+            u8 y_low_word;
+            u8 reserved[2];
+        } points[maximum_touch_points];
+    } __attribute__((packed, aligned(16)));
+
+    private:
+    struct tag_set_touch_buffer
+    {
+        buffer_header a_buffer_header = {.size = sizeof(tag_set_touch_buffer),
+                                         .a_request_response_code = request_response_code::process_request};
+        tag_header a_tag_header = {.a_tag_id = tag_id::set_touch_buffer,
+                                   .value_buffer_size = sizeof(tag_set_touch_buffer::request),
+                                   .response_request_code = {.response_size = 0, .is_response = 0}};
+        union {
+            struct
+            {
+                u32 touch_buffer_address;
+            } request;
+            struct
+            {
+            } response;
+        };
+        u32 end_tag = 0; //indicates end of the tag.
+    } __attribute__((packed, aligned(16)));
+
+    public:
+    //returns true on success.
+    static bool set_touch_buffer(touch_buffer* a_touch_buffer);
 };

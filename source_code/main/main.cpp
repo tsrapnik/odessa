@@ -1,6 +1,10 @@
 #include "buddy_heap.h"
 #include "effect_chorus.h"
+#include "effect_delay.h"
 #include "effect_graph.h"
+#include "effect_looper.h"
+#include "effect_sink.h"
+#include "effect_source.h"
 #include "math.h"
 #include "memory.h"
 #include "scratchpad.h"
@@ -56,12 +60,34 @@ extern "C" i32 main(void)
     effect_graph a_effect_graph;
     effect_chorus a_effect_chorus(rectangle(vector_2_f32(100.0f, 100.0f), vector_2_f32(200.0f, 100.0f)),
                                   color(255, 100, 0, 255));
+    effect_delay a_effect_delay(rectangle(vector_2_f32(100.0f, 100.0f), vector_2_f32(200.0f, 100.0f)),
+                                color(0, 100, 200, 125));
+    effect_looper a_effect_looper(rectangle(vector_2_f32(500.0f, 100.0f), vector_2_f32(200.0f, 100.0f)),
+                                  color(100, 100, 200, 125));
+    i32 sink, source;
+    effect_sink a_effect_sink(&sink,
+                              rectangle(vector_2_f32(100.0f, 300.0f), vector_2_f32(200.0f, 100.0f)),
+                              color(200, 100, 20, 125));
+    effect_source a_effect_source(&source,
+                                  rectangle(vector_2_f32(500.0f, 300.0f), vector_2_f32(200.0f, 100.0f)),
+                                  color(50, 80, 50, 125));
 
     a_effect_graph.add_effect(&a_effect_chorus);
+    a_effect_graph.add_effect(&a_effect_delay);
+    a_effect_graph.add_effect(&a_effect_looper);
+    a_effect_graph.add_effect(&a_effect_sink);
+    a_effect_graph.add_effect(&a_effect_source);
 
     constexpr f32 speed = 0.2f;
     f32 dx = speed;
     f32 dy = speed;
+
+    u8 old_points_size = 0;
+    u32 old_x_position = 0;
+    u32 old_y_position = 0;
+    volatile vc_mailbox_property_tags::touch_buffer a_touch_buffer;
+    vc_mailbox_property_tags::set_touch_buffer(const_cast<vc_mailbox_property_tags::touch_buffer*>(&a_touch_buffer));
+
     while(true)
     {
         //todo: to string is memory leak.
@@ -90,6 +116,41 @@ extern "C" i32 main(void)
         {
             dy = speed;
             a_uart->write("hit top.\r\n");
+        }
+
+        u8 new_points_size = a_touch_buffer.points_size;
+        if(new_points_size > 10)
+            new_points_size = old_points_size;
+        u32 new_x_position = ((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word;
+        if(new_x_position > 799)
+            new_x_position = old_x_position;
+        u32 new_y_position = ((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word;
+        if(new_y_position > 479)
+            new_y_position = old_y_position;
+        if((new_points_size != old_points_size) ||
+           (new_x_position != old_x_position) ||
+           (new_y_position != old_y_position))
+        {
+            char buffer[19];
+            a_uart->write("points: ");
+            a_uart->write(string::to_string(new_points_size, buffer));
+            a_uart->write(", ");
+            a_uart->write(string::to_string(new_x_position, buffer));
+            a_uart->write(", ");
+            a_uart->write(string::to_string(new_y_position, buffer));
+            a_uart->write(", ");
+            a_uart->write(string::to_string(a_touch_buffer.points[0].reserved[0], buffer));
+            a_uart->write(", ");
+            a_uart->write(string::to_string(a_touch_buffer.points[0].reserved[1], buffer));
+            a_uart->write(", ");
+            a_uart->write(string::to_string(a_touch_buffer.device_mode, buffer));
+            a_uart->write(", ");
+            a_uart->write(string::to_string(a_touch_buffer.gesture_id, buffer));
+            a_uart->write(".\r\n");
+
+            old_points_size = new_points_size;
+            old_x_position = new_x_position;
+            old_y_position = new_y_position;
         }
     }
     return (0);
