@@ -1,4 +1,7 @@
-# odessa
+# 0: odessa
+
+## author
+tsrapnik
 
 ## goal
 
