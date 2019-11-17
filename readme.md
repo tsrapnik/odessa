@@ -71,7 +71,7 @@ lsusb
 ...
 screen /dev/...
 ```
-
+todo: bootcode.bin taken form debian image.
 the bootcode.bin file which is used by the gpu on the pi as second bootstage can be modified to enable uart logging during boot stage. the bootcode.bin file provide in the project is already modified, so nothing needs to be done. if needed you can modify the bootcode.bin file yourself with following commands in a terminal. first command checks if the uart logging is enabled.
 
 ```
@@ -169,3 +169,62 @@ service tftp
 ```
 sudo service xinetd restart
 ```
+
+#### debugging
+todo:
+we start by installing some tools required by openocd. it is quite possible along the process some steps will fail and require installation of some extra tools. i for example had to add `automake` and `pkg-config` for the `./bootstrap` step to succeed and `libusb-1.0-0-dev` because the st link v2.0 strictly requires a 1.x version of libusb. if you encounter such issues, just google the error, install the required extra tools and rerun the last step until it succeeds.
+
+```
+sudo apt install autoconf libtool libusb-dev automake pkg-config libusb-1.0-0-dev
+```
+todo: remark everything only works for linux.
+next we will build our openocd executable from source. this is recommended because depending on which target and dongle you use some configuration might differ. choose any directory you like and open it in a terminal. we first clone the source code from a git repository.
+
+```
+cd some_directory
+git clone --recursive git://git.code.sf.net/p/openocd/code openocd
+```
+
+the source code is now in a folder called openocd in you chosen directory. cd into it and just run each command succesively as shown below. if a command fails, fix it as described at the beginning of this chapter.
+
+todo: describe pins, dongle, openocd, gdb.
+the only command where you might need to do something different is the `./configure` command. depending on which dongle you use you may have to provide different options. i for example use the st link v2.0, so i have to add the `--enable-stlink` option for the dongle to be usable. use `./configure --help` to show all available options, here you can find the option for your dongle. at the end of the `./configure` step you should get a summary of all programmers that are available.
+
+```
+cd openocd
+./bootstrap
+./configure --help
+./configure --enable-stlink
+make
+sudo make install
+```
+
+```
+OpenOCD configuration summary
+--------------------------------------------------
+MPSSE mode of FTDI based devices        yes (auto)
+ST-Link Programmer                      yes
+TI ICDI JTAG Programmer                 yes (auto)
+Keil ULINK JTAG Programmer              yes (auto)
+Altera USB-Blaster II Compatible        yes (auto)
+Bitbang mode of FT232R based devices    yes (auto)
+Versaloon-Link JTAG Programmer          yes (auto)
+TI XDS110 Debug Probe                   yes (auto)
+OSBDM (JTAG only) Programmer            yes (auto)
+eStick/opendous JTAG Programmer         yes (auto)
+Andes JTAG Programmer                   yes (auto)
+USBProg JTAG Programmer                 yes (auto)
+Raisonance RLink JTAG Programmer        yes (auto)
+Olimex ARM-JTAG-EW Programmer           yes (auto)
+CMSIS-DAP Compliant Debugger            no
+Cypress KitProg Programmer              no
+Altera USB-Blaster Compatible           no
+ASIX Presto Adapter                     no
+OpenJTAG Adapter                        no
+SEGGER J-Link Programmer                yes (auto)
+```
+
+todo: black magic probe used in stead of openocd.
+* clone ...
+* make ...='stlink...'
+* run blackmagic_stlinkv2

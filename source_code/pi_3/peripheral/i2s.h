@@ -18,87 +18,48 @@ class i2s
     ///available registers for each i2s device.
     struct registers
     {
-        ///control register options.
-        enum class control_options : u32
+        enum class control_and_status_options : u32
         {
-            i2s_enable = 1 << 15,
-            interrupt_on_rx = 1 << 10,
-            interrupt_on_tx = 1 << 9,
-            interrupt_on_done = 1 << 8,
-            start_transfer = 1 << 7,
-            clear_fifo = 1 << 4,
-            read_transfer = 1 << 0
+            ram_standby = 1 << 25,
+            pcm_clock_sync_helper = 1 <<24,
+            rx_sign_extend = 1 << 23,
+            rx_fifo_is_full = 1 << 22,
+            tx_fifo_is_empty = 1 << 21,
+            rx_fifo_contains_data = 1 << 20,
+            tx_fifo_can_accept_data = 1 << 19,
+            rx_fifo_needs_reading = 1 << 18,
+            tx_fifo_needs_writing = 1 << 17,
+            rx_fifo_error = 1 << 16,
+            tx_fifo_error = 1 << 15,
+            rx_fifo_in_sync = 1 << 14,
+            tx_fifo_in_sync = 1 << 13,
+            dma_dreq_enable = 1 << 9,
+            rx_fifo_threshold_mask = 0x3 << 7,
+            rx_fifo_threshold_single_sample= 0x0 << 7,
+            rx_fifo_threshold_fifo_at_least_full = 0x1 << 7,
+            rx_fifo_threshold_fifo_at_least = 0x2 << 7,
+            rx_fifo_threshold_fifo_full = 0x3 << 7,
+            tx_fifo_threshold_mask = 0x3 << 7,
+            tx_fifo_threshold_fifo_empty = 0x1 << 5,
+            tx_fifo_threshold_fifo_less_than_full = 0x1 << 5,
+            // tx_fifo_threshold_fifo_less_than_full = 0x2 << 5,
+            tx_fifo_threshold_fifo_full_but_one_sample = 0x3 << 5,
+            clear_rx_fifo = 1 << 4,
+            clear_tx_fifo = 1 << 3,
+            enable_transmission = 1 << 2,
+            enable_reception = 1 << 1,
+            enable_pcm = 1 << 0,
         };
 
-        ///status register options.
-        enum class status_options : u32
-        {
-            clock_stretch_timeout = 1 << 9,
-            acknowledge_error = 1 << 8,
-            rx_fifo_full = 1 << 7,
-            tx_fifo_empty = 1 << 6,
-            rx_fifo_contains_data = 1 << 5,
-            tx_fifo_can_accept_data = 1 << 4,
-            rx_fifo_needs_reading = 1 << 3,
-            tx_fifo_needs_writing = 1 << 2,
-            transfer_done = 1 << 1,
-            transfer_active = 1 << 0
-        };
-
-        ///data_length register options.
-        enum class data_length_options : u32
-        {
-            data_length_mask = 0xffff,
-            data_length_offset = 0
-        };
-
-        ///slave_address register options.
-        enum class slave_address_options : u32
-        {
-            slave_address_mask = 0x7f,
-            slave_address_offset = 0
-        };
-
-        ///data_fifo register options.
-        enum class data_fifo_options : u32
-        {
-            data_mask = 0xff,
-            data_offset = 0
-        };
-
-        ///
-        ///clock_divider register options.
-        ///
-        enum class clock_divider_options : u32
-        {
-            clock_divider_mask = 0xffff,
-            clock_divider_offset = 0
-        };
-
-        ///data_delay register options.
-        enum class data_delay_options : u32
-        {
-            falling_edge_delay_mask = 0xffff0000,
-            falling_edge_delay_offset = 16,
-            rising_edge_delay_mask = 0x0000ffff,
-            rising_edge_delay_offset = 0
-        };
-
-        ///clock_stretch_timeout register options.
-        ///
-        enum class clock_stretch_timeout_options : u32
-        {
-            clock_stretch_timeout_value_mask = 0xffff,
-            clock_stretch_timeout_value_offset = 0
-        };
-        volatile control_options control; //0x00
-        volatile status_options status; //0x04
-        volatile data_length_options data_length; //0x08
-        volatile slave_address_options slave_address; //0x0c
-        volatile data_fifo_options data_fifo; //0x10
-        volatile clock_divider_options clock_divider; //0x14
-        volatile data_delay_options data_delay; //0x18
-        volatile clock_stretch_timeout_options clock_stretch_timeout; //0x1c
+        control_and_status_options control_and_status; //0x00
+        u32 fifo_data; //0x04
+        // mode_options mode; //0x08
+        // receive_configuration_options receive_configuration; //0x0c
+        // transmit_configuration_options transmit_configuration; //0x10
+        // dma_request_level_options dma_request_level; //0x14
+        // interrupt_enables_options interrupt_enables; //0x18
+        // interrupt_status_and_clear_options interrupt_status_and_clear; //0x1c
+        // gray_mode_control_options gray_mode_control; //0x20
     };
 
     ///
@@ -144,3 +105,102 @@ class i2s
     ///
     i2s* create(device device_id);
 };
+
+enum test_enum: u32
+{
+    a = 0,
+    b = 1,
+    c = 2,
+    d = 4,
+};
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wall"
+struct test_struct
+{
+    u32 q: 4;
+    test_enum r: 4;
+};
+#pragma GCC diagnostic pop
+
+//todo:
+//is just syntactical sugar.
+// struct some_registers
+// {
+//     u32
+//         first_part_of_first_register: 4,
+//         second_part_of_first_register: 24,
+//         third_part_of_first_register: 4;
+//     u32 second_register;
+// }
+
+// ..I just realised that the clang flag is -Wbitfield-enum-conversion, not
+// -Wenum-bitfield-conversion. Please apply the patch below instead, which
+// has replaced the two words to remove the inconsistency.
+
+// 2017-10-16  Sam van Kampen  <sam@segfault.party>
+
+//         * c-family/c.opt: Add a warning flag for struct bit-fields
+//         being too small to hold enumerated types.
+//         * cp/class.c: Likewise.
+//         * doc/invoke.texi: Add documentation for said warning flag.
+
+// Index: gcc/c-family/c.opt
+// ===================================================================
+// --- gcc/c-family/c.opt	(revision 253784)
+// +++ gcc/c-family/c.opt	(working copy)
+// @@ -346,6 +346,10 @@ Wframe-address
+//  C ObjC C++ ObjC++ Var(warn_frame_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+//  Warn when __builtin_frame_address or __builtin_return_address is used unsafely.
+ 
+// +Wbitfield-enum-conversion
+// +C++ Var(warn_bitfield_enum_conversion) Init(1) Warning
+// +Warn about struct bit-fields being too small to hold enumerated types.
+// +
+//  Wbuiltin-declaration-mismatch
+//  C ObjC C++ ObjC++ Var(warn_builtin_declaraion_mismatch) Init(1) Warning
+//  Warn when a built-in function is declared with the wrong signature.
+// Index: gcc/cp/class.c
+// ===================================================================
+// --- gcc/cp/class.c	(revision 253784)
+// +++ gcc/cp/class.c	(working copy)
+// @@ -3278,10 +3278,11 @@ check_bitfield_decl (tree field)
+//  		   && tree_int_cst_lt (TYPE_SIZE (type), w)))
+//  	warning_at (DECL_SOURCE_LOCATION (field), 0,
+//  		    "width of %qD exceeds its type", field);
+// -      else if (TREE_CODE (type) == ENUMERAL_TYPE
+// +      else if (warn_bitfield_enum_conversion
+// +	       && TREE_CODE (type) == ENUMERAL_TYPE
+//  	       && (0 > (compare_tree_int
+//  			(w, TYPE_PRECISION (ENUM_UNDERLYING_TYPE (type))))))
+// -	warning_at (DECL_SOURCE_LOCATION (field), 0,
+// +	warning_at (DECL_SOURCE_LOCATION (field), OPT_Wbitfield_enum_conversion,
+//  		    "%qD is too small to hold all values of %q#T",
+//  		    field, type);
+//      }
+// Index: gcc/doc/invoke.texi
+// ===================================================================
+// --- gcc/doc/invoke.texi	(revision 253784)
+// +++ gcc/doc/invoke.texi	(working copy)
+// @@ -264,7 +264,7 @@ Objective-C and Objective-C++ Dialects}.
+//  -Walloca  -Walloca-larger-than=@var{n} @gol
+//  -Wno-aggressive-loop-optimizations  -Warray-bounds  -Warray-bounds=@var{n} @gol
+//  -Wno-attributes  -Wbool-compare  -Wbool-operation @gol
+// --Wno-builtin-declaration-mismatch @gol
+// +-Wbitfield-enum-conversion -Wno-builtin-declaration-mismatch @gol
+//  -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
+//  -Wc++-compat  -Wc++11-compat  -Wc++14-compat  @gol
+//  -Wcast-align  -Wcast-align=strict  -Wcast-qual  @gol
+// @@ -5431,6 +5431,12 @@ Incrementing a boolean is invalid in C++17, and de
+ 
+//  This warning is enabled by @option{-Wall}.
+ 
+// +@item -Wbitfield-enum-conversion
+// +@opindex Wbitfield-enum-conversion
+// +@opindex Wno-bitfield-enum-conversion
+// +Warn about a bit-field potentially being too small to hold all values
+// +of an enumerated type. This warning is enabled by default.
+// +
+//  @item -Wduplicated-branches
+//  @opindex Wno-duplicated-branches
+//  @opindex Wduplicated-branches

@@ -21,7 +21,7 @@ object_copier = $(prefix)objcopy
 object_dumper = $(prefix)objdump
 object_mapper = $(prefix)nm
 
-compiler_flags = -Wall -O3 -mcpu=cortex-a53+fp+simd -ffreestanding -nostartfiles -std=c++17 -mstrict-align -fno-tree-loop-vectorize -fno-tree-slp-vectorize -Wno-nonnull-compare -fno-exceptions -fno-rtti -fno-builtin -nostdlib -nostdinc
+compiler_flags = -g -Wall -O3 -mcpu=cortex-a53+fp+simd -ffreestanding -nostartfiles -std=c++17 -mstrict-align -fno-tree-loop-vectorize -fno-tree-slp-vectorize -Wno-nonnull-compare -fno-exceptions -fno-rtti -fno-builtin -nostdlib -nostdinc
 
 #definitions of the source code directory and the object directory, where all generated files will be stored.
 source_directory = source_code
@@ -76,7 +76,6 @@ $(image): $(linker_description) $(boot_object) $(objects)
 	$(hide)$(object_copier) $(image_elf) -O binary $(image)
 	$(hide)$(object_dumper) -d $(image_elf) > $(image_dump)
 	$(hide)$(object_mapper) -n $(image_elf) > $(image_map)
-	$(hide)rm $(image_elf)
 
 #include all generated dependency files, which include rules for recompiling a source file when one of its included
 #header files has changed.
