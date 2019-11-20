@@ -115,7 +115,7 @@ enum test_enum: u32
 };
 
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wbitfield-enum-conversion"
 struct test_struct
 {
     u32 q: 4;
@@ -123,7 +123,7 @@ struct test_struct
 };
 #pragma GCC diagnostic pop
 
-//todo:
+//todo: clean up and get i2s working.
 //is just syntactical sugar.
 // struct some_registers
 // {
@@ -133,74 +133,3 @@ struct test_struct
 //         third_part_of_first_register: 4;
 //     u32 second_register;
 // }
-
-// ..I just realised that the clang flag is -Wbitfield-enum-conversion, not
-// -Wenum-bitfield-conversion. Please apply the patch below instead, which
-// has replaced the two words to remove the inconsistency.
-
-// 2017-10-16  Sam van Kampen  <sam@segfault.party>
-
-//         * c-family/c.opt: Add a warning flag for struct bit-fields
-//         being too small to hold enumerated types.
-//         * cp/class.c: Likewise.
-//         * doc/invoke.texi: Add documentation for said warning flag.
-
-// Index: gcc/c-family/c.opt
-// ===================================================================
-// --- gcc/c-family/c.opt	(revision 253784)
-// +++ gcc/c-family/c.opt	(working copy)
-// @@ -346,6 +346,10 @@ Wframe-address
-//  C ObjC C++ ObjC++ Var(warn_frame_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-//  Warn when __builtin_frame_address or __builtin_return_address is used unsafely.
- 
-// +Wbitfield-enum-conversion
-// +C++ Var(warn_bitfield_enum_conversion) Init(1) Warning
-// +Warn about struct bit-fields being too small to hold enumerated types.
-// +
-//  Wbuiltin-declaration-mismatch
-//  C ObjC C++ ObjC++ Var(warn_builtin_declaraion_mismatch) Init(1) Warning
-//  Warn when a built-in function is declared with the wrong signature.
-// Index: gcc/cp/class.c
-// ===================================================================
-// --- gcc/cp/class.c	(revision 253784)
-// +++ gcc/cp/class.c	(working copy)
-// @@ -3278,10 +3278,11 @@ check_bitfield_decl (tree field)
-//  		   && tree_int_cst_lt (TYPE_SIZE (type), w)))
-//  	warning_at (DECL_SOURCE_LOCATION (field), 0,
-//  		    "width of %qD exceeds its type", field);
-// -      else if (TREE_CODE (type) == ENUMERAL_TYPE
-// +      else if (warn_bitfield_enum_conversion
-// +	       && TREE_CODE (type) == ENUMERAL_TYPE
-//  	       && (0 > (compare_tree_int
-//  			(w, TYPE_PRECISION (ENUM_UNDERLYING_TYPE (type))))))
-// -	warning_at (DECL_SOURCE_LOCATION (field), 0,
-// +	warning_at (DECL_SOURCE_LOCATION (field), OPT_Wbitfield_enum_conversion,
-//  		    "%qD is too small to hold all values of %q#T",
-//  		    field, type);
-//      }
-// Index: gcc/doc/invoke.texi
-// ===================================================================
-// --- gcc/doc/invoke.texi	(revision 253784)
-// +++ gcc/doc/invoke.texi	(working copy)
-// @@ -264,7 +264,7 @@ Objective-C and Objective-C++ Dialects}.
-//  -Walloca  -Walloca-larger-than=@var{n} @gol
-//  -Wno-aggressive-loop-optimizations  -Warray-bounds  -Warray-bounds=@var{n} @gol
-//  -Wno-attributes  -Wbool-compare  -Wbool-operation @gol
-// --Wno-builtin-declaration-mismatch @gol
-// +-Wbitfield-enum-conversion -Wno-builtin-declaration-mismatch @gol
-//  -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
-//  -Wc++-compat  -Wc++11-compat  -Wc++14-compat  @gol
-//  -Wcast-align  -Wcast-align=strict  -Wcast-qual  @gol
-// @@ -5431,6 +5431,12 @@ Incrementing a boolean is invalid in C++17, and de
- 
-//  This warning is enabled by @option{-Wall}.
- 
-// +@item -Wbitfield-enum-conversion
-// +@opindex Wbitfield-enum-conversion
-// +@opindex Wno-bitfield-enum-conversion
-// +Warn about a bit-field potentially being too small to hold all values
-// +of an enumerated type. This warning is enabled by default.
-// +
-//  @item -Wduplicated-branches
-//  @opindex Wno-duplicated-branches
-//  @opindex Wduplicated-branches

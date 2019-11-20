@@ -25,11 +25,38 @@ below a nonexhaustive list of projects and blogs that i used as an inspiration o
 ## usage
 
 ### compile
+todo: update compiler link.
 this repository was originally built on a ubuntu machine with visual studio code, but it should run fine with linux flavours and editors. to build the project [make](https://www.gnu.org/software/make/), a bash terminal and an arm gcc compiler are needed. make and bash are preinstalled on most linux machines, on windows you'll have to google for an alternative. the project is compiled with [gcc-linaro-7.1.1-2017.08-x86_64_aarch64-elf](https://releases.linaro.org/components/toolchain/binaries/7.1-2017.08/aarch64-elf/). it is advised to use the same compiler (free downloadable), otherwise the binary might not work.
 
 to compile the project the build.sh script should be modified, according to the instructions inside it. this mostly means defining the paths to the compiler and other recourses and choosing between a few options.
 
 the most important option is the boot mode. you can boot from an sd card (fast boot time, ideal for running a finished program) or over the network (boots slower, but is more convenient while programming).
+
+## todo: custom compiler used.
+Building toolchain from source
+You can build GNU cross-toolchain for the A-profile from sources using Linaro ABE (Advanced Build Environment) and provided ABE manifest files.
+
+Below example shows how to build gcc-arm-aarch64-linux-gnu toolchain from sources using Linaro ABE build system.
+
+Instructions
+Clone ABE one of the URL below and checkout the stable branch (see Getting ABE):
+
+$ git clone https://git.linaro.org/toolchain/abe.git
+Create the build directory and change to it. Any name for the directory will work (see Building Toolchains With ABE):
+
+$ mkdir build && cd build
+Configure ABE (from the build directory):
+
+$ ../abe/configure
+And finally build toolchain (from the build directory):
+
+$ ../abe/abe.sh --manifest gcc-linaro-7.4.1-2019.02-linux-manifest.txt  --build all
+
+now open build_folder/snapshots/gcc.git~linaro-7.4-2019.02_rev_56ec6f6b99cc167ff0c2f8e1a2eed33b1edc85d4 which contains project. edit files (explain as in git diff). remove all gcc-**-.manifest files from /home/tsrapnik/stack/projects/shared_resources/compilers/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf-build/builds/x86_64-unknown-linux-gnu/aarch64-elf to force gcc to get compiled again.
+
+probably a better way to do this, but it was the first thing i found that worked.
+
+$../abe/abe.sh --manifest gcc-linaro-7.4.1-2019.02-linux-manifest.txt --build all --disable update
 
 #### boot from sd card
 to boot from an sd card you of course need an sd card. put the card in your pc and add the correct path to this card in the build.sh file. we will now put the necessary boot files on the card with following commands. the chmod command needs to be done only once, it just tells linux build.sh is an executable script.
@@ -69,7 +96,7 @@ todo: explain how to use dongle.
 ```
 lsusb
 ...
-screen /dev/...
+screen /dev/ttyUSBx 115200
 ```
 todo: bootcode.bin taken form debian image.
 the bootcode.bin file which is used by the gpu on the pi as second bootstage can be modified to enable uart logging during boot stage. the bootcode.bin file provide in the project is already modified, so nothing needs to be done. if needed you can modify the bootcode.bin file yourself with following commands in a terminal. first command checks if the uart logging is enabled.
@@ -161,7 +188,7 @@ service tftp
   wait            = yes
   user            = nobody
   server          = /usr/sbin/in.tftpd
-  server_args     = /home/choose_location
+  server_args     = /home/tsrapnik/tftp_root #todo: should be folder of choise.
   disable         = no
 }
 ```
@@ -223,8 +250,3 @@ ASIX Presto Adapter                     no
 OpenJTAG Adapter                        no
 SEGGER J-Link Programmer                yes (auto)
 ```
-
-todo: black magic probe used in stead of openocd.
-* clone ...
-* make ...='stlink...'
-* run blackmagic_stlinkv2
