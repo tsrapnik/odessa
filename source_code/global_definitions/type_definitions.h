@@ -17,3 +17,19 @@ typedef double f64;
 //standard word sizes, in this case for a 64 bit machine.
 typedef u64 usize;
 typedef i64 isize;
+
+typedef u8 byte;
+
+//static asserts check if the size of the types match the intended type. if one of them should
+//fail this is an indication the type definition should get corrected.
+static_assert(sizeof(u8) == 1);
+static_assert(sizeof(u16) == 2);
+static_assert(sizeof(u32) == 4);
+static_assert(sizeof(u64) == 8);
+static_assert(sizeof(i8) == 1);
+static_assert(sizeof(i16) == 2);
+static_assert(sizeof(i32) == 4);
+static_assert(sizeof(i64) == 8);
+static_assert(sizeof(f32) == 4);
+static_assert(sizeof(f64) == 8);
+static_assert(sizeof(usize) == sizeof(isize));

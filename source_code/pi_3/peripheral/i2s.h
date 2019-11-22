@@ -1,4 +1,6 @@
 #pragma once
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbitfield-enum-conversion"
 
 #include "type_definitions.h"
 
@@ -127,22 +129,11 @@ enum test_enum: u32
     d = 4,
 };
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wbitfield-enum-conversion"
+
 struct test_struct
 {
     u32 q: 4;
     test_enum r: 4;
 };
-#pragma GCC diagnostic pop
 
-//todo: clean up and get i2s working.
-//is just syntactical sugar.
-// struct some_registers
-// {
-//     u32
-//         first_part_of_first_register: 4,
-//         second_part_of_first_register: 24,
-//         third_part_of_first_register: 4;
-//     u32 second_register;
-// }
+#pragma GCC diagnostic pop

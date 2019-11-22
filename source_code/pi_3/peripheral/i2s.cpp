@@ -31,7 +31,6 @@ i2s::i2s(device device_id)
                                             registers::control_and_status_options::tx_fifo_threshold_mask)) |
                                          (registers::control_and_status_options::rx_fifo_threshold_single_sample |
                                           registers::control_and_status_options::tx_fifo_threshold_fifo_full_but_one_sample);
-    
 }
 
 i2s::~i2s()
@@ -57,15 +56,11 @@ i2s* i2s::create(device device_id)
     t.q = 15;
     t.r = test_enum::a;
     t.r = test_enum::d;
-    
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Woverflow"
-    t.q = 123;
-    #pragma GCC diagnostic pop
 
     registers::control_and_status__ x;
     x.clear_rx_fifo = true;
     x.clear_rx_fifo = false;
-    static_assert(sizeof(x) == 4, "hello");
     (void)t;
+    (void)x;
+
 }
