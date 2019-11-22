@@ -5,39 +5,28 @@
     "version": "0.2.0",
     "configurations": [
         { 
-             "name": "(gdb) Attach",
+            "name": "debug",
             "type": "cppdbg",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "program": "${workspaceFolder}/compiled_code/kernel8.elf",
             "MIMode": "gdb",
-            "miDebuggerPath": "/home/tsrapnik/projects/compilers/gcc-linaro-7.1.1-2017.08-x86_64_aarch64-elf/bin/aarch64-elf-gdb",
+            "miDebuggerPath": "/home/tsrapnik/stack/projects/shared_resources/compilers/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf-with_enum_bitfields/bin/aarch64-elf-gdb",
             "miDebuggerServerAddress": "localhost:3333",
-            // "setupCommands": [
-            //     {
-            //         "description": "Enable pretty-printing for gdb",
-            //         "text": "-enable-pretty-printing",
-            //         "ignoreFailures": true
-            //     }
-            // ]
-        },
-        {
-            "name": "(gdb) Pipe Launch",
-            "type": "cppdbg",
-            "request": "launch",
-            "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/compiled_code/kernel8.elf",
-            "MIMode": "gdb",
-            "miDebuggerPath": "/home/tsrapnik/projects/compilers/gcc-linaro-7.1.1-2017.08-x86_64_aarch64-elf/bin/aarch64-elf-gdb",
-            "miDebuggerServerAddress": "localhost:3333",
-            "stopAtEntry": false,
-            "environment": [],
-            "externalConsole": true,
-            "pipeTransport": {
-                "pipeProgram": "openocd",
-                "pipeArgs": ["-f", "c232hm.cfg", "-f", "rpi3.cfg"],
-                "pipeCwd": "${workspaceFolder}"
-            },
+
+            //todo: openocd needs to be started (with openocd task) before being able to debug. two solutions below to automatically start openocd do not work for the moment.
+
+            //does not even seem to launch openocd.
+            // "debugServerPath": "openocd",
+            // "debugServerArgs": ":-s .vscode -f c232hm.cfg -f rpi3.cfg",
+            // "serverStarted": "Info : Listening on port 3336 for gdb connections",
+
+            //starts openocd, but then does stays unresponsive.
+            // "pipeTransport": {
+            //     "pipeProgram": "openocd",
+            //     "pipeArgs": ["-s", ".vscode", "-f", "c232hm.cfg", "-f", "rpi3.cfg"],
+            //     "pipeCwd": "${workspaceFolder}"
+            // },
         },
     ]
 }

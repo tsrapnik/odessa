@@ -51,6 +51,19 @@ class i2s
             enable_pcm = 1 << 0,
         };
 
+        struct control_and_status__
+        {
+            bool enable_pcm : 1;
+            bool enable_reception : 1;
+            bool enable_transmission : 1;
+            bool clear_tx_fifo : 1;
+            bool clear_rx_fifo : 1;
+            enum class ee
+            {} e : 2;
+        //     enum class ff
+        //     {} f : 2;
+        } control_and_status_;
+
         control_and_status_options control_and_status; //0x00
         u32 fifo_data; //0x04
         // mode_options mode; //0x08

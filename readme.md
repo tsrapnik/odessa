@@ -215,22 +215,26 @@ git clone --recursive git://git.code.sf.net/p/openocd/code openocd
 the source code is now in a folder called openocd in you chosen directory. cd into it and just run each command succesively as shown below. if a command fails, fix it as described at the beginning of this chapter.
 
 todo: describe pins, dongle, openocd, gdb.
-the only command where you might need to do something different is the `./configure` command. depending on which dongle you use you may have to provide different options. i for example use the st link v2.0, so i have to add the `--enable-stlink` option for the dongle to be usable. use `./configure --help` to show all available options, here you can find the option for your dongle. at the end of the `./configure` step you should get a summary of all programmers that are available.
+the only command where you might need to do something different is the `./configure` command. depending on which dongle you use you may have to provide different options. i for example use the C232HM DDHSL-0 which uses MPSSE, 
+ --enable-ftdi           Enable building support for the MPSSE mode of FTDI
+                          based devices (default is auto)                  
+so i have to add the `--enable-ftdi` option for the dongle to be usable. use `./configure --help` to show all available options, here you can find the option for your dongle. at the end of the `./configure` step you should get a summary of all programmers that are available.
+
+-j 8 amount of threads should match cores.
 
 ```
-cd openocd
 ./bootstrap
 ./configure --help
-./configure --enable-stlink
-make
+./configure --enable-ftdi
+make -j 8
 sudo make install
 ```
 
 ```
 OpenOCD configuration summary
 --------------------------------------------------
-MPSSE mode of FTDI based devices        yes (auto)
-ST-Link Programmer                      yes
+MPSSE mode of FTDI based devices        yes
+ST-Link Programmer                      yes (auto)
 TI ICDI JTAG Programmer                 yes (auto)
 Keil ULINK JTAG Programmer              yes (auto)
 Altera USB-Blaster II Compatible        yes (auto)

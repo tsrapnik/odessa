@@ -63,5 +63,9 @@ i2s* i2s::create(device device_id)
     t.q = 123;
     #pragma GCC diagnostic pop
 
+    registers::control_and_status__ x;
+    x.clear_rx_fifo = true;
+    x.clear_rx_fifo = false;
+    static_assert(sizeof(x) == 4, "hello");
     (void)t;
 }

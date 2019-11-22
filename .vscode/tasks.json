@@ -26,5 +26,11 @@
             "command": "./build.sh boot",
             "problemMatcher": []
         },
+        {
+            "label": "openocd",
+            "type": "shell",
+            "command": "openocd -s .vscode -f c232hm.cfg -f rpi3.cfg",
+            "problemMatcher": []
+        },
     ]
 }
