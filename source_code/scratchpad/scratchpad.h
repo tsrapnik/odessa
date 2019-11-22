@@ -1,34 +1,48 @@
 #pragma once
 
 #include "type_definitions.h"
+#include "string.h"
 
 //file dedicated for testing stuff.
 
-class i0
+template <typename derived, typename base>
+class clone_inherit : public base
 {
-    public:
-    virtual ~i0() = 0;
-    virtual i0 * clone() = 0;
-    virtual i0 * clone(byte * memory) = 0;
-    virtual void do0() = 0;
+    public:    
+    virtual clone_inherit* clone() const override
+    {
+        clone_inherit* a_derived = new derived;
+        *a_derived = *this;
+        return a_derived;
+    }
+
+    virtual clone_inherit* clone(byte* memory) const override
+    {
+        clone_inherit* a_derived = (derived*)memory;
+        *a_derived = *this;
+        return a_derived;
+    }
 };
 
-class m0 : public i0
+class interface_0
+{
+    public:
+    virtual ~interface_0();
+    virtual interface_0* clone() const = 0;
+    virtual interface_0* clone(byte* memory) const = 0;
+    virtual void do_stuff() = 0;
+};
+
+class interface_implementor_0 : public clone_inherit<interface_implementor_0, interface_0>
 {
     public:
     u32 data = 0;
-    virtual ~m0();
-    virtual i0 * clone() override;
-    virtual i0 * clone(byte * memory);
-    virtual void do0() override;
+    virtual void do_stuff() override;
 };
 
-class m1 : public i0
+class interface_implementor_1 : public clone_inherit<interface_implementor_1, interface_0>
 {
     public:
     u64 data = 0;
-    virtual ~m1();
-    virtual i0 * clone() override;
-    virtual i0 * clone(byte * memory);
-    virtual void do0() override;
+    virtual void do_stuff() override;
 };

@@ -10,77 +10,45 @@ constexpr T max(T a, T b, Args... args) {
   return max(max(a,b), args...);
 }
 
-i0::~i0()
+interface_0::~interface_0()
 {}
 
-i0 * m0::clone(byte * memory)
-{
-    m0 * pm0 = (m0 *)memory;
-    *pm0 = *this;
-    return pm0;
-}
-
-i0 * m0::clone()
-{
-    m0 * pm0 = new m0;
-    *pm0 = *this;
-    return pm0;
-}
-
-m0::~m0()
-{}
-
-void m0::do0()
+void interface_implementor_0::do_stuff()
 {
 }
 
-m1::~m1()
-{}
-
-i0 * m1::clone(byte * memory)
-{
-    m1 * pm1 = (m1 *)memory;
-    *pm1 = *this;
-    return pm1;
-}
-
-i0 * m1::clone()
-{
-    m1 * pm1 = new m1;
-    *pm1 = *this;
-    return pm1;
-}
-
-void m1::do0()
+void interface_implementor_1::do_stuff()
 {
 }
 
-void f0(i0& a_i0)
+void f0(interface_0& a_interface_0)
 {
-    i0 * m_i0 = a_i0.clone();
+    interface_0 * pointer_to_copy_of_interface_0 = a_interface_0.clone();
 
     //do stuff with copy.
-    m_i0->do0();
+    pointer_to_copy_of_interface_0->do_stuff();
 
-    delete m_i0;
+    delete pointer_to_copy_of_interface_0;
 }
 
-void f1(i0& a_i0)
+void f1(interface_0& a_interface_0)
 {
-    static byte memory [max(sizeof(i0), sizeof(m0), sizeof(m1))];
+    //weak point in the configuration is setting up the size of the static memory. have not found a decent compile
+    //time solution.
+    static byte memory [max(sizeof(interface_0), sizeof(interface_implementor_0), sizeof(interface_implementor_1))];
 
-    i0 * m_i0 = a_i0.clone(memory);
+    interface_0 * pointer_to_copy_of_interface_0 = a_interface_0.clone(memory);
     
     //do stuff with copy.
-    m_i0->do0();
+    pointer_to_copy_of_interface_0->do_stuff();
 
     //no deleting required.
 }
 
 void f2()
 {
-    m0 a0;
-    m1 a1;
+    interface_implementor_0 a0;
+    interface_implementor_1 a1;
 
     f0(a0);
     f0(a1);

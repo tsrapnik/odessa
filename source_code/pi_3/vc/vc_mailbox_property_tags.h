@@ -131,7 +131,7 @@ class vc_mailbox_property_tags
         //size in bytes of response. never used in practice, as the response size is already known from documentation.
         struct
         {
-            //todo: get rid of bitfields.
+            //todo: give bitfields proper types.
             u32
                 response_size : 31,
                 is_response : 1;
