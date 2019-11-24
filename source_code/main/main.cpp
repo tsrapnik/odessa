@@ -310,12 +310,12 @@ extern "C" char* __attribute__((weak)) _sbrk(int incr)
 
 extern "C" void memcpy(void* destination, void* source, usize size)
 {
-    u32 size_u64 = size / 8;
-    u32 size_u8 = size % 8;
+    usize size_u64 = size / 8;
+    usize size_u8 = size % 8;
 
     u64* destination_u64 = reinterpret_cast<u64*>(destination);
     u64* source_u64 = reinterpret_cast<u64*>(source);
-    for(u32 i = 0; i < size_u64; i++)
+    for(usize index = 0; index < size_u64; index++)
     {
         *destination_u64 = *source_u64;
         destination_u64++;
@@ -324,7 +324,7 @@ extern "C" void memcpy(void* destination, void* source, usize size)
 
     u8* destination_u8 = reinterpret_cast<u8*>(destination_u64);
     u8* source_u8 = reinterpret_cast<u8*>(source_u64);
-    for(u32 i = 0; i < size_u8; i++)
+    for(usize index = 0; index < size_u8; index++)
     {
         *destination_u8 = *source_u8;
         destination_u8++;

@@ -14,12 +14,45 @@ i2s::i2s(device device_id)
 
     this_registers = registers_base_address[static_cast<u32>(device_id)];
 
-    this_registers->control_and_status.enable_pcm = true;
-
-    //todo: set all options.
-
+    //enable pcm block.
     registers::control_and_status_struct temp_control_and_status;
+    //todo: does enable ram option matter?
+    temp_control_and_status = this_registers->control_and_status;
+    temp_control_and_status.enable_pcm = true;
+    temp_control_and_status.enable_dma_request = false;
+    temp_control_and_status.rx_threshold = registers::control_and_status_struct::rx_threshold_enum::fifo_single_sample;
+    temp_control_and_status.tx_threshold = registers::control_and_status_struct::tx_threshold_enum::fifo_full_but_one;
 
+    //define frame and channel settings.
+    registers::mode_struct temp_mode;
+
+    temp_mode = this_registers->mode;
+    temp_mode.pcm_clock_disable = false;
+    temp_mode.pdm_input_mode_enable = false;
+    temp_mode.receive_frame_packed_mode = registers::mode_struct::receive_frame_packed_mode_enum::single_channel;
+    temp_mode.transmit_frame_packed_mode = registers::mode_struct::transmit_frame_packed_mode_enum::single_channel;
+    temp_mode.clock_mode = registers::mode_struct::clock_mode_enum::slave;
+    temp_mode.clock_invert = false;
+    temp_mode.frame_sync_mode = registers::mode_struct::frame_sync_mode_enum::slave;
+    temp_mode.frame_sync_invert = false;
+
+    this_registers->mode = temp_mode;
+
+    registers::configuration_struct temp_configuration;
+
+    temp_configuration.channel_1_width_extension = true;
+    temp_configuration.channel_1_enable = true;
+    temp_configuration.channel_1_position = 0;
+    temp_configuration.channel_1_width = 8;
+    temp_configuration.channel_2_width_extension = true;
+    temp_configuration.channel_2_enable = true;
+    temp_configuration.channel_2_position = 0;
+    temp_configuration.channel_2_width = 8;
+
+    this_registers->receive_configuration = temp_configuration;
+    this_registers->transmit_configuration = temp_configuration;
+
+    //clear fifo's.
     temp_control_and_status = this_registers->control_and_status;
     temp_control_and_status.clear_rx_fifo = true;
     temp_control_and_status.clear_tx_fifo = true;
@@ -31,9 +64,25 @@ i2s::i2s(device device_id)
     {
     }
 
+    //enable interrupts.
+    //todo: enable error interrupts?
+    registers::interrupt_enables_struct temp_interrupt_enables;
+    temp_interrupt_enables = this_registers->interrupt_enables;
+    temp_interrupt_enables.rx_read_interrupt_enable = true;
+    temp_interrupt_enables.tx_write_interrupt_enable = true;
+
+    this_registers->interrupt_enables = temp_interrupt_enables;
+
+    //fill transmit fifo with zeroes.
+    for(usize index = 0; index < 64; index++)
+    {
+        this_registers->fifo_data = 0;
+    }
+
+    //start transmitting and receiving.
     temp_control_and_status = this_registers->control_and_status;
-    temp_control_and_status.rx_threshold = registers::control_and_status_struct::rx_threshold_enum::fifo_single_sample;
-    temp_control_and_status.tx_threshold = registers::control_and_status_struct::tx_threshold_enum::fifo_full_but_one;
+    temp_control_and_status.enable_transmission = true;
+    temp_control_and_status.enable_reception = true;
 
     this_registers->control_and_status = temp_control_and_status;
 }
