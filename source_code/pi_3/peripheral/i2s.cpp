@@ -14,23 +14,28 @@ i2s::i2s(device device_id)
 
     this_registers = registers_base_address[static_cast<u32>(device_id)];
 
-    this_registers->control_and_status |= registers::control_and_status_options::enable_pcm;
+    this_registers->control_and_status.enable_pcm = true;
 
     //todo: set all options.
 
-    this_registers->control_and_status |= registers::control_and_status_options::clear_rx_fifo |
-                                          registers::control_and_status_options::clear_tx_fifo |
-                                          registers::control_and_status_options::pcm_clock_sync_helper;
-    while((this_registers->control_and_status & registers::control_and_status_options::pcm_clock_sync_helper) !=
-          registers::control_and_status_options::pcm_clock_sync_helper)
+    registers::control_and_status_struct temp_control_and_status;
+
+    temp_control_and_status = this_registers->control_and_status;
+    temp_control_and_status.clear_rx_fifo = true;
+    temp_control_and_status.clear_tx_fifo = true;
+    temp_control_and_status.pcm_clock_sync_helper = true;
+
+    this_registers->control_and_status = temp_control_and_status;
+
+    while(!this_registers->control_and_status.pcm_clock_sync_helper)
     {
     }
 
-    this_registers->control_and_status = (this_registers->control_and_status &
-                                          ~(registers::control_and_status_options::rx_fifo_threshold_mask |
-                                            registers::control_and_status_options::tx_fifo_threshold_mask)) |
-                                         (registers::control_and_status_options::rx_fifo_threshold_single_sample |
-                                          registers::control_and_status_options::tx_fifo_threshold_fifo_full_but_one_sample);
+    temp_control_and_status = this_registers->control_and_status;
+    temp_control_and_status.rx_threshold = registers::control_and_status_struct::rx_threshold_enum::fifo_single_sample;
+    temp_control_and_status.tx_threshold = registers::control_and_status_struct::tx_threshold_enum::fifo_full_but_one;
+
+    this_registers->control_and_status = temp_control_and_status;
 }
 
 i2s::~i2s()
@@ -50,17 +55,4 @@ i2s* i2s::create(device device_id)
         i2s* new_device = new i2s(device_id);
         return new_device;
     }
-    this_registers->control_and_status = registers::control_and_status_options::enable_pcm;
-
-    test_struct t;
-    t.q = 15;
-    t.r = test_enum::a;
-    t.r = test_enum::d;
-
-    registers::control_and_status__ x;
-    x.clear_rx_fifo = true;
-    x.clear_rx_fifo = false;
-    (void)t;
-    (void)x;
-
 }
