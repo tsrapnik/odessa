@@ -1,5 +1,6 @@
 #include "i2s.h"
 #include "enum_flags.h"
+#include "interrupt.h"
 
 bool i2s::device_used[device_count] = {false};
 constexpr i2s::registers* i2s::registers_base_address[device_count];
@@ -77,8 +78,8 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     for(volatile usize index = 0; index < 100; index++)
     ;
 
-    //enable interrupts.
-    //todo: enable error interrupts?
+    //enable interrupt.
+    //todo: enable error interrupt?
     registers::interrupt_enables_struct temp_interrupt_enables;
     temp_interrupt_enables = this_registers->interrupt_enables;
     temp_interrupt_enables.rx_read_interrupt_enable = true;
@@ -151,8 +152,15 @@ i2s* i2s::create(device device_id)
             return nullptr;
         }
 
+        //todo: solve interrupt needs to be created after device.
+        //try to set the interrupt.
+        interruptable* a_interruptable = nullptr;
+        interrupt* i2s_interrupt = interrupt::create(interrupt::device::i2s_interrupt, a_interruptable);
+        (void)i2s_interrupt;
+
         //if all gpio's were created create the device.
         i2s* new_device = new i2s(device_id, pcm_clk, pcm_fs, pcm_din, pcm_dout);
+
         return new_device;
     }
 }

@@ -15,6 +15,7 @@
 #include "vc_gpu.h"
 #include "vc_mailbox_framebuffer.h"
 #include "vc_mailbox_property_tags.h"
+#include "assert.h"
 
 //todo: check for every created device if it does not return a nullptr.
 
@@ -92,16 +93,21 @@ extern "C" i32 main(void)
     volatile vc_mailbox_property_tags::touch_buffer a_touch_buffer;
     vc_mailbox_property_tags::set_touch_buffer(const_cast<vc_mailbox_property_tags::touch_buffer*>(&a_touch_buffer));
 
-
     gpio* enable_adc = gpio::create(gpio::device::gpio_5,
                                     gpio::pull_up_down_state::disable_pull_up_or_down,
                                     gpio::function::output);
+    assert(enable_adc != nullptr);
+
     gpio* enable_dac = gpio::create(gpio::device::gpio_6,
                                     gpio::pull_up_down_state::disable_pull_up_or_down,
                                     gpio::function::output);
+    assert(enable_adc != nullptr);
+
     enable_adc->set_output(true);
     enable_dac->set_output(true);
+
     i2s* i2s0 = i2s::create(i2s::device::i2s0);
+    assert(i2s0 != nullptr);
 
     while(true)
     {
@@ -178,96 +184,21 @@ extern "C" void syn_cur_el0()
     while(true)
         ;
 }
-extern "C" void irq_cur_el0()
-{
-    a_uart->write("irq_cur_el0\r\n");
-    while(true)
-        ;
-}
-extern "C" void fiq_cur_el0()
-{
-    a_uart->write("fiq_cur_el0\r\n");
-    while(true)
-        ;
-}
-extern "C" void err_cur_el0()
-{
-    a_uart->write("err_cur_el0\r\n");
-    while(true)
-        ;
-}
-
 extern "C" void syn_cur_elx()
 {
     a_uart->write("syn_cur_elx\r\n");
     while(true)
         ;
 }
-extern "C" void irq_cur_elx()
-{
-    a_uart->write("irq_cur_elx\r\n");
-    while(true)
-        ;
-}
-extern "C" void fiq_cur_elx()
-{
-    a_uart->write("fiq_cur_elx\r\n");
-    while(true)
-        ;
-}
-extern "C" void err_cur_elx()
-{
-    a_uart->write("err_cur_elx\r\n");
-    while(true)
-        ;
-}
-
 extern "C" void syn_low64_elx()
 {
     a_uart->write("csyn_low64_elx\r\n");
     while(true)
         ;
 }
-extern "C" void irq_low64_elx()
-{
-    a_uart->write("irq_low64_elx\r\n");
-    while(true)
-        ;
-}
-extern "C" void fiq_low64_elx()
-{
-    a_uart->write("fiq_low64_elx\r\n");
-    while(true)
-        ;
-}
-extern "C" void err_low64_elx()
-{
-    a_uart->write("err_low64_elx\r\n");
-    while(true)
-        ;
-}
-
 extern "C" void syn_low32_elx()
 {
     a_uart->write("syn_low32_elx\r\n");
-    while(true)
-        ;
-}
-extern "C" void irq_low32_elx()
-{
-    a_uart->write("irq_low32_elx\r\n");
-    while(true)
-        ;
-}
-extern "C" void fiq_low32_elx()
-{
-    a_uart->write("fiq_low32_elx\r\n");
-    while(true)
-        ;
-}
-extern "C" void err_low32_elx()
-{
-    a_uart->write("err_low32_elx\r\n");
     while(true)
         ;
 }
