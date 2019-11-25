@@ -74,7 +74,7 @@ $(image): $(linker_description) $(boot_object) $(objects)
 	$(info link all objects and generate the image file: $(image).)
 	$(hide)$(linker) $(compiler_flags) -o $(image_elf) -T $(linker_description) $(boot_object) $(objects) -Wl,--build-id=none
 	$(hide)$(object_copier) $(image_elf) -O binary $(image)
-	$(hide)$(object_dumper) -d $(image_elf) > $(image_dump)
+	$(hide)$(object_dumper) -d -S $(image_elf) > $(image_dump)
 	$(hide)$(object_mapper) -n $(image_elf) > $(image_map)
 
 #include all generated dependency files, which include rules for recompiling a source file when one of its included

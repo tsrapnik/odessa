@@ -20,7 +20,7 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
 
     //enable pcm block.
     registers::control_and_status_struct temp_control_and_status;
-    //todo: does enable ram option matter?
+    
     temp_control_and_status = this_registers->control_and_status;
     temp_control_and_status.enable_pcm = true;
     temp_control_and_status.enable_dma_request = false;
@@ -64,9 +64,18 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
 
     this_registers->control_and_status = temp_control_and_status;
 
-    while(!this_registers->control_and_status.pcm_clock_sync_helper)
-    {
-    }
+    //todo: clock sync does not work.
+    for(volatile usize index = 0; index < 100; index++)
+        ;
+    // while(!this_registers->control_and_status.pcm_clock_sync_helper)
+    //     ;
+
+    //todo: enable ram needed?
+    //disable ram standby.
+    this_registers->control_and_status.ram_not_in_standby = true;    
+
+    for(volatile usize index = 0; index < 100; index++)
+    ;
 
     //enable interrupts.
     //todo: enable error interrupts?

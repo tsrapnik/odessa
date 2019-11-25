@@ -92,6 +92,17 @@ extern "C" i32 main(void)
     volatile vc_mailbox_property_tags::touch_buffer a_touch_buffer;
     vc_mailbox_property_tags::set_touch_buffer(const_cast<vc_mailbox_property_tags::touch_buffer*>(&a_touch_buffer));
 
+
+    gpio* enable_adc = gpio::create(gpio::device::gpio_5,
+                                    gpio::pull_up_down_state::disable_pull_up_or_down,
+                                    gpio::function::output);
+    gpio* enable_dac = gpio::create(gpio::device::gpio_6,
+                                    gpio::pull_up_down_state::disable_pull_up_or_down,
+                                    gpio::function::output);
+    enable_adc->set_output(true);
+    enable_dac->set_output(true);
+    i2s* i2s0 = i2s::create(i2s::device::i2s0);
+
     while(true)
     {
         //todo: to string is memory leak.
@@ -120,16 +131,6 @@ extern "C" i32 main(void)
         {
             dy = speed;
             a_uart->write("hit top.\r\n");
-
-            gpio* enable_adc = gpio::create(gpio::device::gpio_5,
-                                            gpio::pull_up_down_state::disable_pull_up_or_down,
-                                            gpio::function::output);
-            gpio* enable_dac = gpio::create(gpio::device::gpio_6,
-                                            gpio::pull_up_down_state::disable_pull_up_or_down,
-                                            gpio::function::output);
-            enable_adc->set_output(true);
-            enable_dac->set_output(true);
-            i2s* i2s0 = i2s::create(i2s::device::i2s0);
         }
 
         u8 new_points_size = a_touch_buffer.points_size;
