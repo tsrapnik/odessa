@@ -5,6 +5,8 @@
 #include "effect_looper.h"
 #include "effect_sink.h"
 #include "effect_source.h"
+#include "gpio.h"
+#include "i2s.h"
 #include "math.h"
 #include "memory.h"
 #include "scratchpad.h"
@@ -13,6 +15,8 @@
 #include "vc_gpu.h"
 #include "vc_mailbox_framebuffer.h"
 #include "vc_mailbox_property_tags.h"
+
+//todo: check for every created device if it does not return a nullptr.
 
 //todo: make uart singleton like device.
 uart* a_uart;
@@ -116,6 +120,16 @@ extern "C" i32 main(void)
         {
             dy = speed;
             a_uart->write("hit top.\r\n");
+
+            gpio* enable_adc = gpio::create(gpio::device::gpio_5,
+                                            gpio::pull_up_down_state::disable_pull_up_or_down,
+                                            gpio::function::output);
+            gpio* enable_dac = gpio::create(gpio::device::gpio_6,
+                                            gpio::pull_up_down_state::disable_pull_up_or_down,
+                                            gpio::function::output);
+            enable_adc->set_output(true);
+            enable_dac->set_output(true);
+            i2s* i2s0 = i2s::create(i2s::device::i2s0);
         }
 
         u8 new_points_size = a_touch_buffer.points_size;
@@ -156,6 +170,7 @@ extern "C" i32 main(void)
     return (0);
 }
 
+//exception handlers.
 extern "C" void syn_cur_el0()
 {
     a_uart->write("syn_cur_el0\r\n");
@@ -303,9 +318,9 @@ extern "C" void __gxx_personality_v0()
 {
 }
 
-extern "C" char* __attribute__((weak)) _sbrk(int incr)
+extern "C" u8* __attribute__((weak)) _sbrk(int incr)
 {
-    return (char*)0;
+    return (u8*)0;
 }
 
 extern "C" void memcpy(void* destination, void* source, usize size)

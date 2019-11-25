@@ -4,6 +4,8 @@
 
 class gpio
 {
+    private:
+    static constexpr usize device_count = 33;
     public:
     //todo: move the enum to another file and maybe lose the singleton to get a more reusable design.
     //todo: maybe make a gpio interface that the real devices inherit, that way you can make some virtual gpio's just for testing stuff etc,
@@ -12,8 +14,14 @@ class gpio
     //represent all available gpio's.
     enum class device : u32
     {
+        gpio_5 = 5,
+        gpio_6 = 6,
         gpio_14 = 14,
         gpio_15 = 15,
+        gpio_18 = 18,
+        gpio_19 = 19,
+        gpio_20 = 20,
+        gpio_21 = 21,
         gpio_32 = 32,
         gpio_33 = 33
     };
@@ -42,26 +50,26 @@ class gpio
     {
         function gpfsel[6]; //0x00-0x14
         u32 reserved_0x18; //0x18
-        u32 gpset0; //0x1c
-        u32 reserved_0x20_0x24[2]; //0x20-0x24
-        u32 gpclr0; //0x28
-        u32 reserved_0x2c_0x30[2]; //0x2c-0x30
-        u32 gplev0; //0x34
-        u32 reserved_0x38_0x3c[2]; //0x38-0x3c
-        u32 gpeds0; //0x40
-        u32 reserved_0x44_0x48[2]; //0x44-0x48
-        u32 gpren0; //0x4c
-        u32 reserved_0x50_0x54[2]; //0x50-0x54
-        u32 gpfen0; //0x58
-        u32 reserved_0x5c_0x60[2]; //0x5c-0x60
-        u32 gphen0; //0x64
-        u32 reserved_0x68_0x6c[2]; //0x68-0x6c
-        u32 gplen0; //0x70
-        u32 reserved_0x74_0x78[2]; //0x74-0x78
-        u32 gparen0; //0x7c
-        u32 reserved_0x80_0x84[2]; //0x80-0x84
-        u32 gpafend0; //0x88
-        u32 reserved_0x8c_0x90[2]; //0x8c-0x90
+        u32 gpset[2]; //0x1c-0x20
+        u32 reserved_0x24; //0x24
+        u32 gpclr[2]; //0x28-0x2c
+        u32 reserved_0x30; //0x30
+        u32 gplev[2]; //0x34-0x38
+        u32 reserved_0x3c; //0x3c
+        u32 gpeds[2]; //0x40-0x44
+        u32 reserved_0x48; //0x48
+        u32 gpren[2]; //0x4c-0x50
+        u32 reserved_0x54; //0x54
+        u32 gpfen[2]; //0x58-0x5c
+        u32 reserved_0x60; //0x60
+        u32 gphen[2]; //0x64-0x68
+        u32 reserved_0x6c; //0x6c
+        u32 gplen[2]; //0x70-0x74
+        u32 reserved_0x78; //0x78
+        u32 gparen[2]; //0x7c-0x80
+        u32 reserved_0x84; //0x84
+        u32 gpafen[2]; //0x88-0x8c
+        u32 reserved_0x90; //0x90
         pull_up_down_state gppud;//0x94
         enum class gppudclk_options : u32
         {
@@ -72,17 +80,11 @@ class gpio
 
     //keeps track of which devices are already used, so only
     //one instance of each can be created.
-    static bool device_used[1];
-
-    //base addresses of the different gpio device registers.
-    // static constexpr registers* registers_base_address = {reinterpret_cast<registers*>(0x3F200000)};
+    static bool device_used[device_count];
 
     private:
     //remembers which gpio device this is.
     device device_id;
-
-    pull_up_down_state the_pull_up_down_state;
-    function the_function;
 
     //pointer to the actual registers of this device.
     volatile registers* the_registers = {reinterpret_cast<registers*>(0x3F200000)};
@@ -93,8 +95,8 @@ class gpio
     gpio(device device_id, pull_up_down_state the_pull_up_down_state, function the_function);
 
     static void delay();
-    void set_pull_up_down();
-    void set_function();
+    void set_pull_up_down(pull_up_down_state the_pull_up_down_state);
+    void set_function(function the_function);
 
     public:
     //destructor.
@@ -105,4 +107,6 @@ class gpio
     //the correct device enum class. if the device is already in use
     //a nullptr will be returned.
     static gpio* create(device device_id, pull_up_down_state the_pull_up_down_state, function the_function);
+
+    void set_output(bool set_high);
 };

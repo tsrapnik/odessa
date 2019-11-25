@@ -361,6 +361,7 @@ void vc_gpu::render()
     v3d->ct0ca = vc_pointer::arm_to_vc_pointer(a_binning_control_list).get_raw_value();
     v3d->ct0ea = vc_pointer::arm_to_vc_pointer(a_binning_control_list).get_raw_value() + sizeof(binning_control_list);
 
+    //todo: hangs here in o0.
     //wait for binning to finish.
     while(v3d->bfc == 0)
         ;
@@ -376,6 +377,7 @@ void vc_gpu::render()
     v3d->ct1ca = vc_pointer::arm_to_vc_pointer(a_render_control_list).get_raw_value();
     v3d->ct1ea = vc_pointer::arm_to_vc_pointer(a_render_control_list).get_raw_value() + sizeof(render_control_list) + binning_height * binning_width * sizeof(binned_list);
 
+    //todo: hangs here in o0.
     //wait for rendering to finish.
     while(v3d->rfc == 0)
         ;

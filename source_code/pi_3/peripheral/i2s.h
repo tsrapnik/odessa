@@ -4,11 +4,12 @@
 
 #include "type_definitions.h"
 #include "volatile_operators.h"
+#include "gpio.h"
 
 class i2s
 {
     private:
-    static constexpr u32 device_count = 1;
+    static constexpr usize device_count = 1;
 
     public:
     ///represent all available i2s devices.
@@ -177,6 +178,7 @@ class i2s
             volatile_assignment_operators(gray_mode_control_struct, u32);
         } gray_mode_control; //0x20
     };
+    static_assert(sizeof(registers) == 0x24, "i2s register map size does not match datasheet.");
 
     ///
     ///keeps track of which devices are already used, so only
@@ -187,7 +189,7 @@ class i2s
     ///
     ///base addresses of the different i2s device registers.
     ///
-    static constexpr registers* registers_base_address[device_count] = {reinterpret_cast<registers*>(0x00000000)};
+    static constexpr registers* registers_base_address[device_count] = {reinterpret_cast<registers*>(0x7e203000)};
 
     private:
     ///
@@ -200,12 +202,17 @@ class i2s
     ///
     volatile registers* this_registers;
 
+    gpio* pcm_clk;
+    gpio* pcm_fs;
+    gpio* pcm_din;
+    gpio* pcm_dout;
+
     ///
     ///constructor is private, all objects should be created with
     ///the create function, to avoid making multiple instances of
     ///the same i2s device.
     ///
-    i2s(device device_id);
+    i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm_dout);
 
     public:
     ///
@@ -219,7 +226,7 @@ class i2s
     ///the correct device enum class. if the device is already in use
     ///a nullptr will be returned.
     ///
-    i2s* create(device device_id);
+    static i2s* create(device device_id);
 };
 
 #pragma GCC diagnostic pop

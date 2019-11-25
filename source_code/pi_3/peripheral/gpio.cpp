@@ -1,17 +1,9 @@
 #include "gpio.h"
 #include "enum_flags.h"
 
-//todo: remove.
-#include "uart.h"
-#include "string.h"
-extern uart* a_uart;
+bool gpio::device_used[device_count] = {false};
 
-bool gpio::device_used[1] = {false};
-// constexpr gpio::registers* gpio::registers_base_address[1];
-
-gpio::gpio(device device_id, pull_up_down_state the_pull_up_down_state, function the_function):
-    the_pull_up_down_state(the_pull_up_down_state),
-    the_function(the_function)
+gpio::gpio(device device_id, pull_up_down_state the_pull_up_down_state, function the_function)
 {
     //mark the device as used to avoid another instance of this device can be made.
     device_used[static_cast<u32>(device_id)] = true;
@@ -19,19 +11,19 @@ gpio::gpio(device device_id, pull_up_down_state the_pull_up_down_state, function
     //set the device_id, so it can be checked at runtime which device this is.
     this->device_id = device_id;
 
-    set_pull_up_down();
-    set_function();
+    set_pull_up_down(the_pull_up_down_state);
+    set_function(the_function);
 }
 
 //just makes sure cpu hangs for at least 150 cycles.
 void gpio::delay()
 {
-    for(volatile u32 count = 0; count < 150; count++)
+    for(volatile usize count = 0; count < 150; count++)
     {
     }
 }
 
-void gpio::set_pull_up_down()
+void gpio::set_pull_up_down(pull_up_down_state the_pull_up_down_state)
 {
     volatile registers::gppudclk_options* a_gppudclk_pointer = &the_registers->gppudclk[static_cast<u32>(device_id) / 32];
 
@@ -43,7 +35,7 @@ void gpio::set_pull_up_down()
     *a_gppudclk_pointer = registers::gppudclk_options::clear;
 }
 
-void gpio::set_function()
+void gpio::set_function(function the_function)
 {
     u32 shift = (static_cast<u32>(device_id) % 10) * 3;
     volatile function* a_function_pointer = &(the_registers->gpfsel[static_cast<u32>(device_id) / 10]);
@@ -58,7 +50,9 @@ gpio::~gpio()
     //unmark the device as used, so it can be created again when needed.
     device_used[static_cast<u32>(device_id)] = false;
 
-    //todo: make sure device and dependencies get destroyed.
+    //make the pin high z.
+    set_function(function::input);
+    set_pull_up_down(pull_up_down_state::disable_pull_up_or_down);
 }
 
 gpio* gpio::create(device device_id, pull_up_down_state the_pull_up_down_state, function the_function)
@@ -71,5 +65,19 @@ gpio* gpio::create(device device_id, pull_up_down_state the_pull_up_down_state, 
     {
         gpio* new_device = new gpio(device_id, the_pull_up_down_state, the_function);
         return new_device;
+    }
+}
+
+void gpio::set_output(bool set_high)
+{
+    if(set_high)
+    {
+        the_registers->gpset[static_cast<u32>(device_id) / 32] =
+            1u << (static_cast<u32>(device_id) % 32);
+    }
+    else
+    {
+        the_registers->gpclr[static_cast<u32>(device_id) / 32] =
+            1u << (static_cast<u32>(device_id) % 32);
     }
 }

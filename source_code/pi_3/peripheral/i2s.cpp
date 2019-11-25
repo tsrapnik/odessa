@@ -4,7 +4,11 @@
 bool i2s::device_used[device_count] = {false};
 constexpr i2s::registers* i2s::registers_base_address[device_count];
 
-i2s::i2s(device device_id)
+i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm_dout) :
+    pcm_clk(pcm_clk),
+    pcm_fs(pcm_fs),
+    pcm_din(pcm_din),
+    pcm_dout(pcm_dout)
 {
     //mark the device as used to avoid another instance of this device can be made.
     device_used[static_cast<u32>(device_id)] = true;
@@ -101,7 +105,45 @@ i2s* i2s::create(device device_id)
         return nullptr;
     else
     {
-        i2s* new_device = new i2s(device_id);
+        //todo: choose pins based on some configuration array, so it works also when there are multiple i2s devices.
+        //try to create the necessary gpio's first.
+        gpio* pcm_clk = gpio::create(gpio::device::gpio_18,
+                                     gpio::pull_up_down_state::disable_pull_up_or_down,
+                                     gpio::function::alternate_function_0);
+        if(pcm_clk == nullptr)
+        {
+            return nullptr;
+        }
+        gpio* pcm_fs = gpio::create(gpio::device::gpio_19,
+                                    gpio::pull_up_down_state::disable_pull_up_or_down,
+                                    gpio::function::alternate_function_0);
+        if(pcm_fs == nullptr)
+        {
+            delete pcm_clk;
+            return nullptr;
+        }
+        gpio* pcm_din = gpio::create(gpio::device::gpio_20,
+                                     gpio::pull_up_down_state::disable_pull_up_or_down,
+                                     gpio::function::alternate_function_0);
+        if(pcm_din == nullptr)
+        {
+            delete pcm_clk;
+            delete pcm_fs;
+            return nullptr;
+        }
+        gpio* pcm_dout = gpio::create(gpio::device::gpio_21,
+                                      gpio::pull_up_down_state::disable_pull_up_or_down,
+                                      gpio::function::alternate_function_0);
+        if(pcm_dout == nullptr)
+        {
+            delete pcm_clk;
+            delete pcm_fs;
+            delete pcm_din;
+            return nullptr;
+        }
+
+        //if all gpio's were created create the device.
+        i2s* new_device = new i2s(device_id, pcm_clk, pcm_fs, pcm_din, pcm_dout);
         return new_device;
     }
 }
