@@ -50,7 +50,7 @@ class interrupt
     ///
     ///base addresses of the different interrupt device registers.
     ///
-    static constexpr registers* registers_base_address[device_count] = {reinterpret_cast<registers*>(0x7e00b200)};
+    static constexpr registers* registers_base_address[device_count] = {reinterpret_cast<registers*>(0x3f00b200)};
 
     private:
     //remembers which interrupt device this is.

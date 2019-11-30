@@ -22,131 +22,131 @@ class i2s
     ///available registers for each i2s device.
     struct registers
     {
-        struct control_and_status_struct
+        struct cs_a_struct
         {
-            bool enable_pcm : 1;
-            bool enable_reception : 1;
-            bool enable_transmission : 1;
-            bool clear_tx_fifo : 1;
-            bool clear_rx_fifo : 1;
-            enum class tx_threshold_enum : u32
+            bool en : 1;
+            bool rxon : 1;
+            bool txon : 1;
+            bool txclr : 1;
+            bool rxclr : 1;
+            enum class txthr_enum : u32
             {
                 fifo_empty = 0,
                 fifo_less_than_full_0 = 1,
                 fifo_less_than_full_1 = 2,
                 fifo_full_but_one = 3,
-            } tx_threshold : 2;
-            enum class rx_threshold_enum : u32
+            } txthr : 2;
+            enum class rxthr_enum : u32
             {
                 fifo_single_sample = 0,
                 fifo_at_leas_full = 1,
                 fifo_at_least = 2,
                 fifo_full = 3,
-            } rx_threshold : 2;
-            bool enable_dma_request : 1;
+            } rxthr : 2;
+            bool dmaen : 1;
             u32 reserved_10_12 : 3;
-            bool tx_fifo_in_sync : 1;
-            bool fx_fifo_in_sync : 1;
-            bool tx_fifo_has_error : 1;
-            bool rx_fifo_has_error : 1;
-            bool tx_needs_writing : 1;
-            bool rx_needs_reading : 1;
-            bool tx_can_accept_data : 1;
-            bool rx_contains_data : 1;
-            bool tx_fifo_empty : 1;
-            bool rx_fifo_full : 1;
-            bool rx_sign_extend : 1;
-            bool pcm_clock_sync_helper : 1;
-            bool ram_not_in_standby : 1;
+            bool txsync : 1;
+            bool rxsync : 1;
+            bool txerr : 1;
+            bool rxerr : 1;
+            bool txh : 1;
+            bool rxr : 1;
+            bool txd : 1;
+            bool rxd : 1;
+            bool txe : 1;
+            bool rxf : 1;
+            bool rxsex : 1;
+            bool sync : 1;
+            bool stby : 1;
             u32 reserved_26_31 : 6;
 
-            volatile_assignment_operators(control_and_status_struct, u32);
-        } control_and_status; //0x00
+            volatile_assignment_operators(cs_a_struct, u32);
+        } cs_a; //0x00
 
-        u32 fifo_data; //0x04
+        u32 fifo_a; //0x04
 
-        struct mode_struct
+        struct mode_a_struct
         {
-            u32 frame_sync_length : 10;
-            u32 frame_length : 10;
-            bool frame_sync_invert : 1;
-            enum class frame_sync_mode_enum : u32
+            u32 fslen : 10;
+            u32 flen : 10;
+            bool fsi : 1;
+            enum class fsm_enum : u32
             {
                 master = 0,
                 slave = 1,
-            } frame_sync_mode : 1;
-            bool clock_invert : 1;
-            enum class clock_mode_enum : u32
+            } fsm : 1;
+            bool clki : 1;
+            enum class clkm_enum : u32
             {
                 master = 0,
                 slave = 1,
-            } clock_mode : 1;
-            enum class transmit_frame_packed_mode_enum : u32
+            } clkm : 1;
+            enum class ftxp_enum : u32
             {
                 single_channel = 0,
                 split = 1,
-            } transmit_frame_packed_mode : 1;
-            enum class receive_frame_packed_mode_enum : u32
+            } ftxp : 1;
+            enum class frxp_enum : u32
             {
                 single_channel = 0,
                 merged = 1,
-            } receive_frame_packed_mode : 1;
-            bool pdm_input_mode_enable : 1;
-            enum class pdm_decimation_factor_enum : u32
+            } frxp : 1;
+            bool pdme : 1;
+            enum class pdmn_enum : u32
             {
                 factor_16 = 0,
                 factor_32 = 1,
-            } pdm_decimation_factor : 1;
-            bool pcm_clock_disable : 1;
+            } pdmn : 1;
+            bool clk_dis : 1;
             u32 reserved_29_31 : 3;
 
-            volatile_assignment_operators(mode_struct, u32);
-        } mode; //0x08
+            volatile_assignment_operators(mode_a_struct, u32);
+        } mode_a; //0x08
 
-        struct configuration_struct
+        struct xc_a_struct
         {
-            u32 channel_2_width : 4;
-            u32 channel_2_position : 10;
-            bool channel_2_enable : 1;
-            bool channel_2_width_extension : 1;
-            u32 channel_1_width : 4;
-            u32 channel_1_position : 10;
-            bool channel_1_enable : 1;
-            bool channel_1_width_extension : 1;
+            u32 ch2wid : 4;
+            u32 ch2pos : 10;
+            bool ch2en : 1;
+            bool ch2wex : 1;
+            u32 ch1wid : 4;
+            u32 ch1pos : 10;
+            bool ch1en : 1;
+            bool ch1wex : 1;
 
-            volatile_assignment_operators(configuration_struct, u32);
+            volatile_assignment_operators(xc_a_struct, u32);
         };
 
-        configuration_struct receive_configuration; //0x0c
+        xc_a_struct rxc_a; //0x0c
 
-        configuration_struct transmit_configuration; //0x10
+        xc_a_struct txc_a; //0x10
 
-        struct dma_request_level_struct
+        struct dreq_a_struct
         {
-            u32 rx_request_level : 7;
+            u32 rx : 7;
             u32 reserved_7 : 1;
-            u32 tx_request_level : 7;
+            u32 tx : 7;
             u32 reserved_15 : 1;
-            u32 rx_panic_level : 7;
+            u32 rx_panic : 7;
             u32 reserved_23 : 1;
-            u32 tx_panic_level : 7;
+            u32 tx_panic : 7;
             u32 reserved_31 : 1;
 
-            volatile_assignment_operators(dma_request_level_struct, u32);
-        } dma_request_level; //0x14
+            volatile_assignment_operators(dreq_a_struct, u32);
+        } dreq_a; //0x14
 
-        struct interrupt_enables_struct
+        struct inten_a_struct
         {
-            bool tx_write_interrupt_enable : 1;
-            bool rx_read_interrupt_enable : 1;
-            bool tx_error_interrupt_enable : 1;
-            bool rx_error_interrupt_enable : 1;
+            bool txw : 1;
+            bool rxr : 1;
+            bool txerr : 1;
+            bool rxerr : 1;
             u32 reserved_4_31 : 28;
 
-            volatile_assignment_operators(interrupt_enables_struct, u32);
-        } interrupt_enables; //0x18
+            volatile_assignment_operators(inten_a_struct, u32);
+        } inten_a; //0x18
 
-        struct interrupt_status_and_clear_struct
+        struct intstc_a_struct
         {
             enum class status_and_clear
             {
@@ -155,28 +155,28 @@ class i2s
                 clear_flag = 1,
             };
 
-            status_and_clear tx_write_interrupt : 1;
-            status_and_clear rx_read_interrupt : 1;
-            status_and_clear tx_error_interrupt : 1;
-            status_and_clear rx_error_interrupt : 1;
+            status_and_clear txw : 1;
+            status_and_clear rxr : 1;
+            status_and_clear txerr : 1;
+            status_and_clear rxerr : 1;
             u32 reserved_4_31 : 28;
 
-            volatile_assignment_operators(interrupt_status_and_clear_struct, u32);
-        } interrupt_status_and_clear; //0x1c
+            volatile_assignment_operators(intstc_a_struct, u32);
+        } intstc_a; //0x1c
 
-        struct gray_mode_control_struct
+        struct gray_struct
         {
-            bool enable_gray_mode : 1;
-            bool clear_gray_mode_logic : 1;
-            bool flush_rx_buffer : 1;
+            bool en : 1;
+            bool clr : 1;
+            bool flush : 1;
             bool reserved_3 : 1;
-            u32 current_fill_level : 6;
-            u32 bits_flushed : 6;
-            u32 current_level : 6;
+            u32 rxlevel : 6;
+            u32 flushed : 6;
+            u32 rxfifolevel : 6;
             u32 reserved_22_31 : 10;
 
-            volatile_assignment_operators(gray_mode_control_struct, u32);
-        } gray_mode_control; //0x20
+            volatile_assignment_operators(gray_struct, u32);
+        } gray; //0x20
     };
     static_assert(sizeof(registers) == 0x24, "i2s register map size does not match datasheet.");
 
@@ -189,7 +189,7 @@ class i2s
     ///
     ///base addresses of the different i2s device registers.
     ///
-    static constexpr registers* registers_base_address[device_count] = {reinterpret_cast<registers*>(0x7e203000)};
+    static constexpr registers* registers_base_address[device_count] = {reinterpret_cast<registers*>(0x3f203000)};
 
     private:
     ///
@@ -227,6 +227,16 @@ class i2s
     ///a nullptr will be returned.
     ///
     static i2s* create(device device_id);
+
+    bool transmit_required();
+    void transmit(u32 sample);
+    bool receive_required();
+    u32 receive();
+
+    bool transmit_error();
+    bool receive_error();
+    void clear_transmit_error();
+    void clear_receive_error();
 };
 
 #pragma GCC diagnostic pop

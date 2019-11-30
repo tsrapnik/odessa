@@ -2,7 +2,7 @@
 
 #include "type_definitions.h"
 #include "gpio.h"
-
+//todo: use reference manual register names everywhere.
 class uart
 {
     private:

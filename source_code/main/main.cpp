@@ -1,3 +1,4 @@
+#include "assert.h"
 #include "buddy_heap.h"
 #include "effect_chorus.h"
 #include "effect_delay.h"
@@ -15,7 +16,6 @@
 #include "vc_gpu.h"
 #include "vc_mailbox_framebuffer.h"
 #include "vc_mailbox_property_tags.h"
-#include "assert.h"
 
 //todo: check for every created device if it does not return a nullptr.
 
@@ -109,70 +109,85 @@ extern "C" i32 main(void)
     i2s* i2s0 = i2s::create(i2s::device::i2s0);
     assert(i2s0 != nullptr);
 
+    a_scene.clear();
+    a_effect_graph.draw(a_scene);
+    a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
+    a_vc_gpu.render();
+
     while(true)
     {
-        //todo: to string is memory leak.
-        a_scene.clear();
-        a_effect_graph.draw(a_scene);
-        a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
-        a_vc_gpu.render();
-
-        a_effect_chorus.move(vector_2_f32(dx, dy));
-        if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] > 800.0f)
+        if(i2s0->receive_required())
         {
-            dx = -speed;
-            a_uart->write("hit right.\r\n");
-        }
-        if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] < 0.0f)
-        {
-            dx = speed;
-            a_uart->write("hit left.\r\n");
-        }
-        if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] > 480.0f)
-        {
-            dy = -speed;
-            a_uart->write("hit bottom.\r\n");
-        }
-        if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] < 0.0f)
-        {
-            dy = speed;
-            a_uart->write("hit top.\r\n");
+            i2s0->transmit(i2s0->receive());
         }
 
-        u8 new_points_size = a_touch_buffer.points_size;
-        if(new_points_size > 10)
-            new_points_size = old_points_size;
-        u32 new_x_position = ((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word;
-        if(new_x_position > 799)
-            new_x_position = old_x_position;
-        u32 new_y_position = ((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word;
-        if(new_y_position > 479)
-            new_y_position = old_y_position;
-        if((new_points_size != old_points_size) ||
-           (new_x_position != old_x_position) ||
-           (new_y_position != old_y_position))
-        {
-            char buffer[19];
-            a_uart->write("points: ");
-            a_uart->write(string::to_string(new_points_size, buffer));
-            a_uart->write(", ");
-            a_uart->write(string::to_string(new_x_position, buffer));
-            a_uart->write(", ");
-            a_uart->write(string::to_string(new_y_position, buffer));
-            a_uart->write(", ");
-            a_uart->write(string::to_string(a_touch_buffer.points[0].reserved[0], buffer));
-            a_uart->write(", ");
-            a_uart->write(string::to_string(a_touch_buffer.points[0].reserved[1], buffer));
-            a_uart->write(", ");
-            a_uart->write(string::to_string(a_touch_buffer.device_mode, buffer));
-            a_uart->write(", ");
-            a_uart->write(string::to_string(a_touch_buffer.gesture_id, buffer));
-            a_uart->write(".\r\n");
+        if(i2s0->receive_error())
+            i2s0->clear_receive_error();
+        if(i2s0->transmit_error())
+            i2s0->clear_transmit_error();
 
-            old_points_size = new_points_size;
-            old_x_position = new_x_position;
-            old_y_position = new_y_position;
-        }
+        // //todo: to string is memory leak.
+        // a_scene.clear();
+        // a_effect_graph.draw(a_scene);
+        // a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
+        // a_vc_gpu.render();
+
+        // a_effect_chorus.move(vector_2_f32(dx, dy));
+        // if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] > 800.0f)
+        // {
+        //     dx = -speed;
+        //     a_uart->write("hit right.\r\n");
+        // }
+        // if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] < 0.0f)
+        // {
+        //     dx = speed;
+        //     a_uart->write("hit left.\r\n");
+        // }
+        // if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] > 480.0f)
+        // {
+        //     dy = -speed;
+        //     a_uart->write("hit bottom.\r\n");
+        // }
+        // if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] < 0.0f)
+        // {
+        //     dy = speed;
+        //     a_uart->write("hit top.\r\n");
+        // }
+
+        // u8 new_points_size = a_touch_buffer.points_size;
+        // if(new_points_size > 10)
+        //     new_points_size = old_points_size;
+        // u32 new_x_position = ((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word;
+        // if(new_x_position > 799)
+        //     new_x_position = old_x_position;
+        // u32 new_y_position = ((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word;
+        // if(new_y_position > 479)
+        //     new_y_position = old_y_position;
+        // if((new_points_size != old_points_size) ||
+        //    (new_x_position != old_x_position) ||
+        //    (new_y_position != old_y_position))
+        // {
+        //     char buffer[19];
+        //     a_uart->write("points: ");
+        //     a_uart->write(string::to_string(new_points_size, buffer));
+        //     a_uart->write(", ");
+        //     a_uart->write(string::to_string(new_x_position, buffer));
+        //     a_uart->write(", ");
+        //     a_uart->write(string::to_string(new_y_position, buffer));
+        //     a_uart->write(", ");
+        //     a_uart->write(string::to_string(a_touch_buffer.points[0].reserved[0], buffer));
+        //     a_uart->write(", ");
+        //     a_uart->write(string::to_string(a_touch_buffer.points[0].reserved[1], buffer));
+        //     a_uart->write(", ");
+        //     a_uart->write(string::to_string(a_touch_buffer.device_mode, buffer));
+        //     a_uart->write(", ");
+        //     a_uart->write(string::to_string(a_touch_buffer.gesture_id, buffer));
+        //     a_uart->write(".\r\n");
+
+        //     old_points_size = new_points_size;
+        //     old_x_position = new_x_position;
+        //     old_y_position = new_y_position;
+        // }
     }
     return (0);
 }
