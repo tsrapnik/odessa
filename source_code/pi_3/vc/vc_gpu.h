@@ -102,7 +102,7 @@ class vc_gpu
         volatile u32 fdbgs;            //0xf10
         w32 reserved_0xf14_0xf1c[3];   //0xf14-0xf1c
         volatile u32 errstat;          //0xf20
-    } __attribute__((packed));
+    } __attribute__((packed, aligned(4)));
 
     static v3d_registers *const v3d;
 

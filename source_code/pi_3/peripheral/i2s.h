@@ -61,7 +61,7 @@ class i2s
             w32 reserved_26_31 : 6;
 
             volatile_assignment_operators(cs_a_struct, u32);
-        } __attribute__((packed))
+        }  __attribute__((packed, aligned(4)))
         cs_a; //0x00
 
         u32 fifo_a; //0x04
@@ -102,7 +102,7 @@ class i2s
             w32 reserved_29_31 : 3;
 
             volatile_assignment_operators(mode_a_struct, u32);
-        } __attribute__((packed))
+        }  __attribute__((packed, aligned(4)))
         mode_a; //0x08
 
         struct xc_a_struct
@@ -117,7 +117,7 @@ class i2s
             bool ch1wex : 1;
 
             volatile_assignment_operators(xc_a_struct, u32);
-        } __attribute__((packed));
+        }  __attribute__((packed, aligned(4)));
 
         xc_a_struct rxc_a; //0x0c
 
@@ -135,7 +135,7 @@ class i2s
             w32 reserved_31 : 1;
 
             volatile_assignment_operators(dreq_a_struct, u32);
-        } __attribute__((packed))
+        }  __attribute__((packed, aligned(4)))
         dreq_a; //0x14
 
         struct inten_a_struct
@@ -147,7 +147,7 @@ class i2s
             w32 reserved_4_31 : 28;
 
             volatile_assignment_operators(inten_a_struct, u32);
-        } __attribute__((packed))
+        }  __attribute__((packed, aligned(4)))
         inten_a; //0x18
 
         struct intstc_a_struct
@@ -166,7 +166,7 @@ class i2s
             u32 reserved_4_31 : 28;
 
             volatile_assignment_operators(intstc_a_struct, u32);
-        } __attribute__((packed))
+        }  __attribute__((packed, aligned(4)))
         intstc_a; //0x1c
 
         struct gray_struct
@@ -181,9 +181,9 @@ class i2s
             w32 reserved_22_31 : 10;
 
             volatile_assignment_operators(gray_struct, u32);
-        } __attribute__((packed))
+        }  __attribute__((packed, aligned(4)))
         gray; //0x20
-    } __attribute__((packed));
+    }  __attribute__((packed, aligned(4)));
     static_assert(sizeof(registers) == 0x24, "i2s register map size does not match datasheet.");
 
     ///

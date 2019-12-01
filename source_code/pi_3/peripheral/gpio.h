@@ -80,7 +80,7 @@ class gpio
             clear = 0,
             assert_clock_on_pin_x = 1
         }gppudclk[2]; //0x98-0x9c
-    } __attribute__((packed));
+    }  __attribute__((packed, aligned(4)));
 
     //keeps track of which devices are already used, so only
     //one instance of each can be created.

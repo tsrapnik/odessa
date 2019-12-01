@@ -90,7 +90,7 @@ class spi
             w32 reserved_26_31 : 6;
 
             volatile_assignment_operators(cs_struct, u32);
-        } __attribute__((packed))
+        }  __attribute__((packed, aligned(4)))
         cs; //0x00
 
         u32 fifo; //0x04
@@ -101,7 +101,7 @@ class spi
             w32 reserved_16_31 : 16;
 
             volatile_assignment_operators(clk_struct, u32);
-        } __attribute__((packed))
+        }  __attribute__((packed, aligned(4)))
         clk; //0x08
 
         struct dlen_struct
@@ -110,7 +110,7 @@ class spi
             w32 reserved_16_31 : 16;
 
             volatile_assignment_operators(dlen_struct, u32);
-        } __attribute__((packed))
+        }  __attribute__((packed, aligned(4)))
         dlen; //0x0c
 
         struct ltoh_struct
@@ -119,7 +119,7 @@ class spi
             w32 reserved_4_31 : 28;
 
             volatile_assignment_operators(ltoh_struct, u32);
-        } __attribute__((packed))
+        }  __attribute__((packed, aligned(4)))
         ltoh; //0x10
 
         struct dc_struct
@@ -130,9 +130,9 @@ class spi
             u32 rpanic : 8;
 
             volatile_assignment_operators(dc_struct, u32);
-        } __attribute__((packed))
+        }  __attribute__((packed, aligned(4)))
         dc; //0x14
-    } __attribute__((packed));
+    }  __attribute__((packed, aligned(4)));
     static_assert(sizeof(registers) == 0x18, "spi register map size does not match datasheet.");
 
     ///

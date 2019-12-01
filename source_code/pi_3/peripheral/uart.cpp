@@ -99,7 +99,6 @@ void uart::write(const char* string)
 {
     for(u32 index = 0; string[index] != '\0'; index++)
     {
-        //todo: hangs here in o0.
         while(static_cast<bool>(the_registers->fr & registers::fr::txff))
             ;
         the_registers->dr = string[index];

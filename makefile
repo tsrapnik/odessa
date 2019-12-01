@@ -21,7 +21,7 @@ object_copier = $(prefix)objcopy
 object_dumper = $(prefix)objdump
 object_mapper = $(prefix)nm
 #todo: make debug and release options.
-compiler_flags = -g -Wall -O3 -mcpu=cortex-a53+fp+simd -ffreestanding -nostartfiles -std=c++17 -mstrict-align -fno-tree-loop-vectorize -fno-tree-slp-vectorize -Wno-nonnull-compare -fno-exceptions -fno-rtti -fno-builtin -nostdlib -nostdinc
+compiler_flags = -g -Wall -Og -mcpu=cortex-a53+fp+simd -ffreestanding -nostartfiles -std=c++17 -mstrict-align -fno-tree-loop-vectorize -fno-tree-slp-vectorize -Wno-nonnull-compare -fno-exceptions -fno-rtti -fno-builtin -nostdlib -nostdinc
 
 #definitions of the source code directory and the object directory, where all generated files will be stored.
 source_directory = source_code

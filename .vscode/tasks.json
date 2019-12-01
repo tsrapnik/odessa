@@ -32,5 +32,17 @@
             "command": "openocd -s .vscode -f c232hm.cfg -f rpi3.cfg",
             "problemMatcher": []
         },
+        {
+            "label": "telnet",
+            "type": "shell",
+            "command": "telnet localhost 4444",
+            "problemMatcher": []
+        },
+        {
+            "label": "screen",
+            "type": "shell",
+            "command": "screen /dev/ttyUSB1 115200",
+            "problemMatcher": []
+        },
     ]
 }

@@ -38,7 +38,7 @@ class interrupt
         u32 disable_irqs[2]; //0x1c-0x20
         u32 disable_basic_irqs; //0x24
 
-    } __attribute__((packed));
+    }  __attribute__((packed, aligned(4)));
     static_assert(sizeof(registers) == 0x28, "interrupt register map size does not match datasheet.");
 
     ///

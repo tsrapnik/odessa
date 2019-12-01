@@ -12,12 +12,13 @@ class uart
     //represent all available uart devices.
     enum class device
     {
-        uart0 = 0
+        uart_pl011 = 0
     };
 
     private:
     struct registers
     {
+        //todo: registers are not complete.
         u32 dr; //0x00
         w32 reserved_0[5]; //0x04-0x14
         enum class fr : u32 //0x18
@@ -43,7 +44,7 @@ class uart
         u32 ris; //0x3c
         u32 mis; //0x40
         u32 icr; //0x44
-    } __attribute__((packed));
+    }  __attribute__((packed, aligned(4))); //todo: explain packed and aligned are necessary. especially aligned, because otherwise byte access in stead of word access.
 
     //keeps track of which devices are already used, so only
     //one instance of each can be created.
