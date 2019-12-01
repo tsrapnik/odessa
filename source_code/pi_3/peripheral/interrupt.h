@@ -38,7 +38,7 @@ class interrupt
         u32 disable_irqs[2]; //0x1c-0x20
         u32 disable_basic_irqs; //0x24
 
-    };
+    } __attribute__((packed));
     static_assert(sizeof(registers) == 0x28, "interrupt register map size does not match datasheet.");
 
     ///
@@ -57,7 +57,7 @@ class interrupt
     device device_id;
 
     //pointer to the actual registers of this device.
-    volatile registers* this_registers;
+    volatile registers* the_registers;
 
     //constructor is private, all objects should be created with
     //the create function, to avoid making multiple instances of

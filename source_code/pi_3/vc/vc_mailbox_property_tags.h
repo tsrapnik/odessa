@@ -411,7 +411,7 @@ class vc_mailbox_property_tags
             u8 x_low_word;
             u8 y_high_word;
             u8 y_low_word;
-            u8 reserved[2];
+            w8 reserved[2];
         } points[maximum_touch_points];
     } __attribute__((packed, aligned(16)));
 

@@ -12,14 +12,14 @@ interrupt::interrupt(device device_id, interruptable* source)
     //set the device_id, so it can be checked at runtime which device this is.
     this->device_id = device_id;
 
-    this_registers = registers_base_address[static_cast<u32>(device_id)];
+    the_registers = registers_base_address[static_cast<u32>(device_id)];
 
     switch (device_id)
     {
     case device::i2s_interrupt:
         //todo: do for all interrupt.
         constexpr usize pcm_int = 55;
-        this_registers->enable_irqs[pcm_int / 32u] = 1u << (pcm_int % 32u);
+        the_registers->enable_irqs[pcm_int / 32u] = 1u << (pcm_int % 32u);
         break;
     }
 }

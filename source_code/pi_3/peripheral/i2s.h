@@ -2,9 +2,9 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wbitfield-enum-conversion"
 
+#include "gpio.h"
 #include "type_definitions.h"
 #include "volatile_operators.h"
-#include "gpio.h"
 
 class i2s
 {
@@ -44,7 +44,7 @@ class i2s
                 fifo_full = 3,
             } rxthr : 2;
             bool dmaen : 1;
-            u32 reserved_10_12 : 3;
+            w32 reserved_10_12 : 3;
             bool txsync : 1;
             bool rxsync : 1;
             bool txerr : 1;
@@ -58,10 +58,11 @@ class i2s
             bool rxsex : 1;
             bool sync : 1;
             bool stby : 1;
-            u32 reserved_26_31 : 6;
+            w32 reserved_26_31 : 6;
 
             volatile_assignment_operators(cs_a_struct, u32);
-        } cs_a; //0x00
+        } __attribute__((packed))
+        cs_a; //0x00
 
         u32 fifo_a; //0x04
 
@@ -98,10 +99,11 @@ class i2s
                 factor_32 = 1,
             } pdmn : 1;
             bool clk_dis : 1;
-            u32 reserved_29_31 : 3;
+            w32 reserved_29_31 : 3;
 
             volatile_assignment_operators(mode_a_struct, u32);
-        } mode_a; //0x08
+        } __attribute__((packed))
+        mode_a; //0x08
 
         struct xc_a_struct
         {
@@ -115,7 +117,7 @@ class i2s
             bool ch1wex : 1;
 
             volatile_assignment_operators(xc_a_struct, u32);
-        };
+        } __attribute__((packed));
 
         xc_a_struct rxc_a; //0x0c
 
@@ -124,16 +126,17 @@ class i2s
         struct dreq_a_struct
         {
             u32 rx : 7;
-            u32 reserved_7 : 1;
+            w32 reserved_7 : 1;
             u32 tx : 7;
-            u32 reserved_15 : 1;
+            w32 reserved_15 : 1;
             u32 rx_panic : 7;
-            u32 reserved_23 : 1;
+            w32 reserved_23 : 1;
             u32 tx_panic : 7;
-            u32 reserved_31 : 1;
+            w32 reserved_31 : 1;
 
             volatile_assignment_operators(dreq_a_struct, u32);
-        } dreq_a; //0x14
+        } __attribute__((packed))
+        dreq_a; //0x14
 
         struct inten_a_struct
         {
@@ -141,10 +144,11 @@ class i2s
             bool rxr : 1;
             bool txerr : 1;
             bool rxerr : 1;
-            u32 reserved_4_31 : 28;
+            w32 reserved_4_31 : 28;
 
             volatile_assignment_operators(inten_a_struct, u32);
-        } inten_a; //0x18
+        } __attribute__((packed))
+        inten_a; //0x18
 
         struct intstc_a_struct
         {
@@ -162,22 +166,24 @@ class i2s
             u32 reserved_4_31 : 28;
 
             volatile_assignment_operators(intstc_a_struct, u32);
-        } intstc_a; //0x1c
+        } __attribute__((packed))
+        intstc_a; //0x1c
 
         struct gray_struct
         {
             bool en : 1;
             bool clr : 1;
             bool flush : 1;
-            bool reserved_3 : 1;
+            w32 reserved_3 : 1;
             u32 rxlevel : 6;
             u32 flushed : 6;
             u32 rxfifolevel : 6;
-            u32 reserved_22_31 : 10;
+            w32 reserved_22_31 : 10;
 
             volatile_assignment_operators(gray_struct, u32);
-        } gray; //0x20
-    };
+        } __attribute__((packed))
+        gray; //0x20
+    } __attribute__((packed));
     static_assert(sizeof(registers) == 0x24, "i2s register map size does not match datasheet.");
 
     ///
@@ -200,7 +206,7 @@ class i2s
     ///
     ///pointer to the actual registers of this device.
     ///
-    volatile registers* this_registers;
+    volatile registers* the_registers;
 
     gpio* pcm_clk;
     gpio* pcm_fs;

@@ -11,6 +11,7 @@
 #include "math.h"
 #include "memory.h"
 #include "scratchpad.h"
+#include "spi.h"
 #include "string.h"
 #include "uart.h"
 #include "vc_gpu.h"
@@ -54,9 +55,14 @@ extern "C" i32 main(void)
     a_uart = uart::create(uart::device::uart0);
     a_uart->write("uart created.\r\n");
 
-    unsigned int max_clockrate = vc_mailbox_property_tags::get_max_clock_rate(vc_mailbox_property_tags::clock_id::arm);
+    u32 max_clockrate = vc_mailbox_property_tags::get_max_clock_rate(vc_mailbox_property_tags::clock_id::arm);
     vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::arm, max_clockrate);
+    a_uart->write("clock speed is ");
+    char buffer[19];
+    a_uart->write(string::to_string(max_clockrate, buffer));
+    a_uart->write(" Hz.\r\n");
 
+    //initialize gpu and draw a example scene to the screen.
     vc_mailbox_framebuffer a_vc_mailbox_framebuffer;
     vc_gpu a_vc_gpu(a_vc_mailbox_framebuffer.get_buffer(), 800, 480);
 
@@ -83,16 +89,55 @@ extern "C" i32 main(void)
     a_effect_graph.add_effect(&a_effect_sink);
     a_effect_graph.add_effect(&a_effect_source);
 
+    a_scene.clear();
+    a_effect_graph.draw(a_scene);
+    a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
+    a_vc_gpu.render();
+
     constexpr f32 speed = 0.2f;
     f32 dx = speed;
     f32 dy = speed;
 
-    u8 old_points_size = 0;
-    u32 old_x_position = 0;
-    u32 old_y_position = 0;
+    //initialize touch screen.
+    // u8 old_points_size = 0;
+    // u32 old_x_position = 0;
+    // u32 old_y_position = 0;
     volatile vc_mailbox_property_tags::touch_buffer a_touch_buffer;
     vc_mailbox_property_tags::set_touch_buffer(const_cast<vc_mailbox_property_tags::touch_buffer*>(&a_touch_buffer));
 
+    //initialize spi.
+    spi* spi0 = spi::create(spi::device::spi0);
+    assert(spi0 != nullptr);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbitfield-enum-conversion"
+    struct pga2500_settings
+    {
+        //bytes are swapped, to match little endian layout.
+        bool gpo1_high : 1;
+        bool gpo2_high : 1;
+        bool gpo3_high : 1;
+        bool gpo4_high : 1;
+        enum class overload_indicator_enum
+        {
+            assert_5_1_v_rms = 0,
+            assert_4_0_v_rms = 1,
+        } overload_indicator : 1;
+        w8 reserved_13 : 1;
+        bool common_mode_servo_enabled : 1;
+        bool dc_servo_enabled : 1;
+
+        u8 gain : 6;
+        w8 reserved_6_7 : 2;
+    }
+    __attribute__((packed));
+    static_assert(sizeof(pga2500_settings) == 2, "pga 2500 settings size does not match datasheet.");
+#pragma GCC diagnostic pop
+
+    pga2500_settings preamp_settings = {};
+    preamp_settings.gain = 11; //matches 20 dB (0 is 0 dB, 1 to 56 is 10 to 65 dB, 57 to 63 is 65 dB).
+
+    //initialize i2s.
     gpio* enable_adc = gpio::create(gpio::device::gpio_5,
                                     gpio::pull_up_down_state::disable_pull_up_or_down,
                                     gpio::function::output);
@@ -108,11 +153,6 @@ extern "C" i32 main(void)
 
     i2s* i2s0 = i2s::create(i2s::device::i2s0);
     assert(i2s0 != nullptr);
-
-    a_scene.clear();
-    a_effect_graph.draw(a_scene);
-    a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
-    a_vc_gpu.render();
 
     while(true)
     {
@@ -132,27 +172,29 @@ extern "C" i32 main(void)
         // a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
         // a_vc_gpu.render();
 
-        // a_effect_chorus.move(vector_2_f32(dx, dy));
-        // if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] > 800.0f)
-        // {
-        //     dx = -speed;
-        //     a_uart->write("hit right.\r\n");
-        // }
-        // if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] < 0.0f)
-        // {
-        //     dx = speed;
-        //     a_uart->write("hit left.\r\n");
-        // }
-        // if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] > 480.0f)
-        // {
-        //     dy = -speed;
-        //     a_uart->write("hit bottom.\r\n");
-        // }
-        // if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] < 0.0f)
-        // {
-        //     dy = speed;
-        //     a_uart->write("hit top.\r\n");
-        // }
+        a_effect_chorus.move(vector_2_f32(dx, dy));
+        if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] > 800.0f)
+        {
+            dx = -speed;
+            a_uart->write("hit right.\r\n");
+        }
+        if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] < 0.0f)
+        {
+            dx = speed;
+            a_uart->write("hit left.\r\n");
+        }
+        if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] > 480.0f)
+        {
+            dy = -speed;
+            a_uart->write("hit bottom.\r\n");
+        }
+        if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] < 0.0f)
+        {
+            dy = speed;
+            a_uart->write("hit top.\r\n");
+    spi0->write(spi::cs_enum::cs0, reinterpret_cast<w8*>(&preamp_settings), sizeof(preamp_settings));
+    spi0->write(spi::cs_enum::cs1, reinterpret_cast<w8*>(&preamp_settings), sizeof(preamp_settings));
+        }
 
         // u8 new_points_size = a_touch_buffer.points_size;
         // if(new_points_size > 10)

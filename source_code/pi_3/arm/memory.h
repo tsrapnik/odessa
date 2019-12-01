@@ -87,7 +87,6 @@ class memory
     }
     __attribute__((packed));
 
-
     struct level_2_block_descriptor
     {
         u64 Value01 : 2, //set to 1.
@@ -108,7 +107,6 @@ class memory
             ignored : 9; //set to 0.
     }
     __attribute__((packed));
-
 
     struct level_2_invalid_descriptor
     {
@@ -145,7 +143,6 @@ class memory
             ;
     }
     __attribute__((packed));
-
 
     struct level_3_invalid_descriptor
     {

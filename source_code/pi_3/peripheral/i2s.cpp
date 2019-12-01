@@ -17,7 +17,7 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     //set the device_id, so it can be checked at runtime which device this is.
     this->device_id = device_id;
 
-    this_registers = registers_base_address[static_cast<u32>(device_id)];
+    the_registers = registers_base_address[static_cast<u32>(device_id)];
 
     //enable pcm block.
     registers::cs_a_struct temp_cs_a = {};
@@ -26,7 +26,7 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     temp_cs_a.rxthr = registers::cs_a_struct::rxthr_enum::fifo_single_sample;
     temp_cs_a.txthr = registers::cs_a_struct::txthr_enum::fifo_full_but_one;
 
-    this_registers->cs_a = temp_cs_a;
+    the_registers->cs_a = temp_cs_a;
 
     //define frame and channel settings.
     registers::mode_a_struct temp_mode_a = {};
@@ -39,7 +39,7 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     temp_mode_a.fsm = registers::mode_a_struct::fsm_enum::slave;
     temp_mode_a.fsi = false;
 
-    this_registers->mode_a = temp_mode_a;
+    the_registers->mode_a = temp_mode_a;
 
     registers::xc_a_struct temp_configuration = {};
     temp_configuration.ch1wex = true;
@@ -51,26 +51,26 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     temp_configuration.ch2pos = 0;
     temp_configuration.ch2wid = 8;
 
-    this_registers->rxc_a = temp_configuration;
-    this_registers->txc_a = temp_configuration;
+    the_registers->rxc_a = temp_configuration;
+    the_registers->txc_a = temp_configuration;
 
     //clear fifo's.
-    temp_cs_a = this_registers->cs_a;
+    temp_cs_a = the_registers->cs_a;
     temp_cs_a.rxclr = true;
     temp_cs_a.txclr = true;
     temp_cs_a.sync = true;
 
-    this_registers->cs_a = temp_cs_a;
+    the_registers->cs_a = temp_cs_a;
 
     //todo: clock sync does not work.
     for(volatile usize index = 0; index < 100; index++)
         ;
-    // while(!this_registers->cs_a.sync)
+    // while(!the_registers->cs_a.sync)
     //     ;
 
     // //todo: enable ram needed?
     // //disable ram standby.
-    // this_registers->cs_a.stby = true;
+    // the_registers->cs_a.stby = true;
 
     // for(volatile usize index = 0; index < 100; index++)
     // ;
@@ -78,24 +78,24 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     //enable interrupt.
     // //todo: enable error interrupt?
     // registers::inten_a_struct temp_inten_a;
-    // temp_inten_a = this_registers->inten_a;
+    // temp_inten_a = the_registers->inten_a;
     // temp_inten_a.rxr = true;
     // temp_inten_a.txw = true;
 
-    // this_registers->inten_a = temp_inten_a;
+    // the_registers->inten_a = temp_inten_a;
 
     //fill transmit fifo with zeroes.
     for(usize index = 0; index < 64; index++)
     {
-        this_registers->fifo_a = 0;
+        the_registers->fifo_a = 0;
     }
 
     //start transmitting and receiving.
-    temp_cs_a = this_registers->cs_a;
+    temp_cs_a = the_registers->cs_a;
     temp_cs_a.txon = true;
     temp_cs_a.rxon = true;
 
-    this_registers->cs_a = temp_cs_a;
+    the_registers->cs_a = temp_cs_a;
 
     // AZO234 implementation.
 
@@ -105,7 +105,7 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     // temp_inten_a.rxr = true;
     // temp_inten_a.txw = true;
 
-    // this_registers->inten_a = temp_inten_a;
+    // the_registers->inten_a = temp_inten_a;
 
     // //define frame and channel settings.
     // registers::mode_a_struct temp_mode_a = {};
@@ -121,7 +121,7 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     // temp_mode_a.flen = 64 - 1;
     // temp_mode_a.fslen = 32;
 
-    // this_registers->mode_a = temp_mode_a;
+    // the_registers->mode_a = temp_mode_a;
 
     // registers::xc_a_struct temp_configuration = {};
     // temp_configuration.ch1wex = true;
@@ -133,8 +133,8 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     // temp_configuration.ch2pos = 32;
     // temp_configuration.ch2wid = 8;
 
-    // this_registers->rxc_a = temp_configuration;
-    // this_registers->txc_a = temp_configuration;
+    // the_registers->rxc_a = temp_configuration;
+    // the_registers->txc_a = temp_configuration;
 
     // //todo: needed?
     // temp_configuration.ch1wex = true;
@@ -146,8 +146,8 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     // temp_configuration.ch2pos = 33;
     // temp_configuration.ch2wid = 8;
 
-    // this_registers->rxc_a = temp_configuration;
-    // this_registers->txc_a = temp_configuration;
+    // the_registers->rxc_a = temp_configuration;
+    // the_registers->txc_a = temp_configuration;
 
     // //enable pcm block.
     // registers::cs_a_struct temp_cs_a = {};
@@ -163,16 +163,16 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     // temp_cs_a.rxsync = true;
     // temp_cs_a.txsync = true;
 
-    // this_registers->cs_a = temp_cs_a;
+    // the_registers->cs_a = temp_cs_a;
 
     // temp_cs_a.sync = false;
 
-    // this_registers->cs_a = temp_cs_a;
+    // the_registers->cs_a = temp_cs_a;
 
     // //todo: clock sync does not work.
     // // for(volatile usize index = 0; index < 100; index++)
     // //     ;
-    // while(this_registers->cs_a.sync)
+    // while(the_registers->cs_a.sync)
     //     ;
 }
 
@@ -180,6 +180,8 @@ i2s::~i2s()
 {
     //unmark the device as used, so it can be created again when needed.
     device_used[static_cast<u32>(device_id)] = false;
+
+    //todo: release all resources.
 }
 
 i2s* i2s::create(device device_id)
@@ -242,70 +244,70 @@ i2s* i2s::create(device device_id)
 
 bool i2s::transmit_required()
 {
-    return this_registers->cs_a.txd;
+    return the_registers->cs_a.txd;
 }
 
 void i2s::transmit(u32 sample)
 {
-    this_registers->fifo_a = sample;
+    the_registers->fifo_a = sample;
 }
 
 bool i2s::receive_required()
 {
-    return this_registers->cs_a.rxd;
+    return the_registers->cs_a.rxd;
 }
 
 u32 i2s::receive()
 {
-    return this_registers->fifo_a;
+    return the_registers->fifo_a;
 }
 
 bool i2s::transmit_error()
 {
-    return this_registers->cs_a.txerr;
+    return the_registers->cs_a.txerr;
 }
 
 bool i2s::receive_error()
 {
-    return this_registers->cs_a.rxerr;
+    return the_registers->cs_a.rxerr;
 }
 
 void i2s::clear_transmit_error()
 {
     //stop transmitting and receiving.
     registers::cs_a_struct temp_cs_a;
-    temp_cs_a = this_registers->cs_a;
+    temp_cs_a = the_registers->cs_a;
     temp_cs_a.txon = false;
     temp_cs_a.rxon = false;
 
-    this_registers->cs_a = temp_cs_a;
+    the_registers->cs_a = temp_cs_a;
 
     //clear fifo's.
-    temp_cs_a = this_registers->cs_a;
+    temp_cs_a = the_registers->cs_a;
     temp_cs_a.rxclr = true;
     temp_cs_a.txclr = true;
     temp_cs_a.sync = true;
 
-    this_registers->cs_a = temp_cs_a;
+    the_registers->cs_a = temp_cs_a;
 
     //todo: clock sync does not work.
     for(volatile usize index = 0; index < 100; index++)
         ;
-    // while(!this_registers->cs_a.sync)
+    // while(!the_registers->cs_a.sync)
     //     ;
 
     //fill transmit fifo with zeroes.
     for(usize index = 0; index < 64; index++)
     {
-        this_registers->fifo_a = 0;
+        the_registers->fifo_a = 0;
     }
 
     //start transmitting and receiving.
-    temp_cs_a = this_registers->cs_a;
+    temp_cs_a = the_registers->cs_a;
     temp_cs_a.txon = true;
     temp_cs_a.rxon = true;
 
-    this_registers->cs_a = temp_cs_a;
+    the_registers->cs_a = temp_cs_a;
 }
 
 void i2s::clear_receive_error()

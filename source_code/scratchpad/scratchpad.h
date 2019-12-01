@@ -16,7 +16,7 @@ class clone_inherit : public base
         return a_derived;
     }
 
-    virtual clone_inherit* clone(byte* memory) const override
+    virtual clone_inherit* clone(w8* memory) const override
     {
         clone_inherit* a_derived = (derived*)memory;
         *a_derived = *this;
@@ -29,7 +29,7 @@ class interface_0
     public:
     virtual ~interface_0();
     virtual interface_0* clone() const = 0;
-    virtual interface_0* clone(byte* memory) const = 0;
+    virtual interface_0* clone(w8* memory) const = 0;
     virtual void do_stuff() = 0;
 };
 

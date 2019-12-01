@@ -23,11 +23,11 @@ class vc_mailbox
     struct mail_box_registers
     {
         volatile u32 read_write; //0x00
-        u32 reserved_0x04[3]; //0x04-0x0c
+        w32 reserved_0x04[3]; //0x04-0x0c
         volatile u32 peek; //0x10
         volatile u32 sender; //0x14
         volatile u32 //0x18
-            status_reserved_0 : 30,
+            status_reserved_0 : 30, //todo: make w32.
             status_empty : 1,
             status_full : 1;
         volatile u32 config; //0x1c

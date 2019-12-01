@@ -16,6 +16,10 @@ class gpio
     {
         gpio_5 = 5,
         gpio_6 = 6,
+        gpio_7 = 7,
+        gpio_8 = 8,
+        gpio_10 = 10,
+        gpio_11 = 11,
         gpio_14 = 14,
         gpio_15 = 15,
         gpio_18 = 18,
@@ -49,27 +53,27 @@ class gpio
     struct registers
     {
         function gpfsel[6]; //0x00-0x14
-        u32 reserved_0x18; //0x18
+        w32 reserved_0x18; //0x18
         u32 gpset[2]; //0x1c-0x20
-        u32 reserved_0x24; //0x24
+        w32 reserved_0x24; //0x24
         u32 gpclr[2]; //0x28-0x2c
-        u32 reserved_0x30; //0x30
+        w32 reserved_0x30; //0x30
         u32 gplev[2]; //0x34-0x38
-        u32 reserved_0x3c; //0x3c
+        w32 reserved_0x3c; //0x3c
         u32 gpeds[2]; //0x40-0x44
-        u32 reserved_0x48; //0x48
+        w32 reserved_0x48; //0x48
         u32 gpren[2]; //0x4c-0x50
-        u32 reserved_0x54; //0x54
+        w32 reserved_0x54; //0x54
         u32 gpfen[2]; //0x58-0x5c
-        u32 reserved_0x60; //0x60
+        w32 reserved_0x60; //0x60
         u32 gphen[2]; //0x64-0x68
-        u32 reserved_0x6c; //0x6c
+        w32 reserved_0x6c; //0x6c
         u32 gplen[2]; //0x70-0x74
-        u32 reserved_0x78; //0x78
+        w32 reserved_0x78; //0x78
         u32 gparen[2]; //0x7c-0x80
-        u32 reserved_0x84; //0x84
+        w32 reserved_0x84; //0x84
         u32 gpafen[2]; //0x88-0x8c
-        u32 reserved_0x90; //0x90
+        w32 reserved_0x90; //0x90
         pull_up_down_state gppud;//0x94
         enum class gppudclk_options : u32
         {

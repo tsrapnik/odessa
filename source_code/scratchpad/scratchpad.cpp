@@ -35,7 +35,7 @@ void f1(interface_0& a_interface_0)
 {
     //weak point in the configuration is setting up the size of the static memory. have not found a decent compile
     //time solution.
-    static byte memory [max(sizeof(interface_0), sizeof(interface_implementor_0), sizeof(interface_implementor_1))];
+    static w8 memory [max(sizeof(interface_0), sizeof(interface_implementor_0), sizeof(interface_implementor_1))];
 
     interface_0 * pointer_to_copy_of_interface_0 = a_interface_0.clone(memory);
     

@@ -1,12 +1,13 @@
 #pragma once
 
-#include "type_definitions.h"
 #include "gpio.h"
+#include "type_definitions.h"
 //todo: use reference manual register names everywhere.
 class uart
 {
     private:
     static constexpr u32 device_count = 1;
+
     public:
     //represent all available uart devices.
     enum class device
@@ -18,13 +19,13 @@ class uart
     struct registers
     {
         u32 dr; //0x00
-        u32 reserved_0[5]; //0x04-0x14
+        w32 reserved_0[5]; //0x04-0x14
         enum class fr : u32 //0x18
         {
             rxfe = 1 << 4,
             txff = 1 << 5
         } fr;
-        u32 reserved_1[2]; //0x1c-0x20
+        w32 reserved_1[2]; //0x1c-0x20
         u32 ibrd; //0x24
         u32 fbrd; //0x28
         enum class lcrh_options : u32 //0x2c
@@ -56,7 +57,7 @@ class uart
     device device_id;
 
     //pointer to the actual registers of this device.
-    volatile registers* this_registers;
+    volatile registers* the_registers;
 
     gpio* gpio_32;
     gpio* gpio_33;
