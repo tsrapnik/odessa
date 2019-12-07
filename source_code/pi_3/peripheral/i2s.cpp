@@ -18,15 +18,19 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     this->device_id = device_id;
 
     the_registers = registers_base_address[static_cast<u32>(device_id)];
-
+    //todo: copy struct literals to registers.
     //enable pcm block.
     registers::cs_a_struct temp_cs_a = {};
     temp_cs_a.en = true;
     temp_cs_a.dmaen = false;
     temp_cs_a.rxthr = registers::cs_a_struct::rxthr_enum::fifo_single_sample;
     temp_cs_a.txthr = registers::cs_a_struct::txthr_enum::fifo_full_but_one;
+    temp_cs_a.rxsex = true;
+    temp_cs_a.stby = registers::cs_a_struct::stdby_enum::disable;
 
     the_registers->cs_a = temp_cs_a;
+
+    u32 channel_length = 64;
 
     //define frame and channel settings.
     registers::mode_a_struct temp_mode_a = {};
@@ -35,23 +39,35 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     temp_mode_a.frxp = registers::mode_a_struct::frxp_enum::single_channel;
     temp_mode_a.ftxp = registers::mode_a_struct::ftxp_enum::single_channel;
     temp_mode_a.clkm = registers::mode_a_struct::clkm_enum::slave;
-    temp_mode_a.clki = false;
+    temp_mode_a.clki = true; //todo: i2s requires reading on positive flank and changing value on negative flank, is inverse of default.
     temp_mode_a.fsm = registers::mode_a_struct::fsm_enum::slave;
-    temp_mode_a.fsi = false;
+    temp_mode_a.fsi = true;
+    // temp_mode_a.fslen = channel_length; //todo: not really necessary, but just for completeness.
+    // temp_mode_a.flen = 2 * channel_length - 1;
 
     the_registers->mode_a = temp_mode_a;
 
     registers::xc_a_struct temp_configuration = {};
     temp_configuration.ch1wex = true;
     temp_configuration.ch1en = true;
-    temp_configuration.ch1pos = 0;
-    temp_configuration.ch1wid = 8;
+    temp_configuration.ch1pos = 0 + 1;
+    temp_configuration.ch1wid = 0;
     temp_configuration.ch2wex = true;
     temp_configuration.ch2en = true;
-    temp_configuration.ch2pos = 0;
-    temp_configuration.ch2wid = 8;
+    temp_configuration.ch2pos = channel_length + 1;
+    temp_configuration.ch2wid = 0;
 
     the_registers->rxc_a = temp_configuration;
+
+    temp_configuration.ch1wex = true;
+    temp_configuration.ch1en = true;
+    temp_configuration.ch1pos = 0 + 1;
+    temp_configuration.ch1wid = 0;
+    temp_configuration.ch2wex = true;
+    temp_configuration.ch2en = true;
+    temp_configuration.ch2pos = channel_length + 1;
+    temp_configuration.ch2wid = 0;
+
     the_registers->txc_a = temp_configuration;
 
     //clear fifo's.
@@ -244,32 +260,40 @@ i2s* i2s::create(device device_id)
 
 bool i2s::transmit_required()
 {
-    return the_registers->cs_a.txd;
+    registers::cs_a_struct tmp_cs_a;
+    tmp_cs_a = the_registers->cs_a;
+    return tmp_cs_a.txd; //todo: change to txd.
 }
 
-void i2s::transmit(u32 sample)
+void i2s::transmit(i32 sample)
 {
     the_registers->fifo_a = sample;
 }
 
 bool i2s::receive_required()
 {
-    return the_registers->cs_a.rxd;
+    registers::cs_a_struct tmp_cs_a;
+    tmp_cs_a = the_registers->cs_a;
+    return tmp_cs_a.rxd; //todo: change to rxd.
 }
 
-u32 i2s::receive()
+i32 i2s::receive()
 {
     return the_registers->fifo_a;
 }
 
 bool i2s::transmit_error()
 {
-    return the_registers->cs_a.txerr;
+    registers::cs_a_struct tmp_cs_a;
+    tmp_cs_a = the_registers->cs_a;
+    return tmp_cs_a.txerr;
 }
 
 bool i2s::receive_error()
 {
-    return the_registers->cs_a.rxerr;
+    registers::cs_a_struct tmp_cs_a;
+    tmp_cs_a = the_registers->cs_a;
+    return tmp_cs_a.rxerr;
 }
 
 void i2s::clear_transmit_error()
@@ -313,4 +337,18 @@ void i2s::clear_transmit_error()
 void i2s::clear_receive_error()
 {
     clear_transmit_error();
+}
+
+i2s::channel i2s::pending_transmit_channel()
+{
+    registers::cs_a_struct tmp_cs_a;
+    tmp_cs_a = the_registers->cs_a;
+    return tmp_cs_a.txsync ? channel::left : channel::right;
+}
+
+i2s::channel i2s::pending_receive_channel()
+{
+    registers::cs_a_struct tmp_cs_a;
+    tmp_cs_a = the_registers->cs_a;
+    return tmp_cs_a.rxsync ? channel::left : channel::right;
 }

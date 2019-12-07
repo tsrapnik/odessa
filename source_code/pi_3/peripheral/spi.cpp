@@ -115,12 +115,15 @@ void spi::write(cs_enum chip, w8* words, u32 word_count)
     u32 receive_count = 0;
     while (true)
     {
-        if(the_registers->cs.txd && (transmit_count < word_count))
+        registers::cs_struct temp_cs = {};
+        temp_cs = the_registers->cs; //todo: always necessary to read as a whole word, otherwise byte accessses.
+        if(temp_cs.txd && (transmit_count < word_count))
         {
             the_registers->fifo = static_cast<u32>(words[transmit_count]);
             transmit_count++;
         }
-        if(the_registers->cs.rxd && (receive_count < word_count))
+        temp_cs = the_registers->cs;
+        if(temp_cs.rxd && (receive_count < word_count))
         {
             u32 received = the_registers->fifo;
             //we are not doing anything with the received word, so just cast it to void,
@@ -128,7 +131,8 @@ void spi::write(cs_enum chip, w8* words, u32 word_count)
             (void)received;
             receive_count++;
         }
-        if((transmit_count == word_count) && (receive_count == word_count) && the_registers->cs.done)
+        temp_cs = the_registers->cs;
+        if((transmit_count == word_count) && (receive_count == word_count) && temp_cs.done)
             break;
     }
 

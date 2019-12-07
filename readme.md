@@ -171,6 +171,8 @@ host odessa {
 sudo service isc-dhcp-server restart
 ```
 
+todo: sometimes required to restart server with above command.
+
 #### setup tftp server
 
 ```

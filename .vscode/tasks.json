@@ -41,7 +41,13 @@
         {
             "label": "screen",
             "type": "shell",
-            "command": "screen /dev/ttyUSB1 115200",
+            "command": "sudo screen /dev/ttyUSB0 115200",
+            "problemMatcher": []
+        },
+        {
+            "label": "restart dhcp server",
+            "type": "shell",
+            "command": "sudo service isc-dhcp-server restart",
             "problemMatcher": []
         },
     ]

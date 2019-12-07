@@ -57,14 +57,18 @@ class i2s
             bool rxf : 1;
             bool rxsex : 1;
             bool sync : 1;
-            bool stby : 1;
+            enum class stdby_enum : u32
+            {
+                enable = 0,
+                disable = 1,
+            } stby : 1;
             w32 reserved_26_31 : 6;
 
             volatile_assignment_operators(cs_a_struct, u32);
-        }  __attribute__((packed, aligned(4)))
+        } __attribute__((packed, aligned(4)))
         cs_a; //0x00
 
-        u32 fifo_a; //0x04
+        i32 fifo_a; //0x04
 
         struct mode_a_struct
         {
@@ -102,7 +106,7 @@ class i2s
             w32 reserved_29_31 : 3;
 
             volatile_assignment_operators(mode_a_struct, u32);
-        }  __attribute__((packed, aligned(4)))
+        } __attribute__((packed, aligned(4)))
         mode_a; //0x08
 
         struct xc_a_struct
@@ -117,7 +121,7 @@ class i2s
             bool ch1wex : 1;
 
             volatile_assignment_operators(xc_a_struct, u32);
-        }  __attribute__((packed, aligned(4)));
+        } __attribute__((packed, aligned(4)));
 
         xc_a_struct rxc_a; //0x0c
 
@@ -135,7 +139,7 @@ class i2s
             w32 reserved_31 : 1;
 
             volatile_assignment_operators(dreq_a_struct, u32);
-        }  __attribute__((packed, aligned(4)))
+        } __attribute__((packed, aligned(4)))
         dreq_a; //0x14
 
         struct inten_a_struct
@@ -147,7 +151,7 @@ class i2s
             w32 reserved_4_31 : 28;
 
             volatile_assignment_operators(inten_a_struct, u32);
-        }  __attribute__((packed, aligned(4)))
+        } __attribute__((packed, aligned(4)))
         inten_a; //0x18
 
         struct intstc_a_struct
@@ -166,7 +170,7 @@ class i2s
             u32 reserved_4_31 : 28;
 
             volatile_assignment_operators(intstc_a_struct, u32);
-        }  __attribute__((packed, aligned(4)))
+        } __attribute__((packed, aligned(4)))
         intstc_a; //0x1c
 
         struct gray_struct
@@ -181,9 +185,9 @@ class i2s
             w32 reserved_22_31 : 10;
 
             volatile_assignment_operators(gray_struct, u32);
-        }  __attribute__((packed, aligned(4)))
+        } __attribute__((packed, aligned(4)))
         gray; //0x20
-    }  __attribute__((packed, aligned(4)));
+    } __attribute__((packed, aligned(4)));
     static_assert(sizeof(registers) == 0x24, "i2s register map size does not match datasheet.");
 
     ///
@@ -235,14 +239,23 @@ class i2s
     static i2s* create(device device_id);
 
     bool transmit_required();
-    void transmit(u32 sample);
+    void transmit(i32 sample);
     bool receive_required();
-    u32 receive();
+    i32 receive();
 
     bool transmit_error();
     bool receive_error();
     void clear_transmit_error();
     void clear_receive_error();
+
+    enum class channel
+    {
+        left,
+        right,
+    };
+
+    channel pending_transmit_channel();
+    channel pending_receive_channel();
 };
 
 #pragma GCC diagnostic pop

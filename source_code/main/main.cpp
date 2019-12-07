@@ -55,6 +55,7 @@ extern "C" i32 main(void)
     a_uart = uart::create(uart::device::uart_pl011);
     a_uart->write("uart created.\r\n");
 
+    //todo: max clockrate appears random.
     u32 max_clockrate = vc_mailbox_property_tags::get_max_clock_rate(vc_mailbox_property_tags::clock_id::arm);
     vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::arm, max_clockrate);
     a_uart->write("clock speed is ");
@@ -98,135 +99,213 @@ extern "C" i32 main(void)
     f32 dx = speed;
     f32 dy = speed;
 
-    //initialize touch screen.
-    u8 old_points_size = 0;
-    u32 old_x_position = 0;
-    u32 old_y_position = 0;
+    // //initialize touch screen.
+    // u8 old_points_size = 0;
+    // u32 old_x_position = 0;
+    // u32 old_y_position = 0;
     volatile vc_mailbox_property_tags::touch_buffer a_touch_buffer;
     vc_mailbox_property_tags::set_touch_buffer(const_cast<vc_mailbox_property_tags::touch_buffer*>(&a_touch_buffer));
 
-    //     //initialize spi.
-    //     spi* spi0 = spi::create(spi::device::spi0);
-    //     assert(spi0 != nullptr);
+    //initialize spi.
+    spi* spi0 = spi::create(spi::device::spi0);
+    assert(spi0 != nullptr);
 
-    // #pragma GCC diagnostic push
-    // #pragma GCC diagnostic ignored "-Wbitfield-enum-conversion"
-    //     struct pga2500_settings
-    //     {
-    //         //bytes are swapped, to match little endian layout.
-    //         bool gpo1_high : 1;
-    //         bool gpo2_high : 1;
-    //         bool gpo3_high : 1;
-    //         bool gpo4_high : 1;
-    //         enum class overload_indicator_enum
-    //         {
-    //             assert_5_1_v_rms = 0,
-    //             assert_4_0_v_rms = 1,
-    //         } overload_indicator : 1;
-    //         w8 reserved_13 : 1;
-    //         bool common_mode_servo_enabled : 1;
-    //         bool dc_servo_enabled : 1;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbitfield-enum-conversion"
+    struct pga2500_settings
+    {
+        //bytes are swapped, to match little endian layout.
+        bool gpo1_high : 1;
+        bool gpo2_high : 1;
+        bool gpo3_high : 1;
+        bool gpo4_high : 1;
+        enum class overload_indicator_enum
+        {
+            assert_5_1_v_rms = 0,
+            assert_4_0_v_rms = 1,
+        } overload_indicator : 1;
+        w8 reserved_13 : 1;
+        bool common_mode_servo_enabled : 1;
+        bool dc_servo_enabled : 1;
 
-    //         u8 gain : 6;
-    //         w8 reserved_6_7 : 2;
-    //     }
-    //      __attribute__((packed, aligned(4)));
-    //     static_assert(sizeof(pga2500_settings) == 2, "pga 2500 settings size does not match datasheet.");
-    // #pragma GCC diagnostic pop
+        u8 gain : 6;
+        w8 reserved_6_7 : 2;
+    } __attribute__((packed));
+    static_assert(sizeof(pga2500_settings) == 2, "pga 2500 settings size does not match datasheet.");
+#pragma GCC diagnostic pop
 
-    //     pga2500_settings preamp_settings = {};
-    //     preamp_settings.gain = 11; //matches 20 dB (0 is 0 dB, 1 to 56 is 10 to 65 dB, 57 to 63 is 65 dB).
+    pga2500_settings preamp_settings = {};
+    preamp_settings.gain = 11; //matches 20 dB (0 is 0 dB, 1 to 56 is 10 to 65 dB, 57 to 63 is 65 dB).
 
-    //     spi0->write(spi::cs_enum::cs0, reinterpret_cast<w8*>(&preamp_settings), sizeof(preamp_settings));
-    //     spi0->write(spi::cs_enum::cs1, reinterpret_cast<w8*>(&preamp_settings), sizeof(preamp_settings));
+    spi0->write(spi::cs_enum::cs0, reinterpret_cast<w8*>(&preamp_settings), sizeof(preamp_settings));
+    spi0->write(spi::cs_enum::cs1, reinterpret_cast<w8*>(&preamp_settings), sizeof(preamp_settings));
 
-    //     //initialize i2s.
-    //     gpio* enable_adc = gpio::create(gpio::device::gpio_5,
-    //                                     gpio::pull_up_down_state::disable_pull_up_or_down,
-    //                                     gpio::function::output);
-    //     assert(enable_adc != nullptr);
+    //initialize i2s.
+    gpio* enable_adc = gpio::create(gpio::device::gpio_5,
+                                    gpio::pull_up_down_state::disable_pull_up_or_down,
+                                    gpio::function::output);
+    assert(enable_adc != nullptr);
 
-    //     gpio* enable_dac = gpio::create(gpio::device::gpio_6,
-    //                                     gpio::pull_up_down_state::disable_pull_up_or_down,
-    //                                     gpio::function::output);
-    //     assert(enable_adc != nullptr);
+    gpio* enable_dac = gpio::create(gpio::device::gpio_6,
+                                    gpio::pull_up_down_state::disable_pull_up_or_down,
+                                    gpio::function::output);
+    assert(enable_adc != nullptr);
 
-    //     enable_adc->set_output(true);
-    //     enable_dac->set_output(true);
+    enable_adc->set_output(true);
+    enable_dac->set_output(true);
 
-    //     i2s* i2s0 = i2s::create(i2s::device::i2s0);
-    //     assert(i2s0 != nullptr);
+    i2s* i2s0 = i2s::create(i2s::device::i2s0);
+    assert(i2s0 != nullptr);
 
+    i32 old_sample = 0;
+    u32 count_left = 0;
+    u32 count_right = 0;
+    i2s::channel next_transmit_channel = i2s::channel::left;
+    i32 sample_left = 0;
+    i32 sample_right = 0;
     while(true)
     {
-        // if(i2s0->receive_required())
-        // {
-        //     i2s0->transmit(i2s0->receive());
-        // }
+        if(i2s0->receive_required())
+        {
+            sample_left = i2s0->receive();
+            //     sample_right = i2s0->receive();
+
+            (void)sample_left;
+            //     // (void)sample_right;
+
+            //     // i2s0->transmit(sample_left);
+            //     // i2s0->transmit(sample_right);
+            //     // i32 sample = i2s0->receive(); //todo: only 24 lsb are read (and sign extended).
+            //     // (void)sample;
+            //     // i2s0->transmit(sample << 8); //todo: only 24 lsb are sent.
+
+            //     // sample = (sample >= 0) ? sample : -sample;
+            //     // sample = static_cast<i32>(((static_cast<u64>(old_sample) * 9999) + (static_cast<u64>(sample) * 1)) / 10000);
+            //     // old_sample = sample;
+
+            //     // char buffer[19];
+            //     // a_uart->write(string::to_string(sample, buffer));
+            //     // a_uart->write("\r\n");
+        }
+
+        if(i2s0->transmit_required())
+        {
+            switch(next_transmit_channel)
+            {
+                case i2s::channel::left:
+                    if(count_left < 256)
+                        sample_left = 0x800055;
+                    else
+                        sample_left = 0x000055;
+                    count_left++;
+                    if(count_left >= 512)
+                        count_left = 0;
+                    i2s0->transmit(sample_left);
+                    next_transmit_channel = i2s::channel::right;
+                    break;
+
+                case i2s::channel::right:
+                    if(count_right < 64)
+                        sample_right = 0x8000fe;
+                    else
+                        sample_right = 0x0000fe;
+                    count_right++;
+                    if(count_right >= 128)
+                        count_right = 0;
+                    i2s0->transmit(sample_right);
+                    next_transmit_channel = i2s::channel::left;
+                    break;
+            }
+
+            // if(count_left < 256)
+            //     sample_left = 0x800055;
+            // else
+            //     sample_left = 0x800055;
+            // count_left++;
+            // if(count_left >= 512)
+            //     count_left = 0;
+
+            // if(count_right < 64)
+            //     sample_right = 0x8000fe;
+            // else
+            //     sample_right = 0x8000fe;
+            // count_right++;
+            // if(count_right >= 128)
+            //     count_right = 0;
+
+            // i2s0->transmit(sample_left);
+            // i2s0->transmit(sample_right);
+        }
 
         // if(i2s0->receive_error())
+        // {
+        //     a_uart->write("r");
         //     i2s0->clear_receive_error();
+        // }
         // if(i2s0->transmit_error())
+        // {
+        //     // a_uart->write("t");
         //     i2s0->clear_transmit_error();
+        // }
 
         //todo: to string is memory leak.
-        a_scene.clear();
-        a_effect_graph.draw(a_scene);
-        a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
-        a_vc_gpu.render();
+        // a_scene.clear();
+        // a_effect_graph.draw(a_scene);
+        // a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
+        // a_vc_gpu.render();
 
-        a_effect_chorus.move(vector_2_f32(dx, dy));
-        if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] > 800.0f)
-        {
-            dx = -speed;
-            a_uart->write("hit right.\r\n");
-        }
-        if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] < 0.0f)
-        {
-            dx = speed;
-            a_uart->write("hit left.\r\n");
-        }
-        if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] > 480.0f)
-        {
-            dy = -speed;
-            a_uart->write("hit bottom.\r\n");
-        }
-        if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] < 0.0f)
-        {
-            dy = speed;
-            a_uart->write("hit top.\r\n");
-        }
+        // a_effect_chorus.move(vector_2_f32(dx, dy));
+        // if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] > 800.0f)
+        // {
+        //     dx = -speed;
+        //     a_uart->write("hit right.\r\n");
+        // }
+        // if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] < 0.0f)
+        // {
+        //     dx = speed;
+        //     a_uart->write("hit left.\r\n");
+        // }
+        // if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] > 480.0f)
+        // {
+        //     dy = -speed;
+        //     a_uart->write("hit bottom.\r\n");
+        // }
+        // if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] < 0.0f)
+        // {
+        //     dy = speed;
+        //     a_uart->write("hit top.\r\n");
+        // }
 
-        u8 new_points_size = a_touch_buffer.points_size;
-        if(new_points_size > 10)
-            new_points_size = old_points_size;
-        u32 new_x_position = ((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word;
-        if(new_x_position > 799)
-            new_x_position = old_x_position;
-        u32 new_y_position = ((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word;
-        if(new_y_position > 479)
-            new_y_position = old_y_position;
-        if((new_points_size != old_points_size) ||
-           (new_x_position != old_x_position) ||
-           (new_y_position != old_y_position))
-        {
-            char buffer[19];
-            a_uart->write("points: size:");
-            a_uart->write(string::to_string(new_points_size, buffer));
-            a_uart->write(", x:");
-            a_uart->write(string::to_string(new_x_position, buffer));
-            a_uart->write(", y:");
-            a_uart->write(string::to_string(new_y_position, buffer));
-            a_uart->write(", mode:");
-            a_uart->write(string::to_string(a_touch_buffer.device_mode, buffer));
-            a_uart->write(", gesture:");
-            a_uart->write(string::to_string(a_touch_buffer.gesture_id, buffer));
-            a_uart->write(".\r\n");
+        // u8 new_points_size = a_touch_buffer.points_size;
+        // if(new_points_size > 10)
+        //     new_points_size = old_points_size;
+        // u32 new_x_position = ((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word;
+        // if(new_x_position > 799)
+        //     new_x_position = old_x_position;
+        // u32 new_y_position = ((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word;
+        // if(new_y_position > 479)
+        //     new_y_position = old_y_position;
+        // if((new_points_size != old_points_size) ||
+        //    (new_x_position != old_x_position) ||
+        //    (new_y_position != old_y_position))
+        // {
+        //     char buffer[19];
+        //     a_uart->write("points: size:");
+        //     a_uart->write(string::to_string(new_points_size, buffer));
+        //     a_uart->write(", x:");
+        //     a_uart->write(string::to_string(new_x_position, buffer));
+        //     a_uart->write(", y:");
+        //     a_uart->write(string::to_string(new_y_position, buffer));
+        //     a_uart->write(", mode:");
+        //     a_uart->write(string::to_string(a_touch_buffer.device_mode, buffer));
+        //     a_uart->write(", gesture:");
+        //     a_uart->write(string::to_string(a_touch_buffer.gesture_id, buffer));
+        //     a_uart->write(".\r\n");
 
-            old_points_size = new_points_size;
-            old_x_position = new_x_position;
-            old_y_position = new_y_position;
-        }
+        //     old_points_size = new_points_size;
+        //     old_x_position = new_x_position;
+        //     old_y_position = new_y_position;
+        // }
     }
     return (0);
 }
