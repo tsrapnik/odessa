@@ -135,7 +135,7 @@ extern "C" i32 main(void)
 #pragma GCC diagnostic pop
 
     pga2500_settings preamp_settings = {};
-    preamp_settings.gain = 11; //matches 20 dB (0 is 0 dB, 1 to 56 is 10 to 65 dB, 57 to 63 is 65 dB).
+    preamp_settings.gain = 31; //matches 40 dB (0 is 0 dB, 1 to 56 is 10 to 65 dB, 57 to 63 is 65 dB).
 
     spi0->write(spi::cs_enum::cs0, reinterpret_cast<w8*>(&preamp_settings), sizeof(preamp_settings));
     spi0->write(spi::cs_enum::cs1, reinterpret_cast<w8*>(&preamp_settings), sizeof(preamp_settings));
@@ -161,16 +161,29 @@ extern "C" i32 main(void)
     u32 count_left = 0;
     u32 count_right = 0;
     i2s::channel next_transmit_channel = i2s::channel::left;
+    i2s::channel next_receive_channel = i2s::channel::left;
     i32 sample_left = 0;
     i32 sample_right = 0;
     while(true)
     {
         if(i2s0->receive_required())
         {
-            sample_left = i2s0->receive();
+            switch (next_receive_channel)
+            {
+                case i2s::channel::left:
+                    sample_left = i2s0->receive();
+                    next_receive_channel = i2s::channel::right;
+                    break;
+
+                case i2s::channel::right:
+                    sample_right = i2s0->receive();
+                    next_receive_channel = i2s::channel::left;
+                    break;
+            }
+            // sample_left = i2s0->receive();
             //     sample_right = i2s0->receive();
 
-            (void)sample_left;
+            // (void)sample_left;
             //     // (void)sample_right;
 
             //     // i2s0->transmit(sample_left);
@@ -193,25 +206,25 @@ extern "C" i32 main(void)
             switch(next_transmit_channel)
             {
                 case i2s::channel::left:
-                    if(count_left < 256)
-                        sample_left = 0x800055;
-                    else
-                        sample_left = 0x000055;
-                    count_left++;
-                    if(count_left >= 512)
-                        count_left = 0;
+                    // if(count_left < 256)
+                    //     sample_left = 0xc00055;
+                    // else
+                    //     sample_left = 0x800055;
+                    // count_left++;
+                    // if(count_left >= 512)
+                    //     count_left = 0;
                     i2s0->transmit(sample_left);
                     next_transmit_channel = i2s::channel::right;
                     break;
 
                 case i2s::channel::right:
-                    if(count_right < 64)
-                        sample_right = 0x8000fe;
-                    else
-                        sample_right = 0x0000fe;
-                    count_right++;
-                    if(count_right >= 128)
-                        count_right = 0;
+                    // if(count_right < 64)
+                    //     sample_right = 0xc000fe;
+                    // else
+                    //     sample_right = 0x8000fe;
+                    // count_right++;
+                    // if(count_right >= 128)
+                    //     count_right = 0;
                     i2s0->transmit(sample_right);
                     next_transmit_channel = i2s::channel::left;
                     break;
