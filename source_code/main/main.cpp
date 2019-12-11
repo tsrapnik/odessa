@@ -135,7 +135,7 @@ extern "C" i32 main(void)
 #pragma GCC diagnostic pop
 
     pga2500_settings preamp_settings = {};
-    preamp_settings.gain = 31; //matches 40 dB (0 is 0 dB, 1 to 56 is 10 to 65 dB, 57 to 63 is 65 dB).
+    preamp_settings.gain = 40 - 9; //(0 is 0 dB, 1 to 56 is 10 to 65 dB, 57 to 63 is 65 dB).
 
     spi0->write(spi::cs_enum::cs0, reinterpret_cast<w8*>(&preamp_settings), sizeof(preamp_settings));
     spi0->write(spi::cs_enum::cs1, reinterpret_cast<w8*>(&preamp_settings), sizeof(preamp_settings));
@@ -164,11 +164,13 @@ extern "C" i32 main(void)
     i2s::channel next_receive_channel = i2s::channel::left;
     i32 sample_left = 0;
     i32 sample_right = 0;
+    i32 sample_out = 0;
+    u32 counter = 0;
     while(true)
     {
         if(i2s0->receive_required())
         {
-            switch (next_receive_channel)
+            switch(next_receive_channel)
             {
                 case i2s::channel::left:
                     sample_left = i2s0->receive();
@@ -180,25 +182,6 @@ extern "C" i32 main(void)
                     next_receive_channel = i2s::channel::left;
                     break;
             }
-            // sample_left = i2s0->receive();
-            //     sample_right = i2s0->receive();
-
-            // (void)sample_left;
-            //     // (void)sample_right;
-
-            //     // i2s0->transmit(sample_left);
-            //     // i2s0->transmit(sample_right);
-            //     // i32 sample = i2s0->receive(); //todo: only 24 lsb are read (and sign extended).
-            //     // (void)sample;
-            //     // i2s0->transmit(sample << 8); //todo: only 24 lsb are sent.
-
-            //     // sample = (sample >= 0) ? sample : -sample;
-            //     // sample = static_cast<i32>(((static_cast<u64>(old_sample) * 9999) + (static_cast<u64>(sample) * 1)) / 10000);
-            //     // old_sample = sample;
-
-            //     // char buffer[19];
-            //     // a_uart->write(string::to_string(sample, buffer));
-            //     // a_uart->write("\r\n");
         }
 
         if(i2s0->transmit_required())
@@ -206,48 +189,15 @@ extern "C" i32 main(void)
             switch(next_transmit_channel)
             {
                 case i2s::channel::left:
-                    // if(count_left < 256)
-                    //     sample_left = 0xc00055;
-                    // else
-                    //     sample_left = 0x800055;
-                    // count_left++;
-                    // if(count_left >= 512)
-                    //     count_left = 0;
                     i2s0->transmit(sample_left);
                     next_transmit_channel = i2s::channel::right;
                     break;
 
                 case i2s::channel::right:
-                    // if(count_right < 64)
-                    //     sample_right = 0xc000fe;
-                    // else
-                    //     sample_right = 0x8000fe;
-                    // count_right++;
-                    // if(count_right >= 128)
-                    //     count_right = 0;
                     i2s0->transmit(sample_right);
                     next_transmit_channel = i2s::channel::left;
                     break;
             }
-
-            // if(count_left < 256)
-            //     sample_left = 0x800055;
-            // else
-            //     sample_left = 0x800055;
-            // count_left++;
-            // if(count_left >= 512)
-            //     count_left = 0;
-
-            // if(count_right < 64)
-            //     sample_right = 0x8000fe;
-            // else
-            //     sample_right = 0x8000fe;
-            // count_right++;
-            // if(count_right >= 128)
-            //     count_right = 0;
-
-            // i2s0->transmit(sample_left);
-            // i2s0->transmit(sample_right);
         }
 
         // if(i2s0->receive_error())
