@@ -1,5 +1,4 @@
 #include "uart.h"
-#include "enum_flags.h"
 
 bool uart::device_used[device_count] = {false};
 constexpr uart::registers* uart::registers_base_address[device_count];
@@ -22,15 +21,40 @@ uart::uart(device device_id, gpio* gpio_32, gpio* gpio_33, gpio* tx_pin, gpio* r
     u32 baud_rate_times_16 = 115200 * 16;
     u32 fraction = (clock_rate % baud_rate_times_16) * 8 / 115200;
 
-    the_registers->imsc = 0;
-    the_registers->icr = 0x7ff;
-    the_registers->ibrd = clock_rate / baud_rate_times_16;
-    the_registers->fbrd = fraction / 2 + fraction % 2;
-    the_registers->lcrh = registers::lcrh_options::wlen8;
-    the_registers->ifls = 0;
-    the_registers->cr = registers::cr_options::uart_enable |
-                         registers::cr_options::txe |
-                         registers::cr_options::rxe;
+    registers::imsc_struct temp_imsc = {};
+    the_registers->imsc = temp_imsc;
+
+    registers::icr_struct temp_icr = {};
+    temp_icr.ctsmic = bool32::true_;
+    temp_icr.rxic = bool32::true_;
+    temp_icr.txic = bool32::true_;
+    temp_icr.rtic = bool32::true_;
+    temp_icr.feic = bool32::true_;
+    temp_icr.peic = bool32::true_;
+    temp_icr.beic = bool32::true_;
+    temp_icr.oeic = bool32::true_;
+    the_registers->icr = temp_icr;
+
+    registers::ibrd_struct temp_ibrd = {};
+    temp_ibrd.ibrd = clock_rate / baud_rate_times_16;
+    the_registers->ibrd = temp_ibrd;
+
+    registers::fbrd_struct temp_fbrd = {};
+    temp_fbrd.fbrd = fraction / 2 + fraction % 2;
+    the_registers->fbrd = temp_fbrd;
+
+    registers::lcrh_struct temp_lcrh = {};
+    temp_lcrh.wlen = registers::lcrh_struct::wlen_enum::bits_8;
+    the_registers->lcrh = temp_lcrh;
+
+    registers::ifls_struct temp_ifls = {};
+    temp_ifls.txiflsel = registers::ifls_struct::txiflsel_enum::fifo_1_8_full;
+    the_registers->ifls = temp_ifls;
+
+    registers::cr_struct temp_cr = {};
+    temp_cr.uarten = bool32::true_;
+    temp_cr.txe = bool32::true_;
+    the_registers->cr = temp_cr;
 }
 
 uart::~uart()
@@ -99,9 +123,9 @@ void uart::write(const char* string)
 {
     for(u32 index = 0; string[index] != '\0'; index++)
     {
-        while(static_cast<bool>(the_registers->fr & registers::fr::txff))
+        while(the_registers->fr.txff == bool32::true_)
             ;
-        the_registers->dr = string[index];
+        the_registers->dr.data = string[index];
     }
 }
 
@@ -110,22 +134,8 @@ void uart::write(char* string, u32 size)
 {
     for(u32 index = 0; index < size; index++)
     {
-        while(static_cast<bool>(the_registers->fr & registers::fr::txff))
-        {
-        }
-        the_registers->dr = string[index];
+        while(the_registers->fr.txff == bool32::true_)
+            ;
+        the_registers->dr.data = string[index];
     }
-}
-
-char* uart::read(u32& size)
-{
-    u32 index = 0;
-    char* a_string = new char[size];
-    while(!static_cast<bool>(the_registers->fr & registers::fr::rxfe) and index < size)
-    {
-        a_string[index] = the_registers->dr;
-        size++;
-    }
-    size = index;
-    return a_string;
 }
