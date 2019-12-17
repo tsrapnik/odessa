@@ -11,7 +11,7 @@ class buddy_heap
     struct block //a memory block of size 2^order.
     {
         usize order; //order of the memory block.
-        u8 data[]; //array of usable memory bytes.
+        w8 data[]; //array of usable memory bytes.
     };
 
     struct block_pointer //points to an available memory block and the previous available memory block_pointer in a linked list.
