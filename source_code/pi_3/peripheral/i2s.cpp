@@ -34,8 +34,7 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     registers::cs_a_struct temp_cs_a = {};
     temp_cs_a.en = true;
     temp_cs_a.dmaen = false;
-    temp_cs_a.rxthr = registers::cs_a_struct::rxthr_enum::fifo_single_sample;
-    temp_cs_a.txthr = registers::cs_a_struct::txthr_enum::fifo_full_but_one;
+    temp_cs_a.rxthr = registers::cs_a_struct::rxthr_enum::fifo_at_least;
     temp_cs_a.rxsex = true;
     temp_cs_a.stby = registers::cs_a_struct::stdby_enum::disable;
 
