@@ -4,6 +4,7 @@
 
 #include "type_definitions.h"
 #include "volatile_operators.h"
+#include "list.h"
 
 //interface all interrupt sources should implement.
 class interruptable
@@ -25,7 +26,7 @@ class interrupt
         i2s_interrupt = 0,
     };
 
-    private:
+    public: //todo: make private.
     ///available registers for each interrupt device.
     struct registers
     {
@@ -50,14 +51,14 @@ class interrupt
     ///
     ///base addresses of the different interrupt device registers.
     ///
-    static constexpr registers* registers_base_address[device_count] = {reinterpret_cast<registers*>(0x3f00b200)};
+    static volatile registers* const the_registers;
 
     private:
     //remembers which interrupt device this is.
     device device_id;
 
-    //pointer to the actual registers of this device.
-    volatile registers* the_registers;
+    //source of the interrupt, which is used to handle the interrupt.
+    interruptable* source;
 
     //constructor is private, all objects should be created with
     //the create function, to avoid making multiple instances of
@@ -72,6 +73,9 @@ class interrupt
     //the correct device enum class. if the device is already in use
     //a nullptr will be returned.
     static interrupt* create(device device_id, interruptable* source);
+
+    //handles all interrupts that where created.
+    static void handle();
 };
 
 #pragma GCC diagnostic pop

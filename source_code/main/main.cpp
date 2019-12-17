@@ -162,43 +162,57 @@ extern "C" i32 main(void)
     u32 count_right = 0;
     i2s::channel next_transmit_channel = i2s::channel::left;
     i2s::channel next_receive_channel = i2s::channel::left;
-    i32 sample_left = 0;
-    i32 sample_right = 0;
+    f32 sample_left = 0;
+    f32 sample_right = 0;
     i32 sample_out = 0;
     u32 counter = 0;
+    effect_chorus my_chorus(rectangle(vector_2_f32(100.0f, 100.0f), vector_2_f32(200.0f, 100.0f)),
+                            color(255, 100, 0, 255));
     while(true)
     {
-        if(i2s0->receive_required())
+        if(i2s0->interrupted)
         {
-            switch(next_receive_channel)
-            {
-                case i2s::channel::left:
-                    sample_left = i2s0->receive();
-                    next_receive_channel = i2s::channel::right;
-                    break;
-
-                case i2s::channel::right:
-                    sample_right = i2s0->receive();
-                    next_receive_channel = i2s::channel::left;
-                    break;
-            }
+            i2s0->interrupted = false;
+            a_uart->write("i");
+        }
+        // else
+        //     i2s0->dod();
+        else
+        {
+            a_uart->write("n");
         }
 
-        if(i2s0->transmit_required())
-        {
-            switch(next_transmit_channel)
-            {
-                case i2s::channel::left:
-                    i2s0->transmit(sample_left);
-                    next_transmit_channel = i2s::channel::right;
-                    break;
+        // if(i2s0->receive_required())
+        // {
+        //     switch(next_receive_channel)
+        //     {
+        //         case i2s::channel::left:
+        //             sample_left = static_cast<f32>(i2s0->receive());
+        //             next_receive_channel = i2s::channel::right;
+        //             break;
 
-                case i2s::channel::right:
-                    i2s0->transmit(sample_right);
-                    next_transmit_channel = i2s::channel::left;
-                    break;
-            }
-        }
+        //         case i2s::channel::right:
+        //             sample_right = static_cast<f32>(i2s0->receive());
+        //             next_receive_channel = i2s::channel::left;
+        //             break;
+        //     }
+        // }
+
+        // if(i2s0->transmit_required())
+        // {
+        //     switch(next_transmit_channel)
+        //     {
+        //         case i2s::channel::left:
+        //             i2s0->transmit(static_cast<i32>(sample_left));
+        //             next_transmit_channel = i2s::channel::right;
+        //             break;
+
+        //         case i2s::channel::right:
+        //             i2s0->transmit(static_cast<i32>(sample_right));
+        //             next_transmit_channel = i2s::channel::left;
+        //             break;
+        //     }
+        // }
 
         // if(i2s0->receive_error())
         // {

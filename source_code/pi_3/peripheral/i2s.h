@@ -3,10 +3,11 @@
 #pragma GCC diagnostic ignored "-Wbitfield-enum-conversion"
 
 #include "gpio.h"
+#include "interrupt.h"
 #include "type_definitions.h"
 #include "volatile_operators.h"
 
-class i2s
+class i2s : interruptable
 {
     private:
     static constexpr usize device_count = 1;
@@ -217,6 +218,8 @@ class i2s
     gpio* pcm_din;
     gpio* pcm_dout;
 
+    interrupt* the_interrupt;
+
     ///
     ///constructor is private, all objects should be created with
     ///the create function, to avoid making multiple instances of
@@ -229,7 +232,7 @@ class i2s
     ///destructor.
     ///
     ~i2s();
-
+    bool interrupted = false; //todo: remove.
     ///
     ///returns a pointer to a new device and initialises it. the
     ///user should specify which device it should be, by passing
@@ -237,6 +240,10 @@ class i2s
     ///a nullptr will be returned.
     ///
     static i2s* create(device device_id);
+
+    //callbacks for interrupt handling.
+    virtual bool interrupt_occured() override;
+    virtual void handle_interrupt() override;
 
     bool transmit_required();
     void transmit(i32 sample);
@@ -256,6 +263,7 @@ class i2s
 
     channel pending_transmit_channel();
     channel pending_receive_channel();
+    void dod(); //todo: remove.
 };
 
 #pragma GCC diagnostic pop
