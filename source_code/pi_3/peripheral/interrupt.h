@@ -2,20 +2,54 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wbitfield-enum-conversion"
 
+#include "list.h"
 #include "type_definitions.h"
 #include "volatile_operators.h"
-#include "list.h"
-
-//interface all interrupt sources should implement.
-class interruptable
-{
-    public:
-    virtual bool interrupt_occured() = 0;
-    virtual void handle_interrupt() = 0;
-};
 
 class interrupt
 {
+    public:
+    //the creation of an instance will disable interrupts. at the end of the scope in which the instance was
+    //created the interrupt flags will be set back to their state before creation of the instance.
+    //use as in example below.
+    // {
+    //     interrupt::disabler a_disabler;
+    //     //from here till end of scope there are no interrupts.
+    // }
+    //do not use as below.
+    // {
+    //     interrupt::disabler a_disabler();
+    //     //no constructor or destructor seem to get called.
+    // }
+    // {
+    //     interrupt::disabler();
+    //     //destructor gets called immediately after constructor and not at the end of the scope.
+    // }
+    class disabler
+    {
+        private:
+        w32 flags;
+
+        private:
+        //private new operators prevent dynamic allocation, so only auto allocation is used. this guarantees the
+        //destructor is called at the end of the scope.
+        static void* operator new(usize);
+        static void* operator new[](usize);
+
+        public:
+        disabler();
+        ~disabler();
+    };
+
+    public:
+    //interface all interrupt sources should implement.
+    class interruptable
+    {
+        public:
+        virtual bool interrupt_occured() = 0;
+        virtual void handle_interrupt() = 0;
+    };
+
     private:
     static constexpr usize device_count = 1;
 
@@ -39,7 +73,7 @@ class interrupt
         u32 disable_irqs[2]; //0x1c-0x20
         u32 disable_basic_irqs; //0x24
 
-    }  __attribute__((packed, aligned(4)));
+    } __attribute__((packed, aligned(4)));
     static_assert(sizeof(registers) == 0x28, "interrupt register map size does not match datasheet.");
 
     ///
@@ -76,6 +110,12 @@ class interrupt
 
     //handles all interrupts that where created.
     static void handle();
+
+    private:
+    static void enable_interrupts();
+    static void disable_interrupts();
+    static void push_interrupt_state();
+    static void pop_interrupt_state();
 };
 
 #pragma GCC diagnostic pop

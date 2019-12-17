@@ -1,9 +1,34 @@
 #include "interrupt.h"
 #include "list_iterator.h"
-#include "uart.h"
+#include "memory.h"
+#include "uart.h" //todo: remove.
+
+//todo: replace with global logger class.
+extern uart* a_uart;
+
+interrupt::disabler::disabler()
+{
+    a_uart->write("constructed\r\n");
+    //save original state.
+    asm volatile("mrs %0, daif"
+                 : "=r"(flags));
+    //disable interrupts only irq (fiq are not used).
+    asm volatile("msr DAIFSet, #2");
+
+    memory::data_memory_barrier();
+}
+
+interrupt::disabler::~disabler()
+{
+    a_uart->write("destructed\r\n");
+    memory::data_memory_barrier();
+
+    //set back to previous state.
+    asm volatile("msr daif, %0" ::"r"(flags));
+}
 
 //list of all interrupt sources that were created and can trigger an interrupt.
-static list<interruptable*> sources;
+static list<interrupt::interruptable*> sources;
 
 bool interrupt::device_used[device_count] = {false};
 
@@ -24,7 +49,7 @@ interrupt::interrupt(device device_id, interruptable* source) :
     {
         case device::i2s_interrupt:
             //todo: do for all interrupt.
-            constexpr u32 pcm_int = 55 ; //should be 55?
+            constexpr u32 pcm_int = 55; //should be 55?
             the_registers->enable_irqs[pcm_int / 32u] = 1u << (pcm_int % 32u);
             break;
     }
@@ -61,9 +86,6 @@ interrupt* interrupt::create(device device_id, interruptable* source)
     }
 }
 
-//todo: replace with global logger class.
-extern uart* a_uart;
-
 void interrupt::handle()
 {
     //we just read the pending registers, so they are acknowledged.
@@ -78,7 +100,7 @@ void interrupt::handle()
         interruptable* source = sources_iterator.get_data_copy();
         if(source->interrupt_occured())
         {
-            source->handle_interrupt(); 
+            source->handle_interrupt();
         }
     }
 }
@@ -101,6 +123,10 @@ extern "C" void fiq_cur_el0()
 }
 extern "C" void irq_cur_elx(void)
 {
+    //in aarch64 by default interrupts are disabled on entering an interrupt. this means
+    //you can only have nested interrupts if you explicitely reenable interrupts in the
+    //interrupt routine. nested interrupts complicate things a lot and we don't need them
+    //so we leave it as it is.
     interrupt::handle();
 }
 extern "C" void fiq_cur_elx()

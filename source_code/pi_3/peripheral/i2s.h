@@ -7,7 +7,7 @@
 #include "type_definitions.h"
 #include "volatile_operators.h"
 
-class i2s : interruptable
+class i2s : interrupt::interruptable
 {
     private:
     static constexpr usize device_count = 1;
