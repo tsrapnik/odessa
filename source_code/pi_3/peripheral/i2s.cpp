@@ -32,10 +32,10 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     //todo: copy struct literals to registers.
     //enable pcm block.
     registers::cs_a_struct temp_cs_a = {};
-    temp_cs_a.en = true;
-    temp_cs_a.dmaen = false;
+    temp_cs_a.en = bool32::true_;
+    temp_cs_a.dmaen = bool32::false_;
     temp_cs_a.rxthr = registers::cs_a_struct::rxthr_enum::fifo_at_least;
-    temp_cs_a.rxsex = true;
+    temp_cs_a.rxsex = bool32::true_;
     temp_cs_a.stby = registers::cs_a_struct::stdby_enum::disable;
 
     the_registers->cs_a = temp_cs_a;
@@ -44,37 +44,37 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
 
     //define frame and channel settings.
     registers::mode_a_struct temp_mode_a = {};
-    temp_mode_a.clk_dis = false;
-    temp_mode_a.pdme = false;
+    temp_mode_a.clk_dis = bool32::false_;
+    temp_mode_a.pdme = bool32::false_;
     temp_mode_a.frxp = registers::mode_a_struct::frxp_enum::single_channel;
     temp_mode_a.ftxp = registers::mode_a_struct::ftxp_enum::single_channel;
     temp_mode_a.clkm = registers::mode_a_struct::clkm_enum::slave;
-    temp_mode_a.clki = true; //todo: i2s requires reading on positive flank and changing value on negative flank, is inverse of default.
+    temp_mode_a.clki = bool32::true_; //todo: i2s requires reading on positive flank and changing value on negative flank, is inverse of default.
     temp_mode_a.fsm = registers::mode_a_struct::fsm_enum::slave;
-    temp_mode_a.fsi = true;
+    temp_mode_a.fsi = bool32::true_;
     // temp_mode_a.fslen = channel_length; //todo: not really necessary, but just for completeness.
     // temp_mode_a.flen = 2 * channel_length - 1;
 
     the_registers->mode_a = temp_mode_a;
 
     registers::xc_a_struct temp_configuration = {};
-    temp_configuration.ch1wex = true;
-    temp_configuration.ch1en = true;
+    temp_configuration.ch1wex = bool32::true_;
+    temp_configuration.ch1en = bool32::true_;
     temp_configuration.ch1pos = 0 + 1;
     temp_configuration.ch1wid = 0;
-    temp_configuration.ch2wex = true;
-    temp_configuration.ch2en = true;
+    temp_configuration.ch2wex = bool32::true_;
+    temp_configuration.ch2en = bool32::true_;
     temp_configuration.ch2pos = channel_length + 1;
     temp_configuration.ch2wid = 0;
 
     the_registers->rxc_a = temp_configuration;
 
-    temp_configuration.ch1wex = true;
-    temp_configuration.ch1en = true;
+    temp_configuration.ch1wex = bool32::true_;
+    temp_configuration.ch1en = bool32::true_;
     temp_configuration.ch1pos = 0 + 1;
     temp_configuration.ch1wid = 0;
-    temp_configuration.ch2wex = true;
-    temp_configuration.ch2en = true;
+    temp_configuration.ch2wex = bool32::true_;
+    temp_configuration.ch2en = bool32::true_;
     temp_configuration.ch2pos = channel_length + 1;
     temp_configuration.ch2wid = 0;
 
@@ -82,9 +82,9 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
 
     //clear fifo's.
     temp_cs_a = the_registers->cs_a;
-    temp_cs_a.rxclr = true;
-    temp_cs_a.txclr = true;
-    temp_cs_a.sync = true;
+    temp_cs_a.rxclr = bool32::true_;
+    temp_cs_a.txclr = bool32::true_;
+    temp_cs_a.sync = bool32::true_;
 
     the_registers->cs_a = temp_cs_a;
 
@@ -96,7 +96,7 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
 
     //enable interrupt.
     registers::inten_a_struct temp_inten_a = {};
-    temp_inten_a.rxr = true;
+    temp_inten_a.rxr = bool32::true_;
 
     the_registers->inten_a = temp_inten_a;
 
@@ -108,8 +108,8 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
 
     //start transmitting and receiving.
     temp_cs_a = the_registers->cs_a;
-    temp_cs_a.txon = true;
-    temp_cs_a.rxon = true;
+    temp_cs_a.txon = bool32::true_;
+    temp_cs_a.rxon = bool32::true_;
 
     the_registers->cs_a = temp_cs_a;
 }
@@ -181,10 +181,8 @@ i2s* i2s::create(device device_id)
 
 bool i2s::interrupt_occured()
 {
-    registers::intstc_a_struct tmp_intstc_a;
-    tmp_intstc_a = the_registers->intstc_a;
     return true;
-    return tmp_intstc_a.rxr == registers::intstc_a_struct::status_and_clear::interrupt_occured;
+    return the_registers->intstc_a.rxr == registers::intstc_a_struct::status_and_clear::interrupt_occured;
 }
 
 void i2s::handle_interrupt()
@@ -196,7 +194,7 @@ void i2s::handle_interrupt()
         the_registers->fifo_a = sample;
     }
 
-    //clear interrupt flags (by writing a 1 to all flags that are set.).
+    //clear interrupt flags (by writing a 1 to all flags that are set).
     registers::intstc_a_struct tmp_intstc_a;
     tmp_intstc_a = the_registers->intstc_a;
     the_registers->intstc_a = tmp_intstc_a;
@@ -204,7 +202,5 @@ void i2s::handle_interrupt()
 
 bool i2s::receive_required()
 {
-    registers::cs_a_struct tmp_cs_a;
-    tmp_cs_a = the_registers->cs_a;
-    return tmp_cs_a.rxd;
+    return the_registers->cs_a.rxd == bool32::true_;
 }

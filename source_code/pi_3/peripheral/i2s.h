@@ -25,11 +25,11 @@ class i2s : interrupt::interruptable
     {
         struct cs_a_struct
         {
-            bool en : 1;
-            bool rxon : 1;
-            bool txon : 1;
-            bool txclr : 1;
-            bool rxclr : 1;
+            bool32 en : 1;
+            bool32 rxon : 1;
+            bool32 txon : 1;
+            bool32 txclr : 1;
+            bool32 rxclr : 1;
             enum class txthr_enum : u32
             {
                 fifo_empty = 0,
@@ -44,20 +44,20 @@ class i2s : interrupt::interruptable
                 fifo_at_least = 2,
                 fifo_full = 3,
             } rxthr : 2;
-            bool dmaen : 1;
+            bool32 dmaen : 1;
             w32 reserved_10_12 : 3;
-            bool txsync : 1;
-            bool rxsync : 1;
-            bool txerr : 1;
-            bool rxerr : 1;
-            bool txh : 1;
-            bool rxr : 1;
-            bool txd : 1;
-            bool rxd : 1;
-            bool txe : 1;
-            bool rxf : 1;
-            bool rxsex : 1;
-            bool sync : 1;
+            bool32 txsync : 1;
+            bool32 rxsync : 1;
+            bool32 txerr : 1;
+            bool32 rxerr : 1;
+            bool32 txh : 1;
+            bool32 rxr : 1;
+            bool32 txd : 1;
+            bool32 rxd : 1;
+            bool32 txe : 1;
+            bool32 rxf : 1;
+            bool32 rxsex : 1;
+            bool32 sync : 1;
             enum class stdby_enum : u32
             {
                 enable = 0,
@@ -75,13 +75,13 @@ class i2s : interrupt::interruptable
         {
             u32 fslen : 10;
             u32 flen : 10;
-            bool fsi : 1;
+            bool32 fsi : 1;
             enum class fsm_enum : u32
             {
                 master = 0,
                 slave = 1,
             } fsm : 1;
-            bool clki : 1;
+            bool32 clki : 1;
             enum class clkm_enum : u32
             {
                 master = 0,
@@ -97,13 +97,13 @@ class i2s : interrupt::interruptable
                 single_channel = 0,
                 merged = 1,
             } frxp : 1;
-            bool pdme : 1;
+            bool32 pdme : 1;
             enum class pdmn_enum : u32
             {
                 factor_16 = 0,
                 factor_32 = 1,
             } pdmn : 1;
-            bool clk_dis : 1;
+            bool32 clk_dis : 1;
             w32 reserved_29_31 : 3;
 
             volatile_assignment_operators(mode_a_struct, u32);
@@ -114,12 +114,12 @@ class i2s : interrupt::interruptable
         {
             u32 ch2wid : 4;
             u32 ch2pos : 10;
-            bool ch2en : 1;
-            bool ch2wex : 1;
+            bool32 ch2en : 1;
+            bool32 ch2wex : 1;
             u32 ch1wid : 4;
             u32 ch1pos : 10;
-            bool ch1en : 1;
-            bool ch1wex : 1;
+            bool32 ch1en : 1;
+            bool32 ch1wex : 1;
 
             volatile_assignment_operators(xc_a_struct, u32);
         } __attribute__((packed, aligned(4)));
@@ -145,10 +145,10 @@ class i2s : interrupt::interruptable
 
         struct inten_a_struct
         {
-            bool txw : 1;
-            bool rxr : 1;
-            bool txerr : 1;
-            bool rxerr : 1;
+            bool32 txw : 1;
+            bool32 rxr : 1;
+            bool32 txerr : 1;
+            bool32 rxerr : 1;
             w32 reserved_4_31 : 28;
 
             volatile_assignment_operators(inten_a_struct, u32);
@@ -176,9 +176,9 @@ class i2s : interrupt::interruptable
 
         struct gray_struct
         {
-            bool en : 1;
-            bool clr : 1;
-            bool flush : 1;
+            bool32 en : 1;
+            bool32 clr : 1;
+            bool32 flush : 1;
             w32 reserved_3 : 1;
             u32 rxlevel : 6;
             u32 flushed : 6;
