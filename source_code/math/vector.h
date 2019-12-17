@@ -70,11 +70,11 @@ vector<length, type> vector<length, type>::scalar_product(type scalar, const vec
 }
 
 //shorthand names for common combinations.
-typedef vector<2, u32> vector_2_u32;
-typedef vector<2, u64> vector_2_u64;
-typedef vector<2, f32> vector_2_f32;
-typedef vector<2, f64> vector_2_f64;
-typedef vector<3, u32> vector_3_u32;
-typedef vector<3, u64> vector_3_u64;
-typedef vector<3, f32> vector_3_f32;
-typedef vector<3, f64> vector_3_f64;
+using vector_2_u32 = vector<2, u32>;
+using vector_2_u64 = vector<2, u64>;
+using vector_2_f32 = vector<2, f32>;
+using vector_2_f64 = vector<2, f64>;
+using vector_3_u32 = vector<3, u32>;
+using vector_3_u64 = vector<3, u64>;
+using vector_3_f32 = vector<3, f32>;
+using vector_3_f64 = vector<3, f64>;

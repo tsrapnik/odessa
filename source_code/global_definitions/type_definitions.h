@@ -3,20 +3,20 @@
 //these definitions should be changed according to the used compiler and target machine. make
 //sure ux, ix and fx are each x bits long. ux are unsigned integers, ix are signed integers,
 //fx are floating point numbers.
-typedef unsigned char u8;
-typedef unsigned short u16;
-typedef unsigned int u32;
-typedef unsigned long u64;
-typedef signed char i8;
-typedef signed short i16;
-typedef signed int i32;
-typedef signed long i64;
-typedef float f32;
-typedef double f64;
+using u8 = unsigned char;
+using u16 = unsigned short;
+using u32 = unsigned int;
+using u64 = unsigned long;
+using i8 = signed char;
+using i16 = signed short;
+using i32 = signed int;
+using i64 = signed long;
+using f32 = float;
+using f64 = double;
 
 //standard int sizes. these match the word size of your processor.
-typedef u64 usize;
-typedef i64 isize;
+using usize = u64;
+using isize = i64;
 
 //wx are words. they are considered raw memory. they have the same sizes as their corresponding
 //integer types, but you are not allowed to perform arithmetic on them or assign values to them
