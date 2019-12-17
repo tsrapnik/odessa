@@ -96,10 +96,8 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     //     ;
 
     //enable interrupt.
-    //todo: only enable receive interrupt?
     registers::inten_a_struct temp_inten_a = {};
     temp_inten_a.rxr = true;
-    // temp_inten_a.txw = true;
 
     the_registers->inten_a = temp_inten_a;
 
@@ -122,7 +120,7 @@ i2s::~i2s()
     //unmark the device as used, so it can be created again when needed.
     device_used[static_cast<u32>(device_id)] = false;
 
-    //todo: release all resources.
+    //todo: release all resources and deinit registers.
     delete the_interrupt;
     delete pcm_clk;
     delete pcm_fs;
@@ -184,7 +182,6 @@ i2s* i2s::create(device device_id)
 
 bool i2s::interrupt_occured()
 {
-    interrupted = true; //todo: remove.
     registers::intstc_a_struct tmp_intstc_a;
     tmp_intstc_a = the_registers->intstc_a;
     return true;
@@ -204,28 +201,6 @@ void i2s::handle_interrupt()
     registers::intstc_a_struct tmp_intstc_a;
     tmp_intstc_a = the_registers->intstc_a;
     the_registers->intstc_a = tmp_intstc_a;
-
-    // registers::intstc_a_struct tmp_intstc_a_1;
-    // tmp_intstc_a_1 = the_registers->intstc_a;
-    // char buffer[19];
-    // a_uart->write("1intstc_a ");
-    // a_uart->write(string::to_string(*reinterpret_cast<u32*>(&tmp_intstc_a), buffer));
-    // a_uart->write("\r\n");
-    // a_uart->write("2intstc_a ");
-    // a_uart->write(string::to_string(*reinterpret_cast<u32*>(&tmp_intstc_a_1), buffer));
-    // a_uart->write("\r\n");
-}
-
-bool i2s::transmit_required()
-{
-    registers::cs_a_struct tmp_cs_a;
-    tmp_cs_a = the_registers->cs_a;
-    return tmp_cs_a.txd;
-}
-
-void i2s::transmit(i32 sample)
-{
-    the_registers->fifo_a = sample;
 }
 
 bool i2s::receive_required()
@@ -233,91 +208,4 @@ bool i2s::receive_required()
     registers::cs_a_struct tmp_cs_a;
     tmp_cs_a = the_registers->cs_a;
     return tmp_cs_a.rxd;
-}
-
-i32 i2s::receive()
-{
-    return the_registers->fifo_a;
-}
-
-bool i2s::transmit_error()
-{
-    registers::cs_a_struct tmp_cs_a;
-    tmp_cs_a = the_registers->cs_a;
-    return tmp_cs_a.txerr;
-}
-
-bool i2s::receive_error()
-{
-    registers::cs_a_struct tmp_cs_a;
-    tmp_cs_a = the_registers->cs_a;
-    return tmp_cs_a.rxerr;
-}
-
-void i2s::clear_transmit_error()
-{
-    //stop transmitting and receiving.
-    registers::cs_a_struct temp_cs_a;
-    temp_cs_a = the_registers->cs_a;
-    temp_cs_a.txon = false;
-    temp_cs_a.rxon = false;
-
-    the_registers->cs_a = temp_cs_a;
-
-    //clear fifo's.
-    temp_cs_a = the_registers->cs_a;
-    temp_cs_a.rxclr = true;
-    temp_cs_a.txclr = true;
-    temp_cs_a.sync = true;
-
-    the_registers->cs_a = temp_cs_a;
-
-    //todo: clock sync does not work.
-    for(volatile usize index = 0; index < 100; index++)
-        ;
-    // while(!the_registers->cs_a.sync)
-    //     ;
-
-    //fill transmit fifo with zeroes.
-    for(usize index = 0; index < 64; index++)
-    {
-        the_registers->fifo_a = 0;
-    }
-
-    //start transmitting and receiving.
-    temp_cs_a = the_registers->cs_a;
-    temp_cs_a.txon = true;
-    temp_cs_a.rxon = true;
-
-    the_registers->cs_a = temp_cs_a;
-}
-
-void i2s::clear_receive_error()
-{
-    clear_transmit_error();
-}
-
-i2s::channel i2s::pending_transmit_channel()
-{
-    registers::cs_a_struct tmp_cs_a;
-    tmp_cs_a = the_registers->cs_a;
-    return tmp_cs_a.txsync ? channel::left : channel::right;
-}
-
-i2s::channel i2s::pending_receive_channel()
-{
-    registers::cs_a_struct tmp_cs_a;
-    tmp_cs_a = the_registers->cs_a;
-    return tmp_cs_a.rxsync ? channel::left : channel::right;
-}
-
-void i2s::dod()
-{
-    registers::intstc_a_struct tmp_intstc_a;
-    tmp_intstc_a = the_registers->intstc_a;
-
-    char buffer[19];
-    a_uart->write("1intstc_a ");
-    a_uart->write(string::to_string(*reinterpret_cast<u32*>(&tmp_intstc_a), buffer));
-    a_uart->write("\r\n");
 }

@@ -13,14 +13,14 @@ class i2s : interruptable
     static constexpr usize device_count = 1;
 
     public:
-    ///represent all available i2s devices.
+    //represent all available i2s devices.
     enum class device
     {
         i2s0 = 0,
     };
 
     private:
-    ///available registers for each i2s device.
+    //available registers for each i2s device.
     struct registers
     {
         struct cs_a_struct
@@ -191,26 +191,18 @@ class i2s : interruptable
     } __attribute__((packed, aligned(4)));
     static_assert(sizeof(registers) == 0x24, "i2s register map size does not match datasheet.");
 
-    ///
-    ///keeps track of which devices are already used, so only
-    ///one instance of each can be created.
-    ///
+    //keeps track of which devices are already used, so only
+    //one instance of each can be created.
     static bool device_used[device_count];
 
-    ///
-    ///base addresses of the different i2s device registers.
-    ///
+    //base addresses of the different i2s device registers.
     static constexpr registers* registers_base_address[device_count] = {reinterpret_cast<registers*>(0x3f203000)};
 
     private:
-    ///
-    ///remembers which i2s device this is.
-    ///
+    //remembers which i2s device this is.
     device device_id;
 
-    ///
-    ///pointer to the actual registers of this device.
-    ///
+    //pointer to the actual registers of this device.
     volatile registers* the_registers;
 
     gpio* pcm_clk;
@@ -220,50 +212,33 @@ class i2s : interruptable
 
     interrupt* the_interrupt;
 
-    ///
-    ///constructor is private, all objects should be created with
-    ///the create function, to avoid making multiple instances of
-    ///the same i2s device.
-    ///
+    //constructor is private, all objects should be created with
+    //the create function, to avoid making multiple instances of
+    //the same i2s device.
     i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm_dout);
 
     public:
-    ///
-    ///destructor.
-    ///
     ~i2s();
-    bool interrupted = false; //todo: remove.
-    ///
-    ///returns a pointer to a new device and initialises it. the
-    ///user should specify which device it should be, by passing
-    ///the correct device enum class. if the device is already in use
-    ///a nullptr will be returned.
-    ///
+
+    //returns a pointer to a new device and initialises it. the
+    //user should specify which device it should be, by passing
+    //the correct device enum class. if the device is already in use
+    //a nullptr will be returned.
     static i2s* create(device device_id);
 
     //callbacks for interrupt handling.
     virtual bool interrupt_occured() override;
     virtual void handle_interrupt() override;
 
-    bool transmit_required();
-    void transmit(i32 sample);
+    private:
     bool receive_required();
-    i32 receive();
 
-    bool transmit_error();
-    bool receive_error();
-    void clear_transmit_error();
-    void clear_receive_error();
-
+    public:
     enum class channel
     {
         left,
         right,
     };
-
-    channel pending_transmit_channel();
-    channel pending_receive_channel();
-    void dod(); //todo: remove.
 };
 
 #pragma GCC diagnostic pop
