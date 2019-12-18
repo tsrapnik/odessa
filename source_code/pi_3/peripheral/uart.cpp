@@ -133,6 +133,8 @@ uart* uart::create(device device_id)
 //in the buffer. if the buffer is full characters will get dropped.
 void uart::write(const char* string)
 {
+    interrupt::disabler current_scope;
+
     for(u32 index = 0; string[index] != '\0'; index++)
     {
         char_buffer.push(string[index]);
@@ -144,6 +146,8 @@ void uart::write(const char* string)
 //in the buffer. if the buffer is full characters will get dropped.
 void uart::write(char* string, u32 size)
 {
+    interrupt::disabler current_scope;
+
     for(u32 index = 0; index < size; index++)
     {
         char_buffer.push(string[index]);
