@@ -13,7 +13,7 @@ class buffer_fifo : public buffer<type>
     ~buffer_fifo();
     void push(type);
     type pop();
-    u32 get_queue_length();
+    u32 get_queue_length() const;
 };
 
 //create a fifo buffer in which you can push new values and pop the oldest
@@ -63,7 +63,7 @@ type buffer_fifo<type>::pop()
 
 //get the current amount of elements in the fifo queue.
 template <typename type>
-u32 buffer_fifo<type>::get_queue_length()
+u32 buffer_fifo<type>::get_queue_length() const //todo: make all functions const if possible.
 {
     return queue_length;
 }
