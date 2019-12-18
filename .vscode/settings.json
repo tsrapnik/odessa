@@ -18,6 +18,7 @@
         "list": "cpp",
         "*.tcc": "cpp",
         "string_view": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "memory_resource": "cpp"
     }
 }

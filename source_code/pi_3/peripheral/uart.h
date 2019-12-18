@@ -335,10 +335,8 @@ class uart : public interrupt::interruptable
     //a nullptr will be returned.
     static uart* create(device device_id);
 
-    void write(const char* string);
-
     //todo: use string class. provide byte array alternative also.
-    void write(char* string, u32 size);
+    void write(const char* a_string);
 
     //callbacks for interrupt handling.
     virtual bool interrupt_occured() override;

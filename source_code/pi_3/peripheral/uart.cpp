@@ -110,45 +110,20 @@ uart* uart::create(device device_id)
 
 //write characters nonblocking to a buffer. the uart will afterwards transmit all characters
 //in the buffer. if the buffer is full characters will get dropped.
-void uart::write(const char* string)
+void uart::write(const char* a_string)
 {
-    //todo: optimize (push directly to fifo first, only add rest to buffer).
-    for(u32 index = 0; string[index] != '\0'; index++)
+    u32 index = 0;
+    //push as many characters as possible directly in the fifo.
+    for(; (a_string[index] != '\0') && (the_registers->fr.txff == bool32::false_); index++)
     {
-        char_buffer.push(string[index]);
+        the_registers->dr.data = a_string[index];
     }
-    if(the_registers->fr.txfe == bool32::true_)
-    {
-        //if fifo is empty we can fill it with up to16 new characters already. also needed
-        //to trigger an interrupt for other characters.
-        u32 count = char_buffer.get_queue_length();
-        count = (count > 16) ? 16 : count;
-        for(u32 index = 0; index < count; index++)
-        {
-            the_registers->dr.data = char_buffer.pop();
-        }
-    }
-}
 
-//todo: make real string input.
-//write characters nonblocking to a buffer. the uart will afterwards transmit all characters
-//in the buffer. if the buffer is full characters will get dropped.
-void uart::write(char* string, u32 size)
-{
-    for(u32 index = 0; index < size; index++)
+    //push other characters in a buffer. when the fifo has room it will automatically trigger an
+    //interrupt to push new characters from the buffer in the fifo.
+    for(; a_string[index] != '\0'; index++)
     {
-        char_buffer.push(string[index]);
-    }
-    if(the_registers->fr.txfe == bool32::true_)
-    {
-        //if fifo is empty we can fill it with up to16 new characters already. also needed
-        //to trigger an interrupt for other characters.
-        u32 count = char_buffer.get_queue_length();
-        count = (count > 16) ? 16 : count;
-        for(u32 index = 0; index < count; index++)
-        {
-            the_registers->dr.data = char_buffer.pop();
-        }
+        char_buffer.push(a_string[index]);
     }
 }
 
