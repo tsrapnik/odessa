@@ -158,7 +158,7 @@ class i2s : public interrupt::interruptable
 
         struct intstc_a_struct
         {
-            enum class status_and_clear
+            enum class status_and_clear : u32
             {
                 no_interrupt_occured = 0,
                 interrupt_occured = 1,

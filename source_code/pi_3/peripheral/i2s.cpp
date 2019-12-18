@@ -175,7 +175,6 @@ i2s* i2s::create(device device_id)
 
 bool i2s::interrupt_occured()
 {
-    return true;
     return the_registers->intstc_a.rxr == registers::intstc_a_struct::status_and_clear::interrupt_occured;
 }
 
