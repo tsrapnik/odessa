@@ -338,6 +338,7 @@ class uart : public interrupt::interruptable
     //todo: use string class. provide byte array alternative also.
     void write(const char* a_string);
 
+    private:
     //callbacks for interrupt handling.
     virtual bool interrupt_occured() override;
     virtual void handle_interrupt() override;

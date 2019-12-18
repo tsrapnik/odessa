@@ -55,6 +55,7 @@ extern "C" i32 main(void)
     a_uart = uart::create(uart::device::uart_pl011);
     a_uart->write("uart created.\r\n");
 
+
     //todo: max clockrate appears random.
     u32 max_clockrate = vc_mailbox_property_tags::get_max_clock_rate(vc_mailbox_property_tags::clock_id::arm);
     vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::arm, max_clockrate);

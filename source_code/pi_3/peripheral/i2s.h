@@ -227,6 +227,7 @@ class i2s : public interrupt::interruptable
     //a nullptr will be returned.
     static i2s* create(device device_id);
 
+    private:
     //callbacks for interrupt handling.
     virtual bool interrupt_occured() override;
     virtual void handle_interrupt() override;

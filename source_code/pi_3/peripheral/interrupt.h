@@ -45,7 +45,8 @@ class interrupt
     //interface all interrupt sources should implement.
     class interruptable
     {
-        public:
+        friend interrupt;
+        private:
         virtual bool interrupt_occured() = 0;
         virtual void handle_interrupt() = 0;
     };
