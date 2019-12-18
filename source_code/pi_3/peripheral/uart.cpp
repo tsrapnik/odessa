@@ -1,6 +1,8 @@
 #include "uart.h"
 #include "assert.h"
 
+#include "string_.h" //todo: remove.
+
 bool uart::device_used[device_count] = {false};
 constexpr uart::registers* uart::registers_base_address[device_count];
 
@@ -136,6 +138,8 @@ void uart::write(const char* string)
     for(u32 index = 0; string[index] != '\0'; index++)
     {
         char_buffer.push(string[index]);
+        if(char_buffer.get_queue_length() == 0)
+            while(true);
     }
 }
 
@@ -147,6 +151,8 @@ void uart::write(char* string, u32 size)
     for(u32 index = 0; index < size; index++)
     {
         char_buffer.push(string[index]);
+        if(char_buffer.get_queue_length() == 0)
+            while(true);
     }
 }
 
@@ -158,7 +164,8 @@ bool uart::interrupt_occured()
 void uart::handle_interrupt()
 {
     //write characters to the transmit fifo until it is full or there are no more characters.
-    while((the_registers->fr.txff == bool32::false_) && (char_buffer.get_queue_length() != 0))
+    u32 queue_lenght = 10;char_buffer.get_queue_length(); //todo: fix.
+    for (u32 index = 0; (index < queue_lenght) && (the_registers->fr.txff == bool32::false_); index++)
     {
         the_registers->dr.data = char_buffer.pop();
     }
