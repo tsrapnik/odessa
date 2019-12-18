@@ -45,7 +45,7 @@ exit_el1:
 
     ldr x0, =VectorTable                        
     msr vbar_el1,x0
-    
+
     b main                            // Jump out to C kernel 
 
 hang:

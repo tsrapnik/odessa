@@ -112,11 +112,21 @@ uart* uart::create(device device_id)
 //in the buffer. if the buffer is full characters will get dropped.
 void uart::write(const char* string)
 {
+    //todo: optimize (push directly to fifo first, only add rest to buffer).
     for(u32 index = 0; string[index] != '\0'; index++)
     {
         char_buffer.push(string[index]);
-        if(char_buffer.get_queue_length() == 0)
-            while(true);
+    }
+    if(the_registers->fr.txfe == bool32::true_)
+    {
+        //if fifo is empty we can fill it with up to16 new characters already. also needed
+        //to trigger an interrupt for other characters.
+        u32 count = char_buffer.get_queue_length();
+        count = (count > 16) ? 16 : count;
+        for(u32 index = 0; index < count; index++)
+        {
+            the_registers->dr.data = char_buffer.pop();
+        }
     }
 }
 
@@ -128,8 +138,17 @@ void uart::write(char* string, u32 size)
     for(u32 index = 0; index < size; index++)
     {
         char_buffer.push(string[index]);
-        if(char_buffer.get_queue_length() == 0)
-            while(true);
+    }
+    if(the_registers->fr.txfe == bool32::true_)
+    {
+        //if fifo is empty we can fill it with up to16 new characters already. also needed
+        //to trigger an interrupt for other characters.
+        u32 count = char_buffer.get_queue_length();
+        count = (count > 16) ? 16 : count;
+        for(u32 index = 0; index < count; index++)
+        {
+            the_registers->dr.data = char_buffer.pop();
+        }
     }
 }
 
@@ -141,8 +160,8 @@ bool uart::interrupt_occured()
 void uart::handle_interrupt()
 {
     //write characters to the transmit fifo until it is full or there are no more characters.
-    u32 queue_lenght = 10;char_buffer.get_queue_length(); //todo: fix.
-    for (u32 index = 0; (index < queue_lenght) && (the_registers->fr.txff == bool32::false_); index++)
+    u32 queue_length = char_buffer.get_queue_length();
+    for(u32 index = 0; (index < queue_length) && (the_registers->fr.txff == bool32::false_); index++)
     {
         the_registers->dr.data = char_buffer.pop();
     }

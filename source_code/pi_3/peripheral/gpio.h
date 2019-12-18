@@ -14,20 +14,32 @@ class gpio
     //represent all available gpio's.
     enum class device : u32
     {
+        gpio_2 = 2,
+        gpio_3 = 3,
+        gpio_4 = 4,
         gpio_5 = 5,
         gpio_6 = 6,
         gpio_7 = 7,
         gpio_8 = 8,
+        gpio_9 = 9,
         gpio_10 = 10,
         gpio_11 = 11,
+        gpio_12 = 12,
+        gpio_13 = 13,
         gpio_14 = 14,
         gpio_15 = 15,
+        gpio_16 = 16,
+        gpio_17 = 17,
         gpio_18 = 18,
         gpio_19 = 19,
         gpio_20 = 20,
         gpio_21 = 21,
-        gpio_32 = 32,
-        gpio_33 = 33
+        gpio_22 = 22,
+        gpio_23 = 23,
+        gpio_24 = 24,
+        gpio_25 = 25,
+        gpio_26 = 26,
+        gpio_27 = 27,
     };
 
     enum class pull_up_down_state : u32
