@@ -6,9 +6,7 @@
 bool uart::device_used[device_count] = {false};
 constexpr uart::registers* uart::registers_base_address[device_count];
 
-uart::uart(device device_id, gpio* gpio_32, gpio* gpio_33, gpio* tx_pin, gpio* rx_pin) :
-    gpio_32(gpio_32),
-    gpio_33(gpio_33),
+uart::uart(device device_id, gpio* tx_pin, gpio* rx_pin) :
     tx_pin(tx_pin),
     rx_pin(rx_pin),
     char_buffer(100)
@@ -73,8 +71,6 @@ uart::~uart()
     device_used[static_cast<u32>(device_id)] = false;
 
     //todo: make sure device gets destroyed and deinitialized.
-    delete gpio_32;
-    delete gpio_33;
     delete tx_pin;
     delete rx_pin;
 
@@ -90,28 +86,11 @@ uart* uart::create(device device_id)
     else
     {
         //try to create the necessary gpio's first.
-        gpio* gpio_32 = gpio::create(gpio::device::gpio_32,
-                                     gpio::pull_up_down_state::disable_pull_up_or_down,
-                                     gpio::function::input);
-        if(gpio_32 == nullptr)
-        {
-            return nullptr;
-        }
-        gpio* gpio_33 = gpio::create(gpio::device::gpio_33,
-                                     gpio::pull_up_down_state::disable_pull_up_or_down,
-                                     gpio::function::input);
-        if(gpio_33 == nullptr)
-        {
-            delete gpio_32;
-            return nullptr;
-        }
         gpio* tx_pin = gpio::create(gpio::device::gpio_14,
                                     gpio::pull_up_down_state::disable_pull_up_or_down,
                                     gpio::function::alternate_function_0);
         if(tx_pin == nullptr)
         {
-            delete gpio_32;
-            delete gpio_33;
             return nullptr;
         }
         gpio* rx_pin = gpio::create(gpio::device::gpio_15,
@@ -119,14 +98,12 @@ uart* uart::create(device device_id)
                                     gpio::function::alternate_function_0);
         if(rx_pin == nullptr)
         {
-            delete gpio_32;
-            delete gpio_33;
             delete tx_pin;
             return nullptr;
         }
 
         //if all gpio's were created create the device.
-        uart* new_device = new uart(device_id, gpio_32, gpio_33, tx_pin, rx_pin);
+        uart* new_device = new uart(device_id, tx_pin, rx_pin);
         return new_device;
     }
 }

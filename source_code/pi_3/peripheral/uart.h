@@ -313,8 +313,6 @@ class uart : public interrupt::interruptable
     //pointer to the actual registers of this device.
     volatile registers* the_registers;
 
-    gpio* gpio_32;
-    gpio* gpio_33;
     gpio* tx_pin;
     gpio* rx_pin;
 
@@ -325,7 +323,7 @@ class uart : public interrupt::interruptable
     //constructor is private, all objects should be created with
     //the create function, to avoid making multiple instances of
     //the same uart device.
-    uart(device device_id, gpio* gpio_32, gpio* gpio_33, gpio* tx_pin, gpio* rx_pin);
+    uart(device device_id, gpio* tx_pin, gpio* rx_pin);
 
     public:
     //destructor.
