@@ -6,6 +6,7 @@
 #include "gpio.h"
 #include "type_definitions.h"
 #include "volatile_operators.h"
+
 //todo: use reference manual register names everywhere.
 class uart
 {

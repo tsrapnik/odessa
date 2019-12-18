@@ -11,7 +11,7 @@ class effect_delay : public effect
     output* the_output;
     rotary_button<f32>*feedback_button, *wet_button, *delay_time_button;
 
-    buffer_delay delay;
+    buffer_delay<f32> delay;
 
     void process() override;
 

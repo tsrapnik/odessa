@@ -62,7 +62,7 @@ uart::~uart()
     //unmark the device as used, so it can be created again when needed.
     device_used[static_cast<u32>(device_id)] = false;
 
-    //todo: make sure device gets destroyed.
+    //todo: make sure device gets destroyed and deinitialized.
     delete gpio_32;
     delete gpio_33;
     delete tx_pin;

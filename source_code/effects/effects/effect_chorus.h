@@ -11,7 +11,7 @@ class effect_chorus : public effect
 	output *the_output;
 	rotary_button<f32> *feedback_button, *wet_button;
 
-	buffer_delay delay;
+	buffer_delay<f32> delay;
 
 	void process() override;
 
