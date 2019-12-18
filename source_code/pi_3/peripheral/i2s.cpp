@@ -2,7 +2,7 @@
 #include "assert.h"
 #include "enum_flags.h"
 #include "interrupt.h"
-#include "string.h"
+#include "string_.h"
 #include "uart.h" //todo: remove.
 
 extern uart* a_uart;
@@ -37,7 +37,6 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     temp_cs_a.rxthr = registers::cs_a_struct::rxthr_enum::fifo_at_least;
     temp_cs_a.rxsex = bool32::true_;
     temp_cs_a.stby = registers::cs_a_struct::stdby_enum::disable;
-
     the_registers->cs_a = temp_cs_a;
 
     u32 channel_length = 64;
@@ -54,7 +53,6 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     temp_mode_a.fsi = bool32::true_;
     // temp_mode_a.fslen = channel_length; //todo: not really necessary, but just for completeness.
     // temp_mode_a.flen = 2 * channel_length - 1;
-
     the_registers->mode_a = temp_mode_a;
 
     registers::xc_a_struct temp_configuration = {};
@@ -66,9 +64,9 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     temp_configuration.ch2en = bool32::true_;
     temp_configuration.ch2pos = channel_length + 1;
     temp_configuration.ch2wid = 0;
-
     the_registers->rxc_a = temp_configuration;
 
+    temp_configuration = {};
     temp_configuration.ch1wex = bool32::true_;
     temp_configuration.ch1en = bool32::true_;
     temp_configuration.ch1pos = 0 + 1;
@@ -77,7 +75,6 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     temp_configuration.ch2en = bool32::true_;
     temp_configuration.ch2pos = channel_length + 1;
     temp_configuration.ch2wid = 0;
-
     the_registers->txc_a = temp_configuration;
 
     //clear fifo's.
@@ -85,7 +82,6 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     temp_cs_a.rxclr = bool32::true_;
     temp_cs_a.txclr = bool32::true_;
     temp_cs_a.sync = bool32::true_;
-
     the_registers->cs_a = temp_cs_a;
 
     //todo: clock sync does not work.
@@ -97,7 +93,6 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     //enable interrupt.
     registers::inten_a_struct temp_inten_a = {};
     temp_inten_a.rxr = bool32::true_;
-
     the_registers->inten_a = temp_inten_a;
 
     //fill transmit fifo with zeroes.
@@ -110,7 +105,6 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     temp_cs_a = the_registers->cs_a;
     temp_cs_a.txon = bool32::true_;
     temp_cs_a.rxon = bool32::true_;
-
     the_registers->cs_a = temp_cs_a;
 }
 
@@ -188,7 +182,7 @@ bool i2s::interrupt_occured()
 void i2s::handle_interrupt()
 {
     //receive all samples until the fifo is empty.
-    while(receive_required())
+    while(the_registers->cs_a.rxd == bool32::true_)
     {
         i32 sample = the_registers->fifo_a;
         the_registers->fifo_a = sample;
@@ -198,9 +192,4 @@ void i2s::handle_interrupt()
     registers::intstc_a_struct tmp_intstc_a;
     tmp_intstc_a = the_registers->intstc_a;
     the_registers->intstc_a = tmp_intstc_a;
-}
-
-bool i2s::receive_required()
-{
-    return the_registers->cs_a.rxd == bool32::true_;
 }

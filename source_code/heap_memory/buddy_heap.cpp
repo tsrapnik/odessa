@@ -3,7 +3,7 @@
 #include "math.h"
 
 //todo: remove.
-#include "string.h"
+#include "string_.h"
 #include "uart.h"
 
 buddy_heap::block_pointer buddy_heap::block_pointers[1 << (order_count - 2)];

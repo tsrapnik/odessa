@@ -51,20 +51,20 @@ class interrupt
     };
 
     private:
-    static constexpr usize device_count = 1;
+    static constexpr usize device_count = 2;
 
     public:
     ///represent all available interrupt devices.
     enum class device
     {
         i2s_interrupt = 0,
+        uart_interrupt = 1,
     };
 
-    public: //todo: make private.
+    private:
     ///available registers for each interrupt device.
     struct registers
     {
-        //todo: provide a not implemented, not modifiable u32 for reserved and not yet implemented registers?
         u32 irq_basic_pending; //0x00
         u32 irq_pending[2]; //0x04-0x08
         u32 fiq_control; //0x0c

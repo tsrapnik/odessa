@@ -2,6 +2,7 @@
 #include "list_iterator.h"
 #include "memory.h"
 #include "uart.h" //todo: remove.
+#include "assert.h"
 
 //todo: replace with global logger class.
 extern uart* a_uart;
@@ -45,14 +46,22 @@ interrupt::interrupt(device device_id, interruptable* source) :
 
     sources.append_copy(source);
 
+    u32 interrupt_index;
     switch(device_id)
     {
         case device::i2s_interrupt:
             //todo: do for all interrupt.
-            constexpr u32 pcm_int = 55; //should be 55?
-            the_registers->enable_irqs[pcm_int / 32u] = 1u << (pcm_int % 32u);
+            interrupt_index = 55;
+            break;
+        case device::uart_interrupt:
+            interrupt_index = 57;
+            break;
+        default:
+            interrupt_index = 0;
+            assert(false);
             break;
     }
+    the_registers->enable_irqs[interrupt_index / 32u] = 1u << (interrupt_index % 32u);
 }
 
 interrupt::~interrupt()
@@ -70,6 +79,8 @@ interrupt::~interrupt()
 
     //unmark the device as used, so it can be created again when needed.
     device_used[static_cast<u32>(device_id)] = false;
+
+    //todo: deinit interrupt.
 }
 
 interrupt* interrupt::create(device device_id, interruptable* source)

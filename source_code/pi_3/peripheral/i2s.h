@@ -6,8 +6,9 @@
 #include "interrupt.h"
 #include "type_definitions.h"
 #include "volatile_operators.h"
+#include "device.h"
 
-class i2s : interrupt::interruptable
+class i2s : public interrupt::interruptable
 {
     private:
     static constexpr usize device_count = 1;
@@ -229,9 +230,6 @@ class i2s : interrupt::interruptable
     //callbacks for interrupt handling.
     virtual bool interrupt_occured() override;
     virtual void handle_interrupt() override;
-
-    private:
-    bool receive_required();
 
     public:
     enum class channel

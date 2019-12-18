@@ -2,7 +2,7 @@
 
 #include "type_definitions.h"
 
-class string
+class string_
 {
     //todo: create full on string class.
     public:

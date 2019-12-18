@@ -7,9 +7,10 @@
 #include "type_definitions.h"
 #include "volatile_operators.h"
 #include "buffer_fifo.h"
+#include "interrupt.h"
 
 //todo: use reference manual register names everywhere.
-class uart
+class uart : public interrupt::interruptable
 {
     private:
     static constexpr u32 device_count = 1;
@@ -317,6 +318,8 @@ class uart
     gpio* tx_pin;
     gpio* rx_pin;
 
+    interrupt* the_interrupt;
+
     buffer_fifo<char> char_buffer;
 
     //constructor is private, all objects should be created with
@@ -338,6 +341,10 @@ class uart
 
     //todo: use string class. provide byte array alternative also.
     void write(char* string, u32 size);
+
+    //callbacks for interrupt handling.
+    virtual bool interrupt_occured() override;
+    virtual void handle_interrupt() override;
 };
 
 #pragma GCC diagnostic pop

@@ -1,4 +1,5 @@
 #include "uart.h"
+#include "assert.h"
 
 bool uart::device_used[device_count] = {false};
 constexpr uart::registers* uart::registers_base_address[device_count];
@@ -18,23 +19,15 @@ uart::uart(device device_id, gpio* gpio_32, gpio* gpio_33, gpio* tx_pin, gpio* r
 
     the_registers = registers_base_address[static_cast<u32>(device_id)];
 
+    //create an interrupt and pass this object as the source. if an interrupt should happen now the handler of this object
+    //will get called at the appropriate time.
+    the_interrupt = interrupt::create(interrupt::device::uart_interrupt, this);
+    assert(the_interrupt != nullptr); //should never fail, if so we have a bug somewhere.
+
+    //set baud rate.
     u32 clock_rate = 48000000;
     u32 baud_rate_times_16 = 115200 * 16;
     u32 fraction = (clock_rate % baud_rate_times_16) * 8 / 115200;
-
-    registers::imsc_struct temp_imsc = {};
-    the_registers->imsc = temp_imsc;
-
-    registers::icr_struct temp_icr = {};
-    temp_icr.ctsmic = bool32::true_;
-    temp_icr.rxic = bool32::true_;
-    temp_icr.txic = bool32::true_;
-    temp_icr.rtic = bool32::true_;
-    temp_icr.feic = bool32::true_;
-    temp_icr.peic = bool32::true_;
-    temp_icr.beic = bool32::true_;
-    temp_icr.oeic = bool32::true_;
-    the_registers->icr = temp_icr;
 
     registers::ibrd_struct temp_ibrd = {};
     temp_ibrd.ibrd = clock_rate / baud_rate_times_16;
@@ -44,18 +37,32 @@ uart::uart(device device_id, gpio* gpio_32, gpio* gpio_33, gpio* tx_pin, gpio* r
     temp_fbrd.fbrd = fraction / 2 + fraction % 2;
     the_registers->fbrd = temp_fbrd;
 
+    //set character length and enable fifo buffer.
     registers::lcrh_struct temp_lcrh = {};
     temp_lcrh.wlen = registers::lcrh_struct::wlen_enum::bits_8;
+    temp_lcrh.fen = bool32::true_;
     the_registers->lcrh = temp_lcrh;
 
-    registers::ifls_struct temp_ifls = {};
-    temp_ifls.txiflsel = registers::ifls_struct::txiflsel_enum::fifo_1_8_full;
-    the_registers->ifls = temp_ifls;
-
+    //enable uart and transmitting.
     registers::cr_struct temp_cr = {};
     temp_cr.uarten = bool32::true_;
     temp_cr.txe = bool32::true_;
     the_registers->cr = temp_cr;
+
+    //set when transmit interrupt should occur.
+    registers::ifls_struct temp_ifls = {};
+    temp_ifls.txiflsel = registers::ifls_struct::txiflsel_enum::fifo_1_8_full;
+    the_registers->ifls = temp_ifls;
+
+    //enable transmit interrupt.
+    registers::imsc_struct temp_imsc = {};
+    temp_imsc.txim = bool32::true_;
+    the_registers->imsc = temp_imsc;
+
+    //clear transmit interrupt set.
+    registers::icr_struct temp_icr = {};
+    temp_icr.txic = bool32::true_;
+    the_registers->icr = temp_icr;
 }
 
 uart::~uart()
@@ -68,6 +75,8 @@ uart::~uart()
     delete gpio_33;
     delete tx_pin;
     delete rx_pin;
+
+    delete the_interrupt;
 }
 
 uart* uart::create(device device_id)
@@ -120,23 +129,42 @@ uart* uart::create(device device_id)
     }
 }
 
+//write characters nonblocking to a buffer. the uart will afterwards transmit all characters
+//in the buffer. if the buffer is full characters will get dropped.
 void uart::write(const char* string)
 {
     for(u32 index = 0; string[index] != '\0'; index++)
     {
-        while(the_registers->fr.txff == bool32::true_)
-            ;
-        the_registers->dr.data = string[index];
+        char_buffer.push(string[index]);
     }
 }
 
 //todo: make real string input.
+//write characters nonblocking to a buffer. the uart will afterwards transmit all characters
+//in the buffer. if the buffer is full characters will get dropped.
 void uart::write(char* string, u32 size)
 {
     for(u32 index = 0; index < size; index++)
     {
-        while(the_registers->fr.txff == bool32::true_)
-            ;
-        the_registers->dr.data = string[index];
+        char_buffer.push(string[index]);
     }
+}
+
+bool uart::interrupt_occured()
+{
+    return the_registers->mis.txmis == bool32::true_;
+}
+
+void uart::handle_interrupt()
+{
+    //write characters to the transmit fifo until it is full or there are no more characters.
+    while((the_registers->fr.txff == bool32::false_) && (char_buffer.get_queue_length() != 0))
+    {
+        the_registers->dr.data = char_buffer.pop();
+    }
+
+    //clear interrupt flag.
+    registers::icr_struct temp_icr = {};
+    temp_icr.txic = bool32::true_;
+    the_registers->icr = temp_icr;
 }

@@ -12,7 +12,7 @@
 #include "memory.h"
 #include "scratchpad.h"
 #include "spi.h"
-#include "string.h"
+#include "string_.h"
 #include "uart.h"
 #include "vc_gpu.h"
 #include "vc_mailbox_framebuffer.h"
@@ -60,7 +60,7 @@ extern "C" i32 main(void)
     vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::arm, max_clockrate);
     a_uart->write("clock speed is ");
     char buffer[19];
-    a_uart->write(string::to_string(max_clockrate, buffer));
+    a_uart->write(string_::to_string(max_clockrate, buffer));
     a_uart->write(" Hz.\r\n");
 
     //initialize gpu and draw a example scene to the screen.
@@ -202,15 +202,15 @@ extern "C" i32 main(void)
         {
             char buffer[19];
             a_uart->write("points: size:");
-            a_uart->write(string::to_string(new_points_size, buffer));
+            a_uart->write(string_::to_string(new_points_size, buffer));
             a_uart->write(", x:");
-            a_uart->write(string::to_string(new_x_position, buffer));
+            a_uart->write(string_::to_string(new_x_position, buffer));
             a_uart->write(", y:");
-            a_uart->write(string::to_string(new_y_position, buffer));
+            a_uart->write(string_::to_string(new_y_position, buffer));
             a_uart->write(", mode:");
-            a_uart->write(string::to_string(a_touch_buffer.device_mode, buffer));
+            a_uart->write(string_::to_string(a_touch_buffer.device_mode, buffer));
             a_uart->write(", gesture:");
-            a_uart->write(string::to_string(a_touch_buffer.gesture_id, buffer));
+            a_uart->write(string_::to_string(a_touch_buffer.gesture_id, buffer));
             a_uart->write(".\r\n");
 
             old_points_size = new_points_size;
