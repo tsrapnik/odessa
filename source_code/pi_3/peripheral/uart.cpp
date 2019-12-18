@@ -7,7 +7,8 @@ uart::uart(device device_id, gpio* gpio_32, gpio* gpio_33, gpio* tx_pin, gpio* r
     gpio_32(gpio_32),
     gpio_33(gpio_33),
     tx_pin(tx_pin),
-    rx_pin(rx_pin)
+    rx_pin(rx_pin),
+    char_buffer(100)
 {
     //mark the device as used to avoid another instance of this device can be made.
     device_used[static_cast<u32>(device_id)] = true;

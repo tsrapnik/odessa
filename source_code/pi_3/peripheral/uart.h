@@ -6,6 +6,7 @@
 #include "gpio.h"
 #include "type_definitions.h"
 #include "volatile_operators.h"
+#include "buffer_fifo.h"
 
 //todo: use reference manual register names everywhere.
 class uart
@@ -315,6 +316,8 @@ class uart
     gpio* gpio_33;
     gpio* tx_pin;
     gpio* rx_pin;
+
+    buffer_fifo<char> char_buffer;
 
     //constructor is private, all objects should be created with
     //the create function, to avoid making multiple instances of
