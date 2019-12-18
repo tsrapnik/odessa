@@ -9,7 +9,6 @@ extern uart* a_uart;
 
 interrupt::disabler::disabler()
 {
-    a_uart->write("constructed\r\n");
     //save original state.
     asm volatile("mrs %0, daif"
                  : "=r"(flags));
@@ -21,7 +20,6 @@ interrupt::disabler::disabler()
 
 interrupt::disabler::~disabler()
 {
-    a_uart->write("destructed\r\n");
     memory::data_memory_barrier();
 
     //set back to previous state.

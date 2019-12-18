@@ -112,6 +112,10 @@ uart* uart::create(device device_id)
 //in the buffer. if the buffer is full characters will get dropped.
 void uart::write(const char* a_string)
 {
+    //disable interrupts in this function, because we are accessing the same resources as in
+    //the interrupt handler.
+    interrupt::disabler current_scope;
+
     u32 index = 0;
     //push as many characters as possible directly in the fifo.
     for(; (a_string[index] != '\0') && (the_registers->fr.txff == bool32::false_); index++)
