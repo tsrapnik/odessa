@@ -15,8 +15,8 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     pcm_fs(pcm_fs),
     pcm_din(pcm_din),
     pcm_dout(pcm_dout),
-    buffers_incoming{buffer_fifo<i32>(64), buffer_fifo<i32>(64)},
-    buffers_outgoing{buffer_fifo<i32>(64), buffer_fifo<i32>(64)}
+    buffers_incoming{buffer_fifo<i32>(buffer_size), buffer_fifo<i32>(buffer_size)},
+    buffers_outgoing{buffer_fifo<i32>(buffer_size), buffer_fifo<i32>(buffer_size)}
 {
     //mark the device as used to avoid another instance of this device can be made.
     device_used[static_cast<u32>(device_id)] = true;

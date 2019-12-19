@@ -224,6 +224,7 @@ class i2s : public interrupt::interruptable
     static constexpr u32 channel_count = 2;
 
     private:
+    static constexpr u32 buffer_size = 512;
     channel next_incoming_channel = channel::left;
     channel next_outgoing_channel = channel::right;
 
