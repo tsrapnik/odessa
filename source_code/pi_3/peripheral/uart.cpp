@@ -9,7 +9,7 @@ constexpr uart::registers* uart::registers_base_address[device_count];
 uart::uart(device device_id, gpio* tx_pin, gpio* rx_pin) :
     tx_pin(tx_pin),
     rx_pin(rx_pin),
-    char_buffer(100)
+    char_buffer(1000)
 {
     //mark the device as used to avoid another instance of this device can be made.
     device_used[static_cast<u32>(device_id)] = true;

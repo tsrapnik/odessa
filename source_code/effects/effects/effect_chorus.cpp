@@ -17,13 +17,13 @@ void effect_chorus::process()
 
 effect_chorus::effect_chorus(rectangle bounding_box, color the_color) :
     effect(bounding_box, the_color),
-    the_input(new input(rectangle(vector_2_f32(0, 120), vector_2_f32(30, 40)),
+    the_input(new input(rectangle(vector_2_f32::sum(get_bounding_box().origin, vector_2_f32(0, 0)), vector_2_f32(30, 40)),
                         color(255, 0, 0, 255))),
-    the_output(new output(rectangle(vector_2_f32(170, 120), vector_2_f32(30, 40)),
+    the_output(new output(rectangle(vector_2_f32::sum(get_bounding_box().origin, vector_2_f32(150, 0)), vector_2_f32(30, 40)),
                           color(0, 255, 0, 255))),
-    feedback_button(new rotary_button<f32>(rectangle(vector_2_f32(80, 80), vector_2_f32(30, 40)),
+    feedback_button(new rotary_button<f32>(rectangle(vector_2_f32::sum(get_bounding_box().origin, vector_2_f32(75, 0)), vector_2_f32(30, 40)),
                                            color(0, 0, 255, 255))),
-    wet_button(new rotary_button<f32>(rectangle(vector_2_f32(80, 130), vector_2_f32(30, 40)),
+    wet_button(new rotary_button<f32>(rectangle(vector_2_f32::sum(get_bounding_box().origin, vector_2_f32(75, 50)), vector_2_f32(30, 40)),
                                       color(0, 0, 255, 255))),
     delay(100)
 

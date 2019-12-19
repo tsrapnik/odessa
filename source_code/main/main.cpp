@@ -55,7 +55,6 @@ extern "C" i32 main(void)
     a_uart = uart::create(uart::device::uart_pl011);
     a_uart->write("uart created.\r\n");
 
-
     //todo: max clockrate appears random.
     u32 max_clockrate = vc_mailbox_property_tags::get_max_clock_rate(vc_mailbox_property_tags::clock_id::arm);
     vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::arm, max_clockrate);
@@ -71,39 +70,21 @@ extern "C" i32 main(void)
     scene_2d a_scene;
 
     effect_graph a_effect_graph;
-    effect_chorus a_effect_chorus(rectangle(vector_2_f32(100.0f, 100.0f), vector_2_f32(200.0f, 100.0f)),
+    effect_chorus a_effect_chorus(rectangle(vector_2_f32(300.0f, 200.0f), vector_2_f32(200.0f, 100.0f)),
                                   color(255, 100, 0, 255));
-    effect_delay a_effect_delay(rectangle(vector_2_f32(100.0f, 100.0f), vector_2_f32(200.0f, 100.0f)),
-                                color(0, 100, 200, 125));
-    effect_looper a_effect_looper(rectangle(vector_2_f32(500.0f, 100.0f), vector_2_f32(200.0f, 100.0f)),
-                                  color(100, 100, 200, 125));
     i32 sink, source;
     effect_sink a_effect_sink(&sink,
-                              rectangle(vector_2_f32(100.0f, 300.0f), vector_2_f32(200.0f, 100.0f)),
+                              rectangle(vector_2_f32(550.0f, 200.0f), vector_2_f32(200.0f, 100.0f)),
                               color(200, 100, 20, 125));
     effect_source a_effect_source(&source,
-                                  rectangle(vector_2_f32(500.0f, 300.0f), vector_2_f32(200.0f, 100.0f)),
+                                  rectangle(vector_2_f32(50.0f, 200.0f), vector_2_f32(200.0f, 100.0f)),
                                   color(50, 80, 50, 125));
 
     a_effect_graph.add_effect(&a_effect_chorus);
-    a_effect_graph.add_effect(&a_effect_delay);
-    a_effect_graph.add_effect(&a_effect_looper);
     a_effect_graph.add_effect(&a_effect_sink);
     a_effect_graph.add_effect(&a_effect_source);
 
-    a_scene.clear();
-    a_effect_graph.draw(a_scene);
-    a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
-    a_vc_gpu.render();
-
-    constexpr f32 speed = 0.2f;
-    f32 dx = speed;
-    f32 dy = speed;
-
     //initialize touch screen.
-    u8 old_points_size = 0;
-    u32 old_x_position = 0;
-    u32 old_y_position = 0;
     volatile vc_mailbox_property_tags::touch_buffer a_touch_buffer;
     vc_mailbox_property_tags::set_touch_buffer(const_cast<vc_mailbox_property_tags::touch_buffer*>(&a_touch_buffer));
 
@@ -158,66 +139,49 @@ extern "C" i32 main(void)
     i2s* i2s0 = i2s::create(i2s::device::i2s0);
     assert(i2s0 != nullptr);
 
+    vector_2_f32 old_mouse_position = vector_2_f32(0.0f, 0.0f);
+    output* selected_output = nullptr;
+
     while(true)
     {
+        if(a_touch_buffer.points_size == 1)
+        {
+            vector_2_f32 mouse_position = vector_2_f32(
+                static_cast<f32>(((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word),
+                static_cast<f32>(((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word));
+            effect* selected_effect = a_effect_graph.get_selected_effect(mouse_position);
+            if(selected_effect != nullptr)
+            {
+                selected_output = selected_effect->get_selected_output(mouse_position);
+                a_uart->write("selected effect.\r\n");
+            }
+            old_mouse_position = mouse_position;
+        }
+        else if(a_touch_buffer.points_size == 0)
+        {
+            effect* selected_effect = a_effect_graph.get_selected_effect(old_mouse_position);
+            if(selected_effect != nullptr)
+            {
+                input* selected_input = selected_effect->get_selected_input(old_mouse_position);
+                if(selected_input != nullptr)
+                {
+                    selected_input->connect_output(selected_output);
+                }
+            }
+            selected_output = nullptr;
+            a_uart->write("cleared selected output.\r\n");
+        }
+
         // todo: to string is memory leak.
         a_scene.clear();
         a_effect_graph.draw(a_scene);
+        if((selected_output != nullptr) && (a_touch_buffer.points_size == 1))
+        {
+            selected_output->draw_connection(a_scene, old_mouse_position);
+            a_uart->write("draw connection.\r\n");
+        }
         a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
         a_vc_gpu.render();
-
-        a_effect_chorus.move(vector_2_f32(dx, dy));
-        if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] > 800.0f)
-        {
-            dx = -speed;
-            a_uart->write("hit right.\r\n");
-        }
-        if(a_effect_chorus.get_bounding_box().get_center().coordinate[0] < 0.0f)
-        {
-            dx = speed;
-            a_uart->write("hit left.\r\n");
-        }
-        if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] > 480.0f)
-        {
-            dy = -speed;
-            a_uart->write("hit bottom.\r\n");
-        }
-        if(a_effect_chorus.get_bounding_box().get_center().coordinate[1] < 0.0f)
-        {
-            dy = speed;
-            a_uart->write("hit top.\r\n");
-        }
-
-        u8 new_points_size = a_touch_buffer.points_size;
-        if(new_points_size > 10)
-            new_points_size = old_points_size;
-        u32 new_x_position = ((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word;
-        if(new_x_position > 799)
-            new_x_position = old_x_position;
-        u32 new_y_position = ((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word;
-        if(new_y_position > 479)
-            new_y_position = old_y_position;
-        if((new_points_size != old_points_size) ||
-           (new_x_position != old_x_position) ||
-           (new_y_position != old_y_position))
-        {
-            char buffer[19];
-            a_uart->write("points: size:");
-            a_uart->write(string_::to_string(new_points_size, buffer));
-            a_uart->write(", x:");
-            a_uart->write(string_::to_string(new_x_position, buffer));
-            a_uart->write(", y:");
-            a_uart->write(string_::to_string(new_y_position, buffer));
-            a_uart->write(", mode:");
-            a_uart->write(string_::to_string(a_touch_buffer.device_mode, buffer));
-            a_uart->write(", gesture:");
-            a_uart->write(string_::to_string(a_touch_buffer.gesture_id, buffer));
-            a_uart->write(".\r\n");
-
-            old_points_size = new_points_size;
-            old_x_position = new_x_position;
-            old_y_position = new_y_position;
-        }
     }
     return (0);
 }
