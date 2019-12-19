@@ -14,7 +14,9 @@ i2s::i2s(device device_id, gpio* pcm_clk, gpio* pcm_fs, gpio* pcm_din, gpio* pcm
     pcm_clk(pcm_clk),
     pcm_fs(pcm_fs),
     pcm_din(pcm_din),
-    pcm_dout(pcm_dout)
+    pcm_dout(pcm_dout),
+    buffers_incoming{buffer_fifo<i32>(64), buffer_fifo<i32>(64)},
+    buffers_outgoing{buffer_fifo<i32>(64), buffer_fifo<i32>(64)}
 {
     //mark the device as used to avoid another instance of this device can be made.
     device_used[static_cast<u32>(device_id)] = true;
@@ -173,6 +175,33 @@ i2s* i2s::create(device device_id)
     }
 }
 
+void i2s::push(i32 sample, channel the_channel)
+{
+    //disable interrupts in this function, because we are accessing the same resources as in
+    //the interrupt handler.
+    interrupt::disabler current_scope;
+
+    buffers_outgoing[static_cast<u32>(the_channel)].push(sample);
+}
+
+u32 i2s::get_sample_count(channel the_channel)
+{
+    //disable interrupts in this function, because we are accessing the same resources as in
+    //the interrupt handler.
+    interrupt::disabler current_scope;
+
+    return buffers_incoming[static_cast<u32>(the_channel)].get_queue_length();
+}
+
+i32 i2s::pop(channel the_channel)
+{
+    //disable interrupts in this function, because we are accessing the same resources as in
+    //the interrupt handler.
+    interrupt::disabler current_scope;
+
+    return buffers_incoming[static_cast<u32>(the_channel)].pop();
+}
+
 bool i2s::interrupt_occured()
 {
     return the_registers->intstc_a.rxr == registers::intstc_a_struct::status_and_clear::interrupt_occured;
@@ -180,11 +209,18 @@ bool i2s::interrupt_occured()
 
 void i2s::handle_interrupt()
 {
-    //receive all samples until the fifo is empty.
+    //receive all samples until the incoming fifo is empty.
     while(the_registers->cs_a.rxd == bool32::true_)
     {
-        i32 sample = the_registers->fifo_a;
-        the_registers->fifo_a = sample;
+        buffers_incoming[static_cast<u32>(next_incoming_channel)].push(the_registers->fifo_a);
+        next_incoming_channel = (next_incoming_channel == channel::left) ? channel::right : channel::left;
+    }
+
+    //transmit all samples until the outgoing fifo is full or the buffer is empty.
+    while((the_registers->cs_a.txd == bool32::true_) && (buffers_outgoing[static_cast<u32>(next_outgoing_channel)].get_queue_length() > 0))
+    {
+        the_registers->fifo_a = buffers_outgoing[static_cast<u32>(next_outgoing_channel)].pop();
+        next_outgoing_channel = (next_outgoing_channel == channel::left) ? channel::right : channel::left;
     }
 
     //clear interrupt flags (by writing a 1 to all flags that are set).

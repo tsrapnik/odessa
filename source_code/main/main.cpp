@@ -146,77 +146,90 @@ extern "C" i32 main(void)
 
     while(true)
     {
-        a_scene.clear();
-        a_effect_graph.draw(a_scene);
-
-        //todo: provide proper implementation, this is just for fooling around.
-        if(!touching && a_touch_buffer.points_size == 1)
+        //process samples.
+        while((i2s0->get_sample_count(i2s::channel::left) > 0) && (i2s0->get_sample_count(i2s::channel::right) > 0))
         {
-            a_uart->write("touched.\r\n");
-            //touched.
-            vector_2_f32 mouse_position = vector_2_f32(
-                static_cast<f32>(((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word),
-                static_cast<f32>(((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word));
+            // source = i2s0->pop(i2s::channel::left);
+            // a_effect_graph.process();
+            // i2s0->push(sink, i2s::channel::left);
 
-            effect* temp_selected_effect = a_effect_graph.get_selected_effect(mouse_position);
-            if(temp_selected_effect != nullptr)
-            {
-                output* temp_selected_output = temp_selected_effect->get_selected_output(mouse_position);
-                if(temp_selected_output != nullptr)
-                {
-                    selected_effect = nullptr;
-                    selected_output = temp_selected_output;
-                }
-                else
-                {
-                    selected_effect = temp_selected_effect;
-                    selected_output = nullptr;
-                }
-            }
-            old_mouse_position = mouse_position;
-            touching = true;
-        }
-        else if(touching && a_touch_buffer.points_size == 1)
-        {
-            //dragged.
-            vector_2_f32 mouse_position = vector_2_f32(
-                static_cast<f32>(((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word),
-                static_cast<f32>(((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word));
-
-            if(selected_effect != nullptr)
-            {
-                selected_effect->move(vector_2_f32::difference(mouse_position, old_mouse_position));
-            }
-            else if(selected_output != nullptr)
-            {
-                selected_output->draw_connection(a_scene, mouse_position);
-            }
-            old_mouse_position = mouse_position;
-        }
-        else if(touching && (a_touch_buffer.points_size == 0))
-        {
-            a_uart->write("released.\r\n");
-            //released.
-            if(selected_output != nullptr)
-            {
-                effect* selected_effect = a_effect_graph.get_selected_effect(old_mouse_position);
-                if(selected_effect != nullptr)
-                {
-                    input* selected_input = selected_effect->get_selected_input(old_mouse_position);
-                    if(selected_input != nullptr)
-                    {
-                        selected_input->connect_output(selected_output);
-                    }
-                }
-            }
-            selected_effect = nullptr;
-            selected_output = nullptr;
-            touching = false;
+            i2s0->push(i2s0->pop(i2s::channel::left), i2s::channel::left);
+            i2s0->push(i2s0->pop(i2s::channel::right), i2s::channel::right);
         }
 
-        // todo: to string is memory leak.
-        a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
-        a_vc_gpu.render();
+        //todo: gui processing takes too long to get proper audio performance.
+        //process gui.
+        // a_scene.clear();
+        // a_effect_graph.draw(a_scene);
+
+        // //todo: provide proper implementation, this is just for fooling around.
+        // if(!touching && a_touch_buffer.points_size == 1)
+        // {
+        //     a_uart->write("touched.\r\n");
+        //     //touched.
+        //     vector_2_f32 mouse_position = vector_2_f32(
+        //         static_cast<f32>(((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word),
+        //         static_cast<f32>(((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word));
+
+        //     effect* temp_selected_effect = a_effect_graph.get_selected_effect(mouse_position);
+        //     if(temp_selected_effect != nullptr)
+        //     {
+        //         output* temp_selected_output = temp_selected_effect->get_selected_output(mouse_position);
+        //         if(temp_selected_output != nullptr)
+        //         {
+        //             selected_effect = nullptr;
+        //             selected_output = temp_selected_output;
+        //         }
+        //         else
+        //         {
+        //             selected_effect = temp_selected_effect;
+        //             selected_output = nullptr;
+        //         }
+        //     }
+        //     old_mouse_position = mouse_position;
+        //     touching = true;
+        // }
+        // else if(touching && a_touch_buffer.points_size == 1)
+        // {
+        //     //dragged.
+        //     vector_2_f32 mouse_position = vector_2_f32(
+        //         static_cast<f32>(((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word),
+        //         static_cast<f32>(((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word));
+
+        //     if(selected_effect != nullptr)
+        //     {
+        //         selected_effect->move(vector_2_f32::difference(mouse_position, old_mouse_position));
+        //     }
+        //     else if(selected_output != nullptr)
+        //     {
+        //         selected_output->draw_connection(a_scene, mouse_position);
+        //     }
+        //     old_mouse_position = mouse_position;
+        // }
+        // else if(touching && (a_touch_buffer.points_size == 0))
+        // {
+        //     a_uart->write("released.\r\n");
+        //     //released.
+        //     if(selected_output != nullptr)
+        //     {
+        //         effect* selected_effect = a_effect_graph.get_selected_effect(old_mouse_position);
+        //         if(selected_effect != nullptr)
+        //         {
+        //             input* selected_input = selected_effect->get_selected_input(old_mouse_position);
+        //             if(selected_input != nullptr)
+        //             {
+        //                 selected_input->connect_output(selected_output);
+        //             }
+        //         }
+        //     }
+        //     selected_effect = nullptr;
+        //     selected_output = nullptr;
+        //     touching = false;
+        // }
+
+        // // todo: to string is memory leak.
+        // a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
+        // a_vc_gpu.render(); //todo: make render function non blocking.
     }
     return (0);
 }

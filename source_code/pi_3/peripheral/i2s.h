@@ -2,11 +2,12 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wbitfield-enum-conversion"
 
+#include "buffer_fifo.h"
+#include "device.h"
 #include "gpio.h"
 #include "interrupt.h"
 #include "type_definitions.h"
 #include "volatile_operators.h"
-#include "device.h"
 
 class i2s : public interrupt::interruptable
 {
@@ -213,6 +214,24 @@ class i2s : public interrupt::interruptable
 
     interrupt* the_interrupt;
 
+    public:
+    enum class channel
+    {
+        left,
+        right,
+    };
+
+    static constexpr u32 channel_count = 2;
+
+    private:
+    channel next_incoming_channel = channel::left;
+    channel next_outgoing_channel = channel::right;
+
+    //buffers for incoming unprocessed samples.
+    buffer_fifo<i32> buffers_incoming[channel_count];
+    //buffers for outgoing processed samples.
+    buffer_fifo<i32> buffers_outgoing[channel_count];
+
     //constructor is private, all objects should be created with
     //the create function, to avoid making multiple instances of
     //the same i2s device.
@@ -227,17 +246,22 @@ class i2s : public interrupt::interruptable
     //a nullptr will be returned.
     static i2s* create(device device_id);
 
+    //write a sample to the outgoing buffer. the device will transmit all samples
+    //in the buffer at the appropriate time. if buffer is full samples will be dropped.
+    void push(i32 sample, channel the_channel);
+
+    //get the amount of samples that are in the incoming buffer. use this before popping
+    //any samples.
+    u32 get_sample_count(channel the_channel);
+
+    //read and remove a sample from the incoming buffer. will return 0 if there are
+    //no more characters in the buffer left. best to check the sample count before popping.
+    i32 pop(channel the_channel);
+
     private:
     //callbacks for interrupt handling.
     virtual bool interrupt_occured() override;
     virtual void handle_interrupt() override;
-
-    public:
-    enum class channel
-    {
-        left,
-        right,
-    };
 };
 
 #pragma GCC diagnostic pop
