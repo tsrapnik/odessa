@@ -117,10 +117,14 @@ void uart::write(const char* a_string)
     interrupt::disabler current_scope;
 
     u32 index = 0;
-    //push as many characters as possible directly in the fifo.
-    for(; (a_string[index] != '\0') && (the_registers->fr.txff == bool32::false_); index++)
+    //push as many characters as possible directly in the fifo (if the buffer is empty, otherwise
+    //the order of characters is incorrect).
+    if(char_buffer.get_queue_length() == 0)
     {
-        the_registers->dr.data = a_string[index];
+        for(; (a_string[index] != '\0') && (the_registers->fr.txff == bool32::false_); index++)
+        {
+            the_registers->dr.data = a_string[index];
+        }
     }
 
     //push other characters in a buffer. when the fifo has room it will automatically trigger an
