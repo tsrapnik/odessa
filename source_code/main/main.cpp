@@ -13,6 +13,7 @@
 #include "scratchpad.h"
 #include "spi.h"
 #include "string_.h"
+#include "system_timer.h"
 #include "uart.h"
 #include "vc_gpu.h"
 #include "vc_mailbox_framebuffer.h"
@@ -44,8 +45,22 @@ void initialize_cpp_runtime()
 
 void process_input(volatile const vc_mailbox_property_tags::touch_buffer& a_touch_buffer, effect_graph& a_effect_graph, scene_2d& a_scene);
 
+#pragma GCC push_options
+#pragma GCC optimize("O0")
+void deadbeef()
+{
+    register u32 dude = 1000000000 / 4;
+    while(dude != 0)
+    {
+        dude--;
+    }
+}
+#pragma GCC pop_options
+
 extern "C" i32 main(void)
 {
+    char buffer[19];
+
     initialize_cpp_runtime();
 
     //todo: change adressing to vc_gpu before mmu can be enabled.
@@ -57,13 +72,9 @@ extern "C" i32 main(void)
     a_uart = uart::create(uart::device::uart_pl011);
     a_uart->write("uart created.\r\n");
 
-    //todo: max clockrate appears random.
-    u32 max_clockrate = vc_mailbox_property_tags::get_max_clock_rate(vc_mailbox_property_tags::clock_id::arm);
-    vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::arm, max_clockrate);
-    a_uart->write("clock speed is ");
-    char buffer[19];
-    a_uart->write(string_::to_string(max_clockrate, buffer));
-    a_uart->write(" Hz.\r\n");
+    system_timer* the_system_timer = system_timer::create();
+
+    vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::arm, 1200000000);
 
     //initialize gpu and draw a example scene to the screen.
     vc_mailbox_framebuffer a_vc_mailbox_framebuffer;
@@ -154,10 +165,21 @@ extern "C" i32 main(void)
 
     gui_state_enum gui_state = gui_state_enum::redraw_scene;
 
+    u64 old_system_time;
+
+    buffer_fifo<u64> process_times(1000);
+    buffer_fifo<u64> gui_times(1000);
+
     while(true)
     {
+        u64 new_system_time;
+        old_system_time = the_system_timer->get_system_time();
+
         //process samples.
-        while((i2s0->get_sample_count(i2s::channel::left) > 0) && (i2s0->get_sample_count(i2s::channel::right) > 0))
+        u32 sample_count_left = i2s0->get_sample_count(i2s::channel::left);
+        u32 sample_count_right = i2s0->get_sample_count(i2s::channel::right);
+        u32 sample_count = (sample_count_left < sample_count_right) ? sample_count_left : sample_count_right;
+        for(u32 index = 0; index < sample_count; index++)
         {
             // source = i2s0->pop(i2s::channel::left);
             // a_effect_graph.process();
@@ -166,6 +188,16 @@ extern "C" i32 main(void)
             i2s0->push(i2s0->pop(i2s::channel::left), i2s::channel::left);
             i2s0->push(i2s0->pop(i2s::channel::right), i2s::channel::right);
         }
+        // while((0 < i2s0->get_sample_count(i2s::channel::left)) && (0 < i2s0->get_sample_count(i2s::channel::right)))
+        // {
+        //     i2s0->push(i2s0->pop(i2s::channel::left), i2s::channel::left);
+        //     i2s0->push(i2s0->pop(i2s::channel::right), i2s::channel::right);
+        // }
+
+        new_system_time = the_system_timer->get_system_time();
+        process_times.push(new_system_time - old_system_time);
+
+        old_system_time = new_system_time;
 
         //process gui.
         switch(gui_state)
@@ -189,7 +221,9 @@ extern "C" i32 main(void)
                 break;
             case gui_state_enum::wait_for_binning_to_finish:
                 if(a_vc_gpu.binning_finished())
+                {
                     gui_state = gui_state_enum::prepare_rendering;
+                }
                 break;
             case gui_state_enum::prepare_rendering:
                 a_vc_gpu.start_rendering();
@@ -197,8 +231,55 @@ extern "C" i32 main(void)
                 break;
             case gui_state_enum::wait_for_rendering_to_finish:
                 if(a_vc_gpu.rendering_finished())
+                {
                     gui_state = gui_state_enum::redraw_scene;
+                }
                 break;
+        }
+
+        new_system_time = the_system_timer->get_system_time();
+        gui_times.push(new_system_time - old_system_time);
+
+        old_system_time = new_system_time;
+        if(process_times.get_queue_length() == 1000)
+        {
+            u64 max_process_time = 0;
+            while(process_times.get_queue_length() > 0)
+            {
+                u64 a_process_time = process_times.pop();
+                max_process_time = (a_process_time > max_process_time) ? a_process_time : max_process_time;
+            }
+            a_uart->write("process time: ");
+            a_uart->write(string_::to_string(max_process_time, buffer));
+            a_uart->write("\r\n");
+        }
+
+        if(gui_times.get_queue_length() == 1000)
+        {
+            u64 max_gui_time = 0;
+            while(gui_times.get_queue_length() > 0)
+            {
+                u64 a_gui_time = gui_times.pop();
+                max_gui_time = (a_gui_time > max_gui_time) ? a_gui_time : max_gui_time;
+            }
+            a_uart->write("gui time: ");
+            a_uart->write(string_::to_string(max_gui_time, buffer));
+            a_uart->write("\r\n");
+
+            new_system_time = the_system_timer->get_system_time();
+            a_uart->write("plot time: ");
+            a_uart->write(string_::to_string(new_system_time - old_system_time, buffer));
+            a_uart->write("\r\n");
+
+            old_system_time = new_system_time;
+            {
+                interrupt::disabler current_scope;
+                deadbeef();
+            }
+            new_system_time = the_system_timer->get_system_time();
+            a_uart->write("test: ");
+            a_uart->write(string_::to_string(new_system_time - old_system_time, buffer));
+            a_uart->write("\r\n");
         }
     }
     return (0);

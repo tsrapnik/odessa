@@ -224,12 +224,12 @@ class i2s : public interrupt::interruptable
     static constexpr u32 channel_count = 2;
 
     private:
-    static constexpr u32 buffer_size = 64;
+    static constexpr u32 buffer_size = 256;
     channel next_incoming_channel = channel::left;
     channel next_outgoing_channel = channel::right;
 
     //buffers for incoming unprocessed samples.
-    buffer_fifo<i32> buffers_incoming[channel_count];
+    buffer_fifo<i32> buffers_incoming[channel_count]; 
     //buffers for outgoing processed samples.
     buffer_fifo<i32> buffers_outgoing[channel_count];
 
