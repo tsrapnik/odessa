@@ -59,8 +59,6 @@ void deadbeef()
 
 extern "C" i32 main(void)
 {
-    char buffer[19];
-
     initialize_cpp_runtime();
 
     //todo: change adressing to vc_gpu before mmu can be enabled.
@@ -250,7 +248,7 @@ extern "C" i32 main(void)
                 max_process_time = (a_process_time > max_process_time) ? a_process_time : max_process_time;
             }
             a_uart->write("process time: ");
-            a_uart->write(string_::to_string(max_process_time, buffer));
+            a_uart->write(string_(max_process_time, string_::integer_style::decimal));
             a_uart->write("\r\n");
         }
 
@@ -263,12 +261,12 @@ extern "C" i32 main(void)
                 max_gui_time = (a_gui_time > max_gui_time) ? a_gui_time : max_gui_time;
             }
             a_uart->write("gui time: ");
-            a_uart->write(string_::to_string(max_gui_time, buffer));
+            a_uart->write(string_(max_gui_time, string_::integer_style::decimal));
             a_uart->write("\r\n");
 
             new_system_time = the_system_timer->get_system_time();
             a_uart->write("plot time: ");
-            a_uart->write(string_::to_string(new_system_time - old_system_time, buffer));
+            a_uart->write(string_(new_system_time - old_system_time, string_::integer_style::decimal));
             a_uart->write("\r\n");
 
             old_system_time = new_system_time;
@@ -278,7 +276,10 @@ extern "C" i32 main(void)
             }
             new_system_time = the_system_timer->get_system_time();
             a_uart->write("test: ");
-            a_uart->write(string_::to_string(new_system_time - old_system_time, buffer));
+            a_uart->write(string_(new_system_time - old_system_time, string_::integer_style::decimal));
+            a_uart->write("\r\n");
+            a_uart->write("test: ");
+            a_uart->write(string_(new_system_time - old_system_time, string_::integer_style::hexadecimal));
             a_uart->write("\r\n");
         }
     }
