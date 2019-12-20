@@ -7,6 +7,50 @@ vc_gpu::v3d_registers* const vc_gpu::v3d = reinterpret_cast<v3d_registers* const
 
 constexpr vc_gpu::vc_instruction vc_gpu::fragment_shader_0[];
 
+void vc_gpu::resize_vertices(u32 vertices_size)
+{
+    const vc_mailbox_property_tags::allocate_memory_flag allocate_flags =
+        vc_mailbox_property_tags::allocate_memory_flag::coherent | vc_mailbox_property_tags::allocate_memory_flag::zero;
+    if(vertices_size != this->vertices_size)
+    {
+        if(!vertices_handle.is_null())
+        {
+            vc_mailbox_property_tags::unlock_memory(vertices_handle);
+            vc_mailbox_property_tags::release_memory(vertices_handle);
+        }
+        this->vertices_size = vertices_size;
+        vertices_handle = vc_mailbox_property_tags::allocate_memory(vertices_size * sizeof(vertex), 0x1000, allocate_flags);
+        this->vertices = reinterpret_cast<volatile vertex*>(
+            vc_mailbox_property_tags::lock_memory(vertices_handle)
+                .to_arm_pointer());
+
+        a_nv_shader_state_record->shaded_vertex_data_address = vc_pointer::arm_to_vc_pointer(this->vertices);
+        a_binning_control_list->a_indexed_primitive_list.maximum_index = vertices_size - 1;
+    }
+}
+
+void vc_gpu::resize_triangles(u32 triangles_size)
+{
+    const vc_mailbox_property_tags::allocate_memory_flag allocate_flags =
+        vc_mailbox_property_tags::allocate_memory_flag::coherent | vc_mailbox_property_tags::allocate_memory_flag::zero;
+    if(triangles_size != this->triangles_size)
+    {
+        if(!triangles_handle.is_null())
+        {
+            vc_mailbox_property_tags::unlock_memory(triangles_handle);
+            vc_mailbox_property_tags::release_memory(triangles_handle);
+        }
+        this->triangles_size = triangles_size;
+        triangles_handle = vc_mailbox_property_tags::allocate_memory(triangles_size * sizeof(triangle), 0x1000, allocate_flags);
+        this->triangles = reinterpret_cast<volatile triangle*>(
+            vc_mailbox_property_tags::lock_memory(triangles_handle)
+                .to_arm_pointer());
+
+        a_binning_control_list->a_indexed_primitive_list.length = triangles_size * 3;
+        a_binning_control_list->a_indexed_primitive_list.address_of_indices_list = vc_pointer::arm_to_vc_pointer(this->triangles);
+    }
+}
+
 vc_gpu::vc_gpu(vc_pointer framebuffer, u16 framebuffer_width, u16 framebuffer_height) :
     framebuffer(framebuffer),
     framebuffer_width(framebuffer_width),
@@ -203,47 +247,52 @@ vc_gpu::vc_gpu(vc_pointer framebuffer, u16 framebuffer_width, u16 framebuffer_he
     }
 }
 
-void vc_gpu::resize_vertices(u32 vertices_size)
+vc_gpu::~vc_gpu()
 {
-    const vc_mailbox_property_tags::allocate_memory_flag allocate_flags =
-        vc_mailbox_property_tags::allocate_memory_flag::coherent | vc_mailbox_property_tags::allocate_memory_flag::zero;
-    if(vertices_size != this->vertices_size)
+    if(!a_binning_control_list_handle.is_null())
     {
-        if(!vertices_handle.is_null())
-        {
-            vc_mailbox_property_tags::unlock_memory(vertices_handle);
-            vc_mailbox_property_tags::release_memory(vertices_handle);
-        }
-        this->vertices_size = vertices_size;
-        vertices_handle = vc_mailbox_property_tags::allocate_memory(vertices_size * sizeof(vertex), 0x1000, allocate_flags);
-        this->vertices = reinterpret_cast<volatile vertex*>(
-            vc_mailbox_property_tags::lock_memory(vertices_handle)
-                .to_arm_pointer());
-
-        a_nv_shader_state_record->shaded_vertex_data_address = vc_pointer::arm_to_vc_pointer(this->vertices);
-        a_binning_control_list->a_indexed_primitive_list.maximum_index = vertices_size - 1;
+        vc_mailbox_property_tags::unlock_memory(a_binning_control_list_handle);
+        vc_mailbox_property_tags::release_memory(a_binning_control_list_handle);
     }
-}
-
-void vc_gpu::resize_triangles(u32 triangles_size)
-{
-    const vc_mailbox_property_tags::allocate_memory_flag allocate_flags =
-        vc_mailbox_property_tags::allocate_memory_flag::coherent | vc_mailbox_property_tags::allocate_memory_flag::zero;
-    if(triangles_size != this->triangles_size)
+    if(!a_buffer_tile_data_handle.is_null())
     {
-        if(!triangles_handle.is_null())
-        {
-            vc_mailbox_property_tags::unlock_memory(triangles_handle);
-            vc_mailbox_property_tags::release_memory(triangles_handle);
-        }
-        this->triangles_size = triangles_size;
-        triangles_handle = vc_mailbox_property_tags::allocate_memory(triangles_size * sizeof(triangle), 0x1000, allocate_flags);
-        this->triangles = reinterpret_cast<volatile triangle*>(
-            vc_mailbox_property_tags::lock_memory(triangles_handle)
-                .to_arm_pointer());
-
-        a_binning_control_list->a_indexed_primitive_list.length = triangles_size * 3;
-        a_binning_control_list->a_indexed_primitive_list.address_of_indices_list = vc_pointer::arm_to_vc_pointer(this->triangles);
+        vc_mailbox_property_tags::unlock_memory(a_buffer_tile_data_handle);
+        vc_mailbox_property_tags::release_memory(a_buffer_tile_data_handle);
+    }
+    if(!a_buffer_tile_state_handle.is_null())
+    {
+        vc_mailbox_property_tags::unlock_memory(a_buffer_tile_state_handle);
+        vc_mailbox_property_tags::release_memory(a_buffer_tile_state_handle);
+    }
+    if(!a_nv_shader_state_record_handle.is_null())
+    {
+        vc_mailbox_property_tags::unlock_memory(a_nv_shader_state_record_handle);
+        vc_mailbox_property_tags::release_memory(a_nv_shader_state_record_handle);
+    }
+    if(!fragment_shader_handle.is_null())
+    {
+        vc_mailbox_property_tags::unlock_memory(fragment_shader_handle);
+        vc_mailbox_property_tags::release_memory(fragment_shader_handle);
+    }
+    if(!buffer_fragment_uniform_handle.is_null())
+    {
+        vc_mailbox_property_tags::unlock_memory(buffer_fragment_uniform_handle);
+        vc_mailbox_property_tags::release_memory(buffer_fragment_uniform_handle);
+    }
+    if(!vertices_handle.is_null())
+    {
+        vc_mailbox_property_tags::unlock_memory(vertices_handle);
+        vc_mailbox_property_tags::release_memory(vertices_handle);
+    }
+    if(!triangles_handle.is_null())
+    {
+        vc_mailbox_property_tags::unlock_memory(triangles_handle);
+        vc_mailbox_property_tags::release_memory(triangles_handle);
+    }
+    if(!a_render_control_list_handle.is_null())
+    {
+        vc_mailbox_property_tags::unlock_memory(a_render_control_list_handle);
+        vc_mailbox_property_tags::release_memory(a_render_control_list_handle);
     }
 }
 
@@ -381,51 +430,48 @@ void vc_gpu::render()
         ;
 }
 
-vc_gpu::~vc_gpu()
+void vc_gpu::start_binning()
 {
-    if(!a_binning_control_list_handle.is_null())
-    {
-        vc_mailbox_property_tags::unlock_memory(a_binning_control_list_handle);
-        vc_mailbox_property_tags::release_memory(a_binning_control_list_handle);
-    }
-    if(!a_buffer_tile_data_handle.is_null())
-    {
-        vc_mailbox_property_tags::unlock_memory(a_buffer_tile_data_handle);
-        vc_mailbox_property_tags::release_memory(a_buffer_tile_data_handle);
-    }
-    if(!a_buffer_tile_state_handle.is_null())
-    {
-        vc_mailbox_property_tags::unlock_memory(a_buffer_tile_state_handle);
-        vc_mailbox_property_tags::release_memory(a_buffer_tile_state_handle);
-    }
-    if(!a_nv_shader_state_record_handle.is_null())
-    {
-        vc_mailbox_property_tags::unlock_memory(a_nv_shader_state_record_handle);
-        vc_mailbox_property_tags::release_memory(a_nv_shader_state_record_handle);
-    }
-    if(!fragment_shader_handle.is_null())
-    {
-        vc_mailbox_property_tags::unlock_memory(fragment_shader_handle);
-        vc_mailbox_property_tags::release_memory(fragment_shader_handle);
-    }
-    if(!buffer_fragment_uniform_handle.is_null())
-    {
-        vc_mailbox_property_tags::unlock_memory(buffer_fragment_uniform_handle);
-        vc_mailbox_property_tags::release_memory(buffer_fragment_uniform_handle);
-    }
-    if(!vertices_handle.is_null())
-    {
-        vc_mailbox_property_tags::unlock_memory(vertices_handle);
-        vc_mailbox_property_tags::release_memory(vertices_handle);
-    }
-    if(!triangles_handle.is_null())
-    {
-        vc_mailbox_property_tags::unlock_memory(triangles_handle);
-        vc_mailbox_property_tags::release_memory(triangles_handle);
-    }
-    if(!a_render_control_list_handle.is_null())
-    {
-        vc_mailbox_property_tags::unlock_memory(a_render_control_list_handle);
-        vc_mailbox_property_tags::release_memory(a_render_control_list_handle);
-    }
+    //clear caches.
+    v3d->l2cactl = 4;
+    v3d->slcactl = 0x0f0f0f0f;
+
+    //stop the thread.
+    v3d->ct0cs = 0x20;
+    //wait for it to stop.
+    while(v3d->ct0cs & 0x20)
+        ;
+
+    //run binning control list.
+    v3d->bfc = 1;
+    v3d->ct0ca = vc_pointer::arm_to_vc_pointer(a_binning_control_list).get_raw_value();
+    v3d->ct0ea = vc_pointer::arm_to_vc_pointer(a_binning_control_list).get_raw_value() + sizeof(binning_control_list);
+}
+
+bool vc_gpu::binning_finished()
+{
+    while(v3d->bfc == 0)
+        ;
+    return v3d->bfc == 0;
+}
+
+void vc_gpu::start_rendering()
+{
+    //stop the thread.
+    v3d->ct1cs = 0x20;
+    // wait for it to stop.
+    while(v3d->ct1cs & 0x20)
+        ;
+
+    //run render control list.
+    v3d->rfc = 1;
+    v3d->ct1ca = vc_pointer::arm_to_vc_pointer(a_render_control_list).get_raw_value();
+    v3d->ct1ea = vc_pointer::arm_to_vc_pointer(a_render_control_list).get_raw_value() + sizeof(render_control_list) + binning_height * binning_width * sizeof(binned_list);
+}
+
+bool vc_gpu::rendering_finished()
+{
+    while(v3d->rfc == 0)
+        ;
+    return v3d->rfc == 0;
 }

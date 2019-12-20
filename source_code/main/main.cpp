@@ -42,6 +42,8 @@ void initialize_cpp_runtime()
     }
 }
 
+void process_input(volatile const vc_mailbox_property_tags::touch_buffer& a_touch_buffer, effect_graph& a_effect_graph, scene_2d& a_scene);
+
 extern "C" i32 main(void)
 {
     initialize_cpp_runtime();
@@ -139,10 +141,20 @@ extern "C" i32 main(void)
     i2s* i2s0 = i2s::create(i2s::device::i2s0);
     assert(i2s0 != nullptr);
 
-    vector_2_f32 old_mouse_position = vector_2_f32(0.0f, 0.0f);
-    effect* selected_effect = nullptr;
-    output* selected_output = nullptr;
-    bool touching = false;
+    enum class gui_state_enum
+    {
+        redraw_scene,
+        process_input,
+        set_triangles,
+        prepare_binning,
+        wait_for_binning_to_finish,
+        prepare_rendering,
+        wait_for_rendering_to_finish,
+
+        blocking_render,
+    };
+
+    gui_state_enum gui_state = gui_state_enum::redraw_scene;
 
     while(true)
     {
@@ -157,81 +169,124 @@ extern "C" i32 main(void)
             i2s0->push(i2s0->pop(i2s::channel::right), i2s::channel::right);
         }
 
-        //todo: gui processing takes too long to get proper audio performance.
         //process gui.
-        a_scene.clear();
-        a_effect_graph.draw(a_scene);
-
-        //todo: provide proper implementation, this is just for fooling around.
-        if(!touching && a_touch_buffer.points_size == 1)
+        switch(gui_state)
         {
-            a_uart->write("touched.\r\n");
-            //touched.
-            vector_2_f32 mouse_position = vector_2_f32(
-                static_cast<f32>(((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word),
-                static_cast<f32>(((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word));
+            case gui_state_enum::redraw_scene:
+                a_uart->write("redraw_scene\r\n");
+                a_scene.clear();
+                a_effect_graph.draw(a_scene);
+                gui_state = gui_state_enum::process_input;
+                break;
+            case gui_state_enum::process_input:
+                a_uart->write("process_input\r\n");
+                process_input(a_touch_buffer, a_effect_graph, a_scene);
+                gui_state = gui_state_enum::set_triangles;
+                break;
+            case gui_state_enum::set_triangles:
+                a_uart->write("set_triangles\r\n");
+                a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
+                gui_state = gui_state_enum::blocking_render;
+                break;
 
-            effect* temp_selected_effect = a_effect_graph.get_selected_effect(mouse_position);
-            if(temp_selected_effect != nullptr)
-            {
-                output* temp_selected_output = temp_selected_effect->get_selected_output(mouse_position);
-                if(temp_selected_output != nullptr)
-                {
-                    selected_effect = nullptr;
-                    selected_output = temp_selected_output;
-                }
-                else
-                {
-                    selected_effect = temp_selected_effect;
-                    selected_output = nullptr;
-                }
-            }
-            old_mouse_position = mouse_position;
-            touching = true;
-        }
-        else if(touching && a_touch_buffer.points_size == 1)
-        {
-            //dragged.
-            vector_2_f32 mouse_position = vector_2_f32(
-                static_cast<f32>(((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word),
-                static_cast<f32>(((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word));
+            case gui_state_enum::prepare_binning:
+                a_uart->write("prepare_binning\r\n");
+                a_vc_gpu.start_binning();
+                gui_state = gui_state_enum::wait_for_binning_to_finish;
+                break;
+            case gui_state_enum::wait_for_binning_to_finish:
+                if(a_vc_gpu.binning_finished())
+                    gui_state = gui_state_enum::prepare_rendering;
+                break;
+            case gui_state_enum::prepare_rendering:
+                a_uart->write("prepare_rendering\r\n");
+                a_vc_gpu.start_rendering();
+                gui_state = gui_state_enum::wait_for_rendering_to_finish;
+                break;
+            case gui_state_enum::wait_for_rendering_to_finish:
+                if(a_vc_gpu.rendering_finished())
+                    gui_state = gui_state_enum::redraw_scene;
+                break;
 
-            if(selected_effect != nullptr)
-            {
-                selected_effect->move(vector_2_f32::difference(mouse_position, old_mouse_position));
-            }
-            else if(selected_output != nullptr)
-            {
-                selected_output->draw_connection(a_scene, mouse_position);
-            }
-            old_mouse_position = mouse_position;
+            case gui_state_enum::blocking_render:
+                a_uart->write("blocking_render\r\n");
+                a_vc_gpu.render();
+                gui_state = gui_state_enum::redraw_scene;
         }
-        else if(touching && (a_touch_buffer.points_size == 0))
-        {
-            a_uart->write("released.\r\n");
-            //released.
-            if(selected_output != nullptr)
-            {
-                effect* selected_effect = a_effect_graph.get_selected_effect(old_mouse_position);
-                if(selected_effect != nullptr)
-                {
-                    input* selected_input = selected_effect->get_selected_input(old_mouse_position);
-                    if(selected_input != nullptr)
-                    {
-                        selected_input->connect_output(selected_output);
-                    }
-                }
-            }
-            selected_effect = nullptr;
-            selected_output = nullptr;
-            touching = false;
-        }
-
-        // // todo: to string is memory leak.
-        // a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
-        // a_vc_gpu.render(); //todo: make render function non blocking.
     }
     return (0);
+}
+
+void process_input(volatile const vc_mailbox_property_tags::touch_buffer& a_touch_buffer, effect_graph& a_effect_graph, scene_2d& a_scene)
+{
+    static vector_2_f32 old_mouse_position = vector_2_f32(0.0f, 0.0f);
+    static effect* selected_effect = nullptr;
+    static output* selected_output = nullptr;
+    static bool touching = false;
+
+    if(!touching && a_touch_buffer.points_size == 1)
+    {
+        a_uart->write("touched.\r\n");
+        //touched.
+        vector_2_f32 mouse_position = vector_2_f32(
+            static_cast<f32>(((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word),
+            static_cast<f32>(((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word));
+
+        effect* temp_selected_effect = a_effect_graph.get_selected_effect(mouse_position);
+        if(temp_selected_effect != nullptr)
+        {
+            output* temp_selected_output = temp_selected_effect->get_selected_output(mouse_position);
+            if(temp_selected_output != nullptr)
+            {
+                selected_effect = nullptr;
+                selected_output = temp_selected_output;
+            }
+            else
+            {
+                selected_effect = temp_selected_effect;
+                selected_output = nullptr;
+            }
+        }
+        old_mouse_position = mouse_position;
+        touching = true;
+    }
+    else if(touching && a_touch_buffer.points_size == 1)
+    {
+        //dragged.
+        vector_2_f32 mouse_position = vector_2_f32(
+            static_cast<f32>(((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word),
+            static_cast<f32>(((a_touch_buffer.points[0].y_high_word & 0xf) << 8) | a_touch_buffer.points[0].y_low_word));
+
+        if(selected_effect != nullptr)
+        {
+            selected_effect->move(vector_2_f32::difference(mouse_position, old_mouse_position));
+        }
+        else if(selected_output != nullptr)
+        {
+            selected_output->draw_connection(a_scene, mouse_position);
+        }
+        old_mouse_position = mouse_position;
+    }
+    else if(touching && (a_touch_buffer.points_size == 0))
+    {
+        a_uart->write("released.\r\n");
+        //released.
+        if(selected_output != nullptr)
+        {
+            effect* selected_effect = a_effect_graph.get_selected_effect(old_mouse_position);
+            if(selected_effect != nullptr)
+            {
+                input* selected_input = selected_effect->get_selected_input(old_mouse_position);
+                if(selected_input != nullptr)
+                {
+                    selected_input->connect_output(selected_output);
+                }
+            }
+        }
+        selected_effect = nullptr;
+        selected_output = nullptr;
+        touching = false;
+    }
 }
 
 //exception handlers.
@@ -263,6 +318,7 @@ extern "C" void syn_low32_elx()
 //dummy functions to avoid linker complaints.
 extern "C" void __cxa_pure_virtual()
 {
+    a_uart->write("pure virtual function call.\r\n");
     while(1)
         ;
 }
@@ -273,17 +329,14 @@ extern "C" void __aeabi_atexit(void)
         ;
 }
 
-extern "C" void __dso_handle(void)
+void* __dso_handle;
+
+extern "C" int __cxa_guard_acquire(long long int*)
 {
-    while(1)
-        ;
+    return 0;
 }
 
-extern "C" void __cxa_guard_acquire(void)
-{
-}
-
-extern "C" void __cxa_guard_release(void)
+extern "C" void __cxa_guard_release(long long int*)
 {
 }
 

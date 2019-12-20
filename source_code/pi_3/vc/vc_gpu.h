@@ -583,4 +583,9 @@ class vc_gpu
     void set_triangles(list<vertex>& vertices, list<triangle>& triangles, color background_color);
     void set_triangles(scene_2d& scene, color background_color);
     void render();
+
+    void start_binning();
+    bool binning_finished();
+    void start_rendering();
+    bool rendering_finished();
 };

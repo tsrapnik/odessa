@@ -6,6 +6,8 @@
 #include "string_.h"
 #include "uart.h"
 
+extern uart* a_uart;
+
 buddy_heap::block_pointer buddy_heap::block_pointers[1 << (order_count - 2)];
 buddy_heap::block_pointer* buddy_heap::available_block_pointers[1 << (order_count - 2)];
 buddy_heap::block_pointer** buddy_heap::last_available_block_pointer;
@@ -134,7 +136,7 @@ void* buddy_heap::allocate(usize size)
             higher_order++;
         }
     }
-    //todo: add error log.
+    a_uart->write("heap full.\r\n");
     return nullptr; //return nullptr if allocation failed.
 }
 
@@ -142,8 +144,10 @@ void buddy_heap::free(void* pointer)
 {
     //cannot free a nullpointer.
     if(pointer == nullptr)
-        //todo: add error log.
+    {
+        a_uart->write("freed nullpointer.\r\n");
         return;
+    }
 
     block* freed_block = reinterpret_cast<block*>(reinterpret_cast<usize*>(pointer) - 1); //the pointer address is actually pointing to the data part of the block the block address is one usize before this address.
     usize order = freed_block->order;
