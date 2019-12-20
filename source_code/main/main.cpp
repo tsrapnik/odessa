@@ -150,8 +150,6 @@ extern "C" i32 main(void)
         wait_for_binning_to_finish,
         prepare_rendering,
         wait_for_rendering_to_finish,
-
-        blocking_render,
     };
 
     gui_state_enum gui_state = gui_state_enum::redraw_scene;
@@ -173,24 +171,19 @@ extern "C" i32 main(void)
         switch(gui_state)
         {
             case gui_state_enum::redraw_scene:
-                a_uart->write("redraw_scene\r\n");
                 a_scene.clear();
                 a_effect_graph.draw(a_scene);
                 gui_state = gui_state_enum::process_input;
                 break;
             case gui_state_enum::process_input:
-                a_uart->write("process_input\r\n");
                 process_input(a_touch_buffer, a_effect_graph, a_scene);
                 gui_state = gui_state_enum::set_triangles;
                 break;
             case gui_state_enum::set_triangles:
-                a_uart->write("set_triangles\r\n");
                 a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
-                gui_state = gui_state_enum::blocking_render;
+                gui_state = gui_state_enum::prepare_binning;
                 break;
-
             case gui_state_enum::prepare_binning:
-                a_uart->write("prepare_binning\r\n");
                 a_vc_gpu.start_binning();
                 gui_state = gui_state_enum::wait_for_binning_to_finish;
                 break;
@@ -199,7 +192,6 @@ extern "C" i32 main(void)
                     gui_state = gui_state_enum::prepare_rendering;
                 break;
             case gui_state_enum::prepare_rendering:
-                a_uart->write("prepare_rendering\r\n");
                 a_vc_gpu.start_rendering();
                 gui_state = gui_state_enum::wait_for_rendering_to_finish;
                 break;
@@ -207,11 +199,6 @@ extern "C" i32 main(void)
                 if(a_vc_gpu.rendering_finished())
                     gui_state = gui_state_enum::redraw_scene;
                 break;
-
-            case gui_state_enum::blocking_render:
-                a_uart->write("blocking_render\r\n");
-                a_vc_gpu.render();
-                gui_state = gui_state_enum::redraw_scene;
         }
     }
     return (0);

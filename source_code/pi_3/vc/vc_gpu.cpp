@@ -1,7 +1,11 @@
 #include "vc_gpu.h"
 #include "enum_flags.h"
 #include "memory.h"
+#include "string_.h"
+#include "uart.h"
 #include "vc_mailbox_property_tags.h"
+
+extern uart* a_uart;
 
 vc_gpu::v3d_registers* const vc_gpu::v3d = reinterpret_cast<v3d_registers* const>(0x3fc00000);
 
@@ -395,38 +399,11 @@ void vc_gpu::set_triangles(scene_2d& scene, color background_color)
 
 void vc_gpu::render()
 {
-    //clear caches.
-    v3d->l2cactl = 4;
-    v3d->slcactl = 0x0f0f0f0f;
-
-    //stop the thread.
-    v3d->ct0cs = 0x20;
-    //wait for it to stop.
-    while(v3d->ct0cs & 0x20)
+    start_binning();
+    while(!binning_finished())
         ;
-
-    //run binning control list.
-    v3d->bfc = 1;
-    v3d->ct0ca = vc_pointer::arm_to_vc_pointer(a_binning_control_list).get_raw_value();
-    v3d->ct0ea = vc_pointer::arm_to_vc_pointer(a_binning_control_list).get_raw_value() + sizeof(binning_control_list);
-
-    //wait for binning to finish.
-    while(v3d->bfc == 0)
-        ;
-
-    //stop the thread.
-    v3d->ct1cs = 0x20;
-    // wait for it to stop.
-    while(v3d->ct1cs & 0x20)
-        ;
-
-    //run render control list.
-    v3d->rfc = 1;
-    v3d->ct1ca = vc_pointer::arm_to_vc_pointer(a_render_control_list).get_raw_value();
-    v3d->ct1ea = vc_pointer::arm_to_vc_pointer(a_render_control_list).get_raw_value() + sizeof(render_control_list) + binning_height * binning_width * sizeof(binned_list);
-
-    //wait for rendering to finish.
-    while(v3d->rfc == 0)
+    start_rendering();
+    while(!rendering_finished())
         ;
 }
 
@@ -450,9 +427,7 @@ void vc_gpu::start_binning()
 
 bool vc_gpu::binning_finished()
 {
-    while(v3d->bfc == 0)
-        ;
-    return v3d->bfc == 0;
+    return v3d->bfc != 0;
 }
 
 void vc_gpu::start_rendering()
@@ -471,7 +446,5 @@ void vc_gpu::start_rendering()
 
 bool vc_gpu::rendering_finished()
 {
-    while(v3d->rfc == 0)
-        ;
-    return v3d->rfc == 0;
+    return v3d->rfc != 0;
 }
