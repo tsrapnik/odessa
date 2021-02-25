@@ -54,9 +54,9 @@ SECTIONS
         __stack_core_0_start = .;
         . = . + 512;
         __stack_core_0_el0 = .;
-        . = . + 16384;
-        __stack_core_0_el1 = .;
         . = . + 512;
+        __stack_core_0_el1 = .;
+        . = . + 16384;
         __stack_core_0_el2 = .;
         __stack_core_0_end = .;    
     }
@@ -67,9 +67,9 @@ SECTIONS
         __stack_core_1_start = .;
         . = . + 512;
         __stack_core_1_el0 = .;
-        . = . + 16384;
-        __stack_core_1_el1 = .;
         . = . + 512;
+        __stack_core_1_el1 = .;
+        . = . + 16384;
         __stack_core_1_el2 = .;
         __stack_core_1_end = .;    
     }
@@ -80,9 +80,9 @@ SECTIONS
         __stack_core_2_start = .;
         . = . + 512;
         __stack_core_2_el0 = .;
-        . = . + 16384;
-        __stack_core_2_el1 = .;
         . = . + 512;
+        __stack_core_2_el1 = .;
+        . = . + 16384;
         __stack_core_2_el2 = .;
         __stack_core_2_end = .;    
     }
@@ -93,9 +93,9 @@ SECTIONS
         __stack_core_3_start = .;
         . = . + 512;
         __stack_core_3_el0 = .;
-        . = . + 16384;
-        __stack_core_3_el1 = .;
         . = . + 512;
+        __stack_core_3_el1 = .;
+        . = . + 16384;
         __stack_core_3_el2 = .;
         __stack_core_3_end = .;    
     }
