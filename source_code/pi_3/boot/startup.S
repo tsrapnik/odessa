@@ -2,32 +2,35 @@
 .balign    4
 .globl _start
 _start:
-    ldr x2, = __stack_core_0_el2                // Address of EL2_stack_core0 stack pointer value
-    ldr x3, = __stack_core_0_el1                // Address of EL1_stack_core0 stack pointer value
-    ldr x4, = __stack_core_0_el0                // Address of EL0_stack_core0 stack pointer value
-    mov    sp, x2                                /* EL2 stack set */
-    msr    sp_el1, x3                            /* EL1 stack set */
-    msr    sp_el0, x4                            /* EL0 stack set */
+    // code starts in el2. we do some initialization in el2 and then return to el1 for the rest of our code.
 
-    /* Initialize Generic Timers */
+    // set stack pointers for el2 to el0
+    ldr x2, = __stack_core_0_el2
+    ldr x3, = __stack_core_0_el1
+    ldr x4, = __stack_core_0_el0
+    mov    sp, x2
+    msr    sp_el1, x3
+    msr    sp_el0, x4
+
+    // init generic timers.
     mrs    x0, cnthctl_el2
-    orr    x0, x0, #0x3    /* Enable EL1 access to timers */
+    orr    x0, x0, #0x3    // enable el1 access to timers.
     msr    cnthctl_el2, x0
     msr    cntvoff_el2, xzr
 
-    /* Initilize MPID/MPIDR registers */
+    // initialize mpid and mpidr registers.
     mrs    x0, midr_el1
     mrs    x1, mpidr_el1
     msr    vpidr_el2, x0
     msr    vmpidr_el2, x1
 
     mov    x0, #0x33ff
-    msr    cptr_el2, x0                        // Disable coprocessor traps to EL2
-    msr    hstr_el2, xzr                        // Disable coprocessor traps to EL2
+    msr    cptr_el2, x0 // disable coprocessor traps to el2.
+    msr    hstr_el2, xzr // disable coprocessor traps to el2.
     mov    x0, #3 << 20
-    msr    cpacr_el1, x0                        // Enable FP/SIMD at EL1
+    msr    cpacr_el1, x0 // enable fp and simd at el1.
 
-    mov    x0, #(1 << 31)                        // 64bit EL1
+    mov    x0, #(1 << 31) // enable 64bit in el1.
     msr    hcr_el2, x0
 
     mov    x0, #0x0800
@@ -36,20 +39,31 @@ _start:
     orr    x0, x0, #(0x1 << 12)           // The I bit on (instruction cache)
     msr    sctlr_el1, x0
 
-    mov    x0, #0x345                            // EL1_SP1 | D | A | F
-    msr    spsr_el2, x0                        // Set spsr_el2 with settings
-    adr    x0, exit_el1                        // Address to exit EL2
-    msr    elr_el2, x0                            // Set elevated return register
-    eret                                    // Call elevated return
-exit_el1:
-
-    ldr x0, =VectorTable                        
+    // spsr_el2 will be copied to pstate of el1 when we return to it, so we set some configurations in it.
+    // mask all exceptions except irq interrupts.
+    // bit 9, D (debug exception mask) = 1
+    // bit 8, A (serror interrupt mask) = 1
+    // bit 7, I (irq interrupt mask) = 0
+    // bit 6, F (fiq interrupt mask) = 1
+    // we want to return to el1 with sp_el1.
+    // bit 3-0, M (el1 with sp_el1 (h)) = 5
+    mov    x0, #0x345
+    msr    spsr_el2, x0
+    // set address to return to from el2.
+    adr    x0, exit_to_el1
+    msr    elr_el2, x0
+    eret
+exit_to_el1:
+    // set exception table for el1.
+    ldr x0, =vector_table
     msr vbar_el1,x0
-
-    b main                            // Jump out to C kernel 
-
+    // branch to main c++ function.
+    b main
+    // infinite loop is here in case main accidentally returns.
 hang:
     b hang
+
+_start_secondary:
 
 .macro    vector handler
 .balign 0x80
@@ -57,41 +71,47 @@ b    \handler
 .endm
 
 .balign 0x800
-.globl    VectorTable
-VectorTable:
-    /* from current EL with sp_el0 */
-    vector    syn_cur_el0            /* Synchronous */
-    vector  irq_cur_el0            /* IRQ */
-    vector    fiq_cur_el0            /* FIQ */
-    vector    err_cur_el0            /* SErrorStub */
+.globl    vector_table
+vector_table:
+    // handlers for exceptions from current el1 with sp_el0
+    // won't be called, since we run in el1 with sp_el1.
+    vector    syn_cur_el0 // synchronous
+    vector    irq_cur_el0 // irq
+    vector    fiq_cur_el0 // fiq
+    vector    err_cur_el0 // serror
 
-    /* from current EL with sp_elx, x != 0 */
-    vector    syn_cur_elx             /* Synchronous */
-    vector    irq_cur_elx_wrapper /* IRQ */
-    vector    fiq_cur_elx /* FIQ */
-    vector    err_cur_elx             /* SErrorStub */
+    // handlers for exceptions from current el1 with sp_el1
+    vector    syn_cur_elx // synchronous
+    vector    irq_cur_elx_wrapper // irq
+    vector    fiq_cur_elx // fiq
+    vector    err_cur_elx // serror
 
-    /* from lower EL, target EL minus 1 is AArch64 */
-    vector    syn_low64_elx            /* Synchronous */
-    vector  irq_low64_elx            /* IRQ */
-    vector    fiq_low64_elx            /* FIQ */
-    vector    err_low64_elx            /* SErrorStub */
+    // handlers for exceptions from el0 (with el0 running aarch64)
+    // won't be called, since we run in el1.
+    vector    syn_low64_elx // synchronous
+    vector    irq_low64_elx // irq
+    vector    fiq_low64_elx // fiq
+    vector    err_low64_elx // serror
 
-    /* from lower EL, target EL minus 1 is AArch32 */
-    vector    syn_low32_elx            /* Synchronous */
-    vector  irq_low32_elx            /* IRQ */
-    vector    fiq_low32_elx            /* FIQ */
-    vector    err_low32_elx            /* SErrorStub */
+    // handlers for exceptions from el0 (with el0 running aarch32)
+    // won't be called, since we run in el1.
+    vector    syn_low32_elx // synchronous
+    vector    irq_low32_elx // irq
+    vector    fiq_low32_elx // fiq
+    vector    err_low32_elx // serror
 
-//makes sure the interrupt handler correctly returns to regular code.
+// makes sure the interrupt handler correctly returns to regular code (without modifying the state of the registers).
 irq_cur_elx_wrapper:
-    stp    x29, x30, [sp, #-16]!        /* save x29, x30 onto stack */
+    // save x29 and x30 to stack.
+    stp    x29, x30, [sp, #-16]!
 
-    mrs    x29, elr_el1            /* save elr_el1, spsr_el1 onto stack */
+    // save elr_el1 and spsr_el1 to stack.
+    mrs    x29, elr_el1
     mrs    x30, spsr_el1
     stp    x29, x30, [sp, #-16]!
 
-    stp    x27, x28, [sp, #-16]!        /* save x0-x28 onto stack */
+    // save x0 - x28 to stack.
+    stp    x27, x28, [sp, #-16]!
     stp    x25, x26, [sp, #-16]!
     stp    x23, x24, [sp, #-16]!
     stp    x21, x22, [sp, #-16]!
@@ -107,9 +127,11 @@ irq_cur_elx_wrapper:
     stp    x1, x2, [sp, #-16]!
     str    x0, [sp, #-16]!
 
+    // call actual handler.
     bl    irq_cur_elx
 
-    ldr    x0, [sp], #16            /* restore x0-x28 from stack */
+    // restore x0 - x28 from stack.
+    ldr    x0, [sp], #16
     ldp    x1, x2, [sp], #16
     ldp    x3, x4, [sp], #16
     ldp    x5, x6, [sp], #16
@@ -125,10 +147,12 @@ irq_cur_elx_wrapper:
     ldp    x25, x26, [sp], #16
     ldp    x27, x28, [sp], #16
 
-    ldp    x29, x30, [sp], #16        /* restore elr_el1, spsr_el1 from stack */
+    // restore elr_el1 and spsr_el1 from stack.
+    ldp    x29, x30, [sp], #16
     msr    elr_el1, x29
     msr    spsr_el1, x30
 
-    ldp    x29, x30, [sp], #16        /* restore x29, x30 from stack */
+    // restore x29 and x30 from stack.
+    ldp    x29, x30, [sp], #16
 
     eret
