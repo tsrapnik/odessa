@@ -11,7 +11,7 @@
             "cwd": "${workspaceFolder}",
             "program": "${workspaceFolder}/compiled_code/kernel8.elf",
             "MIMode": "gdb",
-            "miDebuggerPath": "/home/tsrapnik/stack/projects/shared_resources/compilers/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf-with_enum_bitfields/bin/aarch64-elf-gdb",
+            "miDebuggerPath": "/home/tsrapnik/projects/shared_resources/compilers/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf-with_enum_bitfields/bin/aarch64-elf-gdb",
             "miDebuggerServerAddress": "localhost:3333",
 
             //todo: openocd needs to be started (with openocd task) before being able to debug. two solutions below to automatically start openocd do not work for the moment.

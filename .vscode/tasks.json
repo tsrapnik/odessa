@@ -29,7 +29,7 @@
         {
             "label": "openocd",
             "type": "shell",
-            "command": "openocd -s .vscode -f c232hm.cfg -f rpi3.cfg",
+            "command": "sudo openocd -s .vscode -f c232hm.cfg -f rpi3.cfg",
             "problemMatcher": []
         },
         {

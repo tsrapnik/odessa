@@ -14,7 +14,7 @@ pi_serial=8f3e7b47
 
 #add here the paths to given files and directories.
 #bin folder of the compiler.
-compiler_directory=$(dirname $(dirname $(dirname $PWD)))/shared_resources/compilers/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf-with_enum_bitfields/bin
+compiler_directory=$(dirname $PWD)/shared_resources/compilers/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf-with_enum_bitfields/bin
 #folder containing raspberry pi boot files. should normally not be changed.
 binary_blob_directory=source_code/pi_3/boot/binary_blob
 #path of image file. should normally not be changed.
