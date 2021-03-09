@@ -2,12 +2,27 @@
 .balign    4
 .globl _start
 _start:
+    // core 0 starts here.
+    b init_core
+
+_start_secondary:
+    b init_core
+
+// function initializes core and calls main c++ function afterwards.
+init_core:
     // code starts in el2. we do some initialization in el2 and then return to el1 for the rest of our code.
 
-    // set stack pointers for el2 to el0
-    ldr x2, = __stack_core_0_el2
-    ldr x3, = __stack_core_0_el1
-    ldr x4, = __stack_core_0_el0
+    // get cpu index.
+    mrs x1, mpidr_el1
+    and x1, x1, #0x3
+
+    // set stack pointers for el2 to el0, depending on cpu index.
+    ldr    x2, =stack_el2
+    ldr    x2, [x2, x1]
+    ldr    x3, =stack_el1
+    ldr    x3, [x3, x1]
+    ldr    x4, =stack_el0
+    ldr    x4, [x4, x1]
     mov    sp, x2
     msr    sp_el1, x3
     msr    sp_el0, x4
@@ -33,10 +48,11 @@ _start:
     mov    x0, #(1 << 31) // enable 64bit in el1.
     msr    hcr_el2, x0
 
-    mov    x0, #0x0800
+    // bit 12, I (enable instruction cache) = 1
+    // bit 2, C (enable data cache) = 1
+    // and some other settings...
+    mov    x0, #0x1804
     movk    x0, #0x30d0, lsl #16
-    orr    x0, x0, #(0x1 << 2)            // The C bit on (data cache). 
-    orr    x0, x0, #(0x1 << 12)           // The I bit on (instruction cache)
     msr    sctlr_el1, x0
 
     // spsr_el2 will be copied to pstate of el1 when we return to it, so we set some configurations in it.
@@ -63,7 +79,10 @@ exit_to_el1:
 hang:
     b hang
 
-_start_secondary:
+// stackpointers
+stack_el2:  .word __stack_core_0_el2, __stack_core_1_el2, __stack_core_2_el2, __stack_core_3_el2
+stack_el1:  .word __stack_core_0_el1, __stack_core_1_el1, __stack_core_2_el1, __stack_core_3_el1
+stack_el0:  .word __stack_core_0_el0, __stack_core_1_el0, __stack_core_2_el0, __stack_core_3_el0
 
 .macro    vector handler
 .balign 0x80
