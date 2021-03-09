@@ -128,7 +128,7 @@ extern "C" i32 main(void)
 #pragma GCC diagnostic pop
 
     pga2500_settings preamp_settings = {};
-    preamp_settings.gain = 40 - 9; //(0 is 0 dB, 1 to 56 is 10 to 65 dB, 57 to 63 is 65 dB).
+    preamp_settings.gain = 60 - 9; //(0 is 0 dB, 1 to 56 is 10 to 65 dB, 57 to 63 is 65 dB).
 
     spi0->write(spi::cs_enum::cs0, reinterpret_cast<w8*>(&preamp_settings), sizeof(preamp_settings));
     spi0->write(spi::cs_enum::cs1, reinterpret_cast<w8*>(&preamp_settings), sizeof(preamp_settings));
@@ -170,8 +170,8 @@ extern "C" i32 main(void)
 
     while(true)
     {
-        u64 new_system_time;
-        old_system_time = the_system_timer->get_system_time();
+        // u64 new_system_time;
+        // old_system_time = the_system_timer->get_system_time();
 
         //process samples.
         u32 sample_count_left = i2s0->get_sample_count(i2s::channel::left);
@@ -192,96 +192,96 @@ extern "C" i32 main(void)
         //     i2s0->push(i2s0->pop(i2s::channel::right), i2s::channel::right);
         // }
 
-        new_system_time = the_system_timer->get_system_time();
-        process_times.push(new_system_time - old_system_time);
+        // new_system_time = the_system_timer->get_system_time();
+        // process_times.push(new_system_time - old_system_time);
 
-        old_system_time = new_system_time;
+        // old_system_time = new_system_time;
 
-        //process gui.
-        switch(gui_state)
-        {
-            case gui_state_enum::redraw_scene:
-                a_scene.clear();
-                a_effect_graph.draw(a_scene);
-                gui_state = gui_state_enum::process_input;
-                break;
-            case gui_state_enum::process_input:
-                process_input(a_touch_buffer, a_effect_graph, a_scene);
-                gui_state = gui_state_enum::set_triangles;
-                break;
-            case gui_state_enum::set_triangles:
-                a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
-                gui_state = gui_state_enum::prepare_binning;
-                break;
-            case gui_state_enum::prepare_binning:
-                a_vc_gpu.start_binning();
-                gui_state = gui_state_enum::wait_for_binning_to_finish;
-                break;
-            case gui_state_enum::wait_for_binning_to_finish:
-                if(a_vc_gpu.binning_finished())
-                {
-                    gui_state = gui_state_enum::prepare_rendering;
-                }
-                break;
-            case gui_state_enum::prepare_rendering:
-                a_vc_gpu.start_rendering();
-                gui_state = gui_state_enum::wait_for_rendering_to_finish;
-                break;
-            case gui_state_enum::wait_for_rendering_to_finish:
-                if(a_vc_gpu.rendering_finished())
-                {
-                    gui_state = gui_state_enum::redraw_scene;
-                }
-                break;
-        }
+        // //process gui.
+        // switch(gui_state)
+        // {
+        //     case gui_state_enum::redraw_scene:
+        //         a_scene.clear();
+        //         a_effect_graph.draw(a_scene);
+        //         gui_state = gui_state_enum::process_input;
+        //         break;
+        //     case gui_state_enum::process_input:
+        //         process_input(a_touch_buffer, a_effect_graph, a_scene);
+        //         gui_state = gui_state_enum::set_triangles;
+        //         break;
+        //     case gui_state_enum::set_triangles:
+        //         a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
+        //         gui_state = gui_state_enum::prepare_binning;
+        //         break;
+        //     case gui_state_enum::prepare_binning:
+        //         a_vc_gpu.start_binning();
+        //         gui_state = gui_state_enum::wait_for_binning_to_finish;
+        //         break;
+        //     case gui_state_enum::wait_for_binning_to_finish:
+        //         if(a_vc_gpu.binning_finished())
+        //         {
+        //             gui_state = gui_state_enum::prepare_rendering;
+        //         }
+        //         break;
+        //     case gui_state_enum::prepare_rendering:
+        //         a_vc_gpu.start_rendering();
+        //         gui_state = gui_state_enum::wait_for_rendering_to_finish;
+        //         break;
+        //     case gui_state_enum::wait_for_rendering_to_finish:
+        //         if(a_vc_gpu.rendering_finished())
+        //         {
+        //             gui_state = gui_state_enum::redraw_scene;
+        //         }
+        //         break;
+        // }
 
-        new_system_time = the_system_timer->get_system_time();
-        gui_times.push(new_system_time - old_system_time);
+        // new_system_time = the_system_timer->get_system_time();
+        // gui_times.push(new_system_time - old_system_time);
 
-        old_system_time = new_system_time;
-        if(process_times.get_queue_length() == 1000)
-        {
-            u64 max_process_time = 0;
-            while(process_times.get_queue_length() > 0)
-            {
-                u64 a_process_time = process_times.pop();
-                max_process_time = (a_process_time > max_process_time) ? a_process_time : max_process_time;
-            }
-            a_uart->write("process time: ");
-            a_uart->write(string_(max_process_time, string_::integer_style::decimal));
-            a_uart->write("\r\n");
-        }
+        // old_system_time = new_system_time;
+        // if(process_times.get_queue_length() == 1000)
+        // {
+        //     u64 max_process_time = 0;
+        //     while(process_times.get_queue_length() > 0)
+        //     {
+        //         u64 a_process_time = process_times.pop();
+        //         max_process_time = (a_process_time > max_process_time) ? a_process_time : max_process_time;
+        //     }
+        //     a_uart->write("process time: ");
+        //     a_uart->write(string_(max_process_time, string_::integer_style::decimal));
+        //     a_uart->write("\r\n");
+        // }
 
-        if(gui_times.get_queue_length() == 1000)
-        {
-            u64 max_gui_time = 0;
-            while(gui_times.get_queue_length() > 0)
-            {
-                u64 a_gui_time = gui_times.pop();
-                max_gui_time = (a_gui_time > max_gui_time) ? a_gui_time : max_gui_time;
-            }
-            a_uart->write("gui time: ");
-            a_uart->write(string_(max_gui_time, string_::integer_style::decimal));
-            a_uart->write("\r\n");
+        // if(gui_times.get_queue_length() == 1000)
+        // {
+        //     u64 max_gui_time = 0;
+        //     while(gui_times.get_queue_length() > 0)
+        //     {
+        //         u64 a_gui_time = gui_times.pop();
+        //         max_gui_time = (a_gui_time > max_gui_time) ? a_gui_time : max_gui_time;
+        //     }
+        //     a_uart->write("gui time: ");
+        //     a_uart->write(string_(max_gui_time, string_::integer_style::decimal));
+        //     a_uart->write("\r\n");
 
-            new_system_time = the_system_timer->get_system_time();
-            a_uart->write("plot time: ");
-            a_uart->write(string_(new_system_time - old_system_time, string_::integer_style::decimal));
-            a_uart->write("\r\n");
+        //     new_system_time = the_system_timer->get_system_time();
+        //     a_uart->write("plot time: ");
+        //     a_uart->write(string_(new_system_time - old_system_time, string_::integer_style::decimal));
+        //     a_uart->write("\r\n");
 
-            old_system_time = new_system_time;
-            {
-                interrupt::disabler current_scope;
-                deadbeef();
-            }
-            new_system_time = the_system_timer->get_system_time();
-            a_uart->write("test: ");
-            a_uart->write(string_(new_system_time - old_system_time, string_::integer_style::decimal));
-            a_uart->write("\r\n");
-            a_uart->write("test: ");
-            a_uart->write(string_(new_system_time - old_system_time, string_::integer_style::hexadecimal));
-            a_uart->write("\r\n");
-        }
+        //     old_system_time = new_system_time;
+        //     {
+        //         interrupt::disabler current_scope;
+        //         deadbeef();
+        //     }
+        //     new_system_time = the_system_timer->get_system_time();
+        //     a_uart->write("test: ");
+        //     a_uart->write(string_(new_system_time - old_system_time, string_::integer_style::decimal));
+        //     a_uart->write("\r\n");
+        //     a_uart->write("test: ");
+        //     a_uart->write(string_(new_system_time - old_system_time, string_::integer_style::hexadecimal));
+        //     a_uart->write("\r\n");
+        // }
     }
     return (0);
 }
