@@ -1,8 +1,8 @@
 #/bin/bash!
 
 #choose here wether to boot from an sd card or from the network, by uncommenting the option you want.
-boot_mode=network
-# boot_mode=sd_card
+# boot_mode=network
+boot_mode=sd_card
 
 #choose your version of raspberry pi, by uncommenting the version you want. only the options below
 #are supported for the moment.
@@ -24,7 +24,7 @@ image_directory=compiled_code/kernel8.img
 #it should point to where your sd card is mounted in the file system. when booting from network you
 #should also provide the directory of the root folder of your tftp server (see readme.md).
 tftp_directory=/home/tsrapnik/tftp_root
-sd_directory=/media/tsrapnik/ODESSA
+sd_directory=/media/tsrapnik/odessa
 
 #actual script. no need to change anything here.
 if [ "$1" = "boot" ]
