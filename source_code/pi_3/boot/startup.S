@@ -16,13 +16,18 @@ init_core:
     mrs x1, mpidr_el1
     and x1, x1, #0x3
 
+
     // set stack pointers for el2 to el0, depending on cpu index.
-    ldr    x2, =stack_el2
-    ldr    x2, [x2, x1]
-    ldr    x3, =stack_el1
-    ldr    x3, [x3, x1]
-    ldr    x4, =stack_el0
-    ldr    x4, [x4, x1]
+    //ldr    x2, =stack_el2
+    //ldr    x2, [x2, x1]
+    //ldr    x3, =stack_el1
+    //ldr    x3, [x3, x1]
+    //ldr    x4, =stack_el0
+    //ldr    x4, [x4, x1]
+    // set stack pointers for el2 to el0
+    ldr x2, = __stack_core_0_el2
+    ldr x3, = __stack_core_0_el1
+    ldr x4, = __stack_core_0_el0
     mov    sp, x2
     msr    sp_el1, x3
     msr    sp_el0, x4
