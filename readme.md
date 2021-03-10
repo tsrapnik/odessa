@@ -256,3 +256,6 @@ ASIX Presto Adapter                     no
 OpenJTAG Adapter                        no
 SEGGER J-Link Programmer                yes (auto)
 ```
+
+# sd card becomes read only
+sudo mount --options remount,rw /dev/cardname
