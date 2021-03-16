@@ -80,6 +80,7 @@ else
 
     if [ "$boot_mode" = "sd_card" ]
     then
+        rm $sd_directory/kernel8.img 2> /dev/null
         cp $image_directory $sd_directory
         if [ $? -eq 0 ]
         then
