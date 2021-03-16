@@ -57,8 +57,11 @@ void deadbeef()
 }
 #pragma GCC pop_options
 
-extern "C" i32 main(void)
+//c++ entry point for all cores. different cores are differentiated by core_index, which can be 0 - 3.
+extern "C" i32 main(usize core_index)
 {
+    while (core_index != 0); //hang all cores except core 0. todo: only run initialize_cpp_runtime and buddy_heap once.
+
     initialize_cpp_runtime();
 
     //todo: change adressing to vc_gpu before mmu can be enabled.

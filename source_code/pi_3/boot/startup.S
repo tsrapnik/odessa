@@ -27,9 +27,6 @@ init_core:
     mrs x0, mpidr_el1
     and x0, x0, #0x3
 
-hold_secondary:
-    cbnz x0, hold_secondary
-
     // set stack pointers for el2 to el0, depending on core index.
     ldr    x1, =stack_el2
     ldr    x2, [x1, x0, lsl #3]
@@ -87,7 +84,7 @@ exit_to_el1:
     // set exception table for el1.
     ldr x1, =vector_table
     msr vbar_el1, x1
-    // branch to main c++ function.
+    // branch to main c++ function. x0 still contains core index, which is used as parameter for the main function.
     b main
     // infinite loop is here in case main accidentally returns.
 hang:
