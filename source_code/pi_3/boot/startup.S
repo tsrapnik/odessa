@@ -2,59 +2,72 @@
 .balign    4
 .globl _start
 _start:
-    // core 0 starts here.
-    b init_core
+    // core 0 starts here. this is initially the only core that is awake.
 
-_start_secondary:
+    // a spin table is defined in memory, where pointers are stored where the other cores should start. we
+    // let all cores start with the init_core function. address for pointers are found in
+    // https://github.com/raspberrypi/tools/blob/master/armstubs/armstub8.S.
+    ldr x0, =init_core
+    mov x1, #0xd8
+    str x0, [x1, #8]!
+    str x0, [x1, #8]!
+    str x0, [x1, #8]!
+
+    // this instruction actually wakes the other cores.
+    sev
+
+    // now initialize core 0.
     b init_core
 
 // function initializes core and calls main c++ function afterwards.
 init_core:
     // code starts in el2. we do some initialization in el2 and then return to el1 for the rest of our code.
 
-    // get cpu index.
-    mrs x1, mpidr_el1
-    and x1, x1, #0x3
+    // get core index.
+    mrs x0, mpidr_el1
+    and x0, x0, #0x3
 
+hold_secondary:
+    cbnz x0, hold_secondary
 
-    // set stack pointers for el2 to el0, depending on cpu index.
-    ldr    x2, =stack_el2
-    ldr    x2, [x2, x1]
-    ldr    x3, =stack_el1
-    ldr    x3, [x3, x1]
-    ldr    x4, =stack_el0
-    ldr    x4, [x4, x1]
+    // set stack pointers for el2 to el0, depending on core index.
+    ldr    x1, =stack_el2
+    ldr    x2, [x1, x0, lsl #3]
+    ldr    x1, =stack_el1
+    ldr    x3, [x1, x0, lsl #3]
+    ldr    x1, =stack_el0
+    ldr    x4, [x1, x0, lsl #3]
     mov    sp, x2
     msr    sp_el1, x3
     msr    sp_el0, x4
 
     // init generic timers.
-    mrs    x0, cnthctl_el2
-    orr    x0, x0, #0x3    // enable el1 access to timers.
-    msr    cnthctl_el2, x0
+    mrs    x1, cnthctl_el2
+    orr    x1, x1, #0x3    // enable el1 access to timers.
+    msr    cnthctl_el2, x1
     msr    cntvoff_el2, xzr
 
     // initialize mpid and mpidr registers.
-    mrs    x0, midr_el1
-    mrs    x1, mpidr_el1
-    msr    vpidr_el2, x0
-    msr    vmpidr_el2, x1
+    mrs    x1, midr_el1
+    mrs    x2, mpidr_el1
+    msr    vpidr_el2, x1
+    msr    vmpidr_el2, x2
 
-    mov    x0, #0x33ff
-    msr    cptr_el2, x0 // disable coprocessor traps to el2.
+    mov    x1, #0x33ff
+    msr    cptr_el2, x1 // disable coprocessor traps to el2.
     msr    hstr_el2, xzr // disable coprocessor traps to el2.
-    mov    x0, #3 << 20
-    msr    cpacr_el1, x0 // enable fp and simd at el1.
+    mov    x1, #3 << 20
+    msr    cpacr_el1, x1 // enable fp and simd at el1.
 
-    mov    x0, #(1 << 31) // enable 64bit in el1.
-    msr    hcr_el2, x0
+    mov    x1, #(1 << 31) // enable 64bit in el1.
+    msr    hcr_el2, x1
 
     // bit 12, I (enable instruction cache) = 1
     // bit 2, C (enable data cache) = 1
     // and some other settings...
-    mov    x0, #0x1804
-    movk    x0, #0x30d0, lsl #16
-    msr    sctlr_el1, x0
+    mov    x1, #0x1804
+    movk   x1, #0x30d0, lsl #16
+    msr    sctlr_el1, x1
 
     // spsr_el2 will be copied to pstate of el1 when we return to it, so we set some configurations in it.
     // mask all exceptions except irq interrupts.
@@ -64,16 +77,16 @@ init_core:
     // bit 6, F (fiq interrupt mask) = 1
     // we want to return to el1 with sp_el1.
     // bit 3-0, M (el1 with sp_el1 (h)) = 5
-    mov    x0, #0x345
-    msr    spsr_el2, x0
+    mov    x1, #0x345
+    msr    spsr_el2, x1
     // set address to return to from el2.
-    adr    x0, exit_to_el1
-    msr    elr_el2, x0
+    adr    x1, exit_to_el1
+    msr    elr_el2, x1
     eret
 exit_to_el1:
     // set exception table for el1.
-    ldr x0, =vector_table
-    msr vbar_el1,x0
+    ldr x1, =vector_table
+    msr vbar_el1, x1
     // branch to main c++ function.
     b main
     // infinite loop is here in case main accidentally returns.
@@ -81,6 +94,7 @@ hang:
     b hang
 
 // stackpointers
+.balign    8
 stack_el2:  .quad __stack_core_0_el2, __stack_core_1_el2, __stack_core_2_el2, __stack_core_3_el2
 stack_el1:  .quad __stack_core_0_el1, __stack_core_1_el1, __stack_core_2_el1, __stack_core_3_el1
 stack_el0:  .quad __stack_core_0_el0, __stack_core_1_el0, __stack_core_2_el0, __stack_core_3_el0
