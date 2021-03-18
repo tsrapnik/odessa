@@ -1,12 +1,14 @@
 #pragma once
 
+#include "type_definitions.h"
+
 class mutex
 {
     private:
-        bool locked;
+        u32 the_lock;
     public:
         mutex();
-        
+
         void lock();
         void unlock();
 };
