@@ -26,12 +26,8 @@ compiler_flags = -g -Wall -O3 -mcpu=cortex-a53+fp+simd -ffreestanding -nostartfi
 #definitions of the source code directory and the object directory, where all generated files will be stored.
 source_directory = source_code
 object_directory = compiled_code
-boot_folder_name = pi_3/boot
-boot_source_directory = $(source_directory)/$(boot_folder_name)
-boot_object_directory = $(object_directory)/$(boot_folder_name)
 
 #naming of some specific source and object files.
-boot_source_name = startup
 linker_description_name = linker_description
 image_name = kernel8
 
@@ -44,12 +40,11 @@ object_directories = $(patsubst $(source_directory)%,$(object_directory)%,$(sour
 include_directories = $(patsubst %,-I%,$(source_directories))
 
 #find all paths of the source files and use them to generate equivalent paths for the object and dependency files.
-sources = $(shell find $(source_directory) -name "*.cpp")
+sources = $(shell find $(source_directory) -name "*.cpp") $(shell find $(source_directory) -name "*.S")
 objects = $(patsubst %.cpp,%.o,$(sources))
+objects := $(patsubst %.S,%.o,$(objects))
 objects := $(patsubst $(source_directory)%,$(object_directory)%,$(objects))
 dependencies = $(patsubst %.o,%.d,$(objects))
-boot_source = $(boot_source_directory)/$(boot_source_name).S
-boot_object = $(boot_object_directory)/$(boot_source_name).o
 linker_description = $(linker_description_name).ld
 image = $(object_directory)/$(image_name).img
 image_elf = $(object_directory)/$(image_name).elf
@@ -72,7 +67,7 @@ $(object_directory_tree):
 #cluttering the object directory.
 $(image): $(linker_description) $(boot_object) $(objects)
 	$(info link all objects and generate the image file: $(image).)
-	$(hide)$(linker) $(compiler_flags) -o $(image_elf) -T $(linker_description) $(boot_object) $(objects) -Wl,--build-id=none
+	$(hide)$(linker) $(compiler_flags) -o $(image_elf) -T $(linker_description) $(objects) -Wl,--build-id=none
 	$(hide)$(object_copier) $(image_elf) -O binary $(image)
 	$(hide)$(object_dumper) -d -S $(image_elf) > $(image_dump)
 	$(hide)$(object_mapper) -n $(image_elf) > $(image_map)
@@ -81,18 +76,20 @@ $(image): $(linker_description) $(boot_object) $(objects)
 #header files has changed.
 -include $(dependencies)
 
-#compile the boot file.
-$(boot_object): $(boot_source)
-	$(info compile boot source file: $<.)
-	$(hide)$(assembler) $(compiler_flags) $(include_directories) -c -o $@ $<
-
-#compile all source files in the project.
+#Compile all S source files in the project.
 #the first rule outputs which file is compiled. if the hide option is active this is the only line that will be
 #displayed, to avoid an overload of information. the second rule is a generic rule for actually compiling the object
 #file from the source file. the third rule generates a dependecy file that is later used for checking changes in
 #header files that are included by the source file. the last rule is to modify the dependency file. the
 #target in this file is generated in the form "object.o", which wont work cause we need the full path, so it is
 #converted to the form "subdirectory/subdirectory/object.o".
+$(object_directory)/%.o: $(source_directory)/%.S
+	$(info compile source file: $<.)
+	$(hide)$(assembler) $(compiler_flags) $(include_directories) -c -o $@ $<
+	$(hide)$(assembler) $(include_directories) -MM $(source_directory)/$*.S > $(object_directory)/$*.d
+	$(hide)sed -i 's|.*:|$(object_directory)/$*.o:|' $(object_directory)/$*.d
+
+#compile all c++ source files in the project. uses same principle as for S source files.
 $(object_directory)/%.o: $(source_directory)/%.cpp
 	$(info compile source file: $<.)
 	$(hide)$(compiler) $(compiler_flags) $(include_directories) -c -o $@ $<
