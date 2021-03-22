@@ -1,5 +1,4 @@
 #include "assert.h"
-#include "buddy_heap.h"
 #include "effect_chorus.h"
 #include "effect_delay.h"
 #include "effect_graph.h"
@@ -24,51 +23,13 @@
 //todo: make uart singleton like device.
 uart* a_uart;
 
-void initialize_cpp_runtime()
-{
-    //clear bss.
-    extern u8 __bss_start;
-    extern u8 __bss_end;
-    for(u8* pBSS = &__bss_start; pBSS < &__bss_end; pBSS++)
-    {
-        *pBSS = 0;
-    }
-
-    //call construtors of static objects.
-    extern void (*__init_start)(void);
-    extern void (*__init_end)(void);
-    for(void (**constructor)(void) = &__init_start; constructor < &__init_end; constructor++)
-    {
-        (**constructor)();
-    }
-}
-
+void gui_task();
+void audio_task();
 void process_input(volatile const vc_mailbox_property_tags::touch_buffer& a_touch_buffer, effect_graph& a_effect_graph, scene_2d& a_scene);
-
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-void deadbeef()
-{
-    register u32 dude = 1000000000 / 4;
-    while(dude != 0)
-    {
-        dude--;
-    }
-}
-#pragma GCC pop_options
 
 //c++ entry point for all cores. different cores are differentiated by core_index, which can be 0 - 3.
 extern "C" i32 main(usize core_index)
 {
-    while (core_index != 0); //hang all cores except core 0. todo: only run initialize_cpp_runtime and buddy_heap once.
-
-    initialize_cpp_runtime();
-
-    //todo: change adressing to vc_gpu before mmu can be enabled.
-    // memory::enable_mmu();
-
-    buddy_heap::initialize();
-
     //should be created as soon as possible to enable debugging.
     a_uart = uart::create(uart::device::uart_pl011);
     a_uart->write("uart created.\r\n");
@@ -77,6 +38,25 @@ extern "C" i32 main(usize core_index)
 
     vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::arm, 1200000000);
 
+    switch(core_index)
+    {
+        case 0:
+            gui_task();
+            break;
+        case 1:
+            audio_task();
+            break;
+        case 2:
+        case 3:
+        default:
+            while(true)
+                ;
+            break;
+    }
+
+    return (0);
+}void gui_task()
+{
     //initialize gpu and draw a example scene to the screen.
     vc_mailbox_framebuffer a_vc_mailbox_framebuffer;
     vc_gpu a_vc_gpu(a_vc_mailbox_framebuffer.get_buffer(), 800, 480);
@@ -101,6 +81,64 @@ extern "C" i32 main(usize core_index)
     //initialize touch screen.
     volatile vc_mailbox_property_tags::touch_buffer a_touch_buffer;
     vc_mailbox_property_tags::set_touch_buffer(const_cast<vc_mailbox_property_tags::touch_buffer*>(&a_touch_buffer));
+
+    enum class gui_state_enum
+    {
+        redraw_scene,
+        process_input,
+        set_triangles,
+        prepare_binning,
+        wait_for_binning_to_finish,
+        prepare_rendering,
+        wait_for_rendering_to_finish,
+    };
+
+    gui_state_enum gui_state = gui_state_enum::redraw_scene;
+
+    while(true)
+    {
+        //process gui.
+        switch(gui_state)
+        {
+            case gui_state_enum::redraw_scene:
+                a_scene.clear();
+                a_effect_graph.draw(a_scene);
+                gui_state = gui_state_enum::process_input;
+                break;
+            case gui_state_enum::process_input:
+                process_input(a_touch_buffer, a_effect_graph, a_scene);
+                gui_state = gui_state_enum::set_triangles;
+                break;
+            case gui_state_enum::set_triangles:
+                a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
+                gui_state = gui_state_enum::prepare_binning;
+                break;
+            case gui_state_enum::prepare_binning:
+                a_vc_gpu.start_binning();
+                gui_state = gui_state_enum::wait_for_binning_to_finish;
+                break;
+            case gui_state_enum::wait_for_binning_to_finish:
+                if(a_vc_gpu.binning_finished())
+                {
+                    gui_state = gui_state_enum::prepare_rendering;
+                }
+                break;
+            case gui_state_enum::prepare_rendering:
+                a_vc_gpu.start_rendering();
+                gui_state = gui_state_enum::wait_for_rendering_to_finish;
+                break;
+            case gui_state_enum::wait_for_rendering_to_finish:
+                if(a_vc_gpu.rendering_finished())
+                {
+                    gui_state = gui_state_enum::redraw_scene;
+                }
+                break;
+        }
+    }
+}
+
+void audio_task()
+{
 
     //initialize spi.
     spi* spi0 = spi::create(spi::device::spi0);
@@ -153,29 +191,8 @@ extern "C" i32 main(usize core_index)
     i2s* i2s0 = i2s::create(i2s::device::i2s0);
     assert(i2s0 != nullptr);
 
-    enum class gui_state_enum
-    {
-        redraw_scene,
-        process_input,
-        set_triangles,
-        prepare_binning,
-        wait_for_binning_to_finish,
-        prepare_rendering,
-        wait_for_rendering_to_finish,
-    };
-
-    gui_state_enum gui_state = gui_state_enum::redraw_scene;
-
-    u64 old_system_time;
-
-    buffer_fifo<u64> process_times(1000);
-    buffer_fifo<u64> gui_times(1000);
-
     while(true)
     {
-        // u64 new_system_time;
-        // old_system_time = the_system_timer->get_system_time();
-
         //process samples.
         u32 sample_count_left = i2s0->get_sample_count(i2s::channel::left);
         u32 sample_count_right = i2s0->get_sample_count(i2s::channel::right);
@@ -194,99 +211,7 @@ extern "C" i32 main(usize core_index)
         //     i2s0->push(i2s0->pop(i2s::channel::left), i2s::channel::left);
         //     i2s0->push(i2s0->pop(i2s::channel::right), i2s::channel::right);
         // }
-
-        // new_system_time = the_system_timer->get_system_time();
-        // process_times.push(new_system_time - old_system_time);
-
-        // old_system_time = new_system_time;
-
-        // //process gui.
-        // switch(gui_state)
-        // {
-        //     case gui_state_enum::redraw_scene:
-        //         a_scene.clear();
-        //         a_effect_graph.draw(a_scene);
-        //         gui_state = gui_state_enum::process_input;
-        //         break;
-        //     case gui_state_enum::process_input:
-        //         process_input(a_touch_buffer, a_effect_graph, a_scene);
-        //         gui_state = gui_state_enum::set_triangles;
-        //         break;
-        //     case gui_state_enum::set_triangles:
-        //         a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
-        //         gui_state = gui_state_enum::prepare_binning;
-        //         break;
-        //     case gui_state_enum::prepare_binning:
-        //         a_vc_gpu.start_binning();
-        //         gui_state = gui_state_enum::wait_for_binning_to_finish;
-        //         break;
-        //     case gui_state_enum::wait_for_binning_to_finish:
-        //         if(a_vc_gpu.binning_finished())
-        //         {
-        //             gui_state = gui_state_enum::prepare_rendering;
-        //         }
-        //         break;
-        //     case gui_state_enum::prepare_rendering:
-        //         a_vc_gpu.start_rendering();
-        //         gui_state = gui_state_enum::wait_for_rendering_to_finish;
-        //         break;
-        //     case gui_state_enum::wait_for_rendering_to_finish:
-        //         if(a_vc_gpu.rendering_finished())
-        //         {
-        //             gui_state = gui_state_enum::redraw_scene;
-        //         }
-        //         break;
-        // }
-
-        // new_system_time = the_system_timer->get_system_time();
-        // gui_times.push(new_system_time - old_system_time);
-
-        // old_system_time = new_system_time;
-        // if(process_times.get_queue_length() == 1000)
-        // {
-        //     u64 max_process_time = 0;
-        //     while(process_times.get_queue_length() > 0)
-        //     {
-        //         u64 a_process_time = process_times.pop();
-        //         max_process_time = (a_process_time > max_process_time) ? a_process_time : max_process_time;
-        //     }
-        //     a_uart->write("process time: ");
-        //     a_uart->write(string_(max_process_time, string_::integer_style::decimal));
-        //     a_uart->write("\r\n");
-        // }
-
-        // if(gui_times.get_queue_length() == 1000)
-        // {
-        //     u64 max_gui_time = 0;
-        //     while(gui_times.get_queue_length() > 0)
-        //     {
-        //         u64 a_gui_time = gui_times.pop();
-        //         max_gui_time = (a_gui_time > max_gui_time) ? a_gui_time : max_gui_time;
-        //     }
-        //     a_uart->write("gui time: ");
-        //     a_uart->write(string_(max_gui_time, string_::integer_style::decimal));
-        //     a_uart->write("\r\n");
-
-        //     new_system_time = the_system_timer->get_system_time();
-        //     a_uart->write("plot time: ");
-        //     a_uart->write(string_(new_system_time - old_system_time, string_::integer_style::decimal));
-        //     a_uart->write("\r\n");
-
-        //     old_system_time = new_system_time;
-        //     {
-        //         interrupt::disabler current_scope;
-        //         deadbeef();
-        //     }
-        //     new_system_time = the_system_timer->get_system_time();
-        //     a_uart->write("test: ");
-        //     a_uart->write(string_(new_system_time - old_system_time, string_::integer_style::decimal));
-        //     a_uart->write("\r\n");
-        //     a_uart->write("test: ");
-        //     a_uart->write(string_(new_system_time - old_system_time, string_::integer_style::hexadecimal));
-        //     a_uart->write("\r\n");
-        // }
     }
-    return (0);
 }
 
 void process_input(volatile const vc_mailbox_property_tags::touch_buffer& a_touch_buffer, effect_graph& a_effect_graph, scene_2d& a_scene)

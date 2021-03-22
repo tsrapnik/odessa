@@ -4,6 +4,9 @@
 _start:
     // core 0 starts here. this is initially the only core that is awake.
 
+    // first initialize c++ runtime.
+    bl initialize_cpp_runtime
+
     // a spin table is defined in memory, where pointers are stored where the other cores should start. we
     // let all cores start with the init_core function. address for pointers are found in
     // https://github.com/raspberrypi/tools/blob/master/armstubs/armstub8.S.
