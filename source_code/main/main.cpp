@@ -46,11 +46,11 @@ extern "C" i32 main(usize core_index)
             //wake other cores.
             asm("sev");
 
-            gui_task();
-            break;
-        case 1:
             audio_task();
             break;
+        case 1:
+            // gui_task();
+            // break;
         case 2:
         case 3:
         default:
