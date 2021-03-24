@@ -17,30 +17,35 @@
 #include "vc_gpu.h"
 #include "vc_mailbox_framebuffer.h"
 #include "vc_mailbox_property_tags.h"
+#include "buddy_heap.h"
 
 //todo: check for every created device if it does not return a nullptr.
 
 //todo: make uart singleton like device.
 uart* a_uart;
 
+void initialize_cpp_runtime();
 void gui_task();
 void audio_task();
 void process_input(volatile const vc_mailbox_property_tags::touch_buffer& a_touch_buffer, effect_graph& a_effect_graph, scene_2d& a_scene);
 
 //c++ entry point for all cores. different cores are differentiated by core_index, which can be 0 - 3.
+//core 0 first arrives at the main function, while other cores are sleeping. core 0 has to wake the other
+//cores if you want to use them (with sev assembly instruction).
 extern "C" i32 main(usize core_index)
 {
-    //should be created as soon as possible to enable debugging.
-    a_uart = uart::create(uart::device::uart_pl011);
-    a_uart->write("uart created.\r\n");
-
-    system_timer* the_system_timer = system_timer::create();
-
-    vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::arm, 1200000000);
-
     switch(core_index)
     {
         case 0:
+            //core 0 first initializes everything needed for c++ runtime and some other shared things, then starts the
+            //other cores and does gui processing.
+            initialize_cpp_runtime();
+            //should be created as soon as possible to enable debugging.
+            a_uart = uart::create(uart::device::uart_pl011);
+            a_uart->write("uart created.\r\n");
+            //wake other cores.
+            asm("sev");
+
             gui_task();
             break;
         case 1:
@@ -55,7 +60,34 @@ extern "C" i32 main(usize core_index)
     }
 
     return (0);
-}void gui_task()
+}
+
+void initialize_cpp_runtime()
+{
+    //clear bss.
+    extern u8 __bss_start;
+    extern u8 __bss_end;
+    for(u8* pBSS = &__bss_start; pBSS < &__bss_end; pBSS++)
+    {
+        *pBSS = 0;
+    }
+
+    //call construtors of static objects.
+    extern void (*__init_start)(void);
+    extern void (*__init_end)(void);
+    for(void (**constructor)(void) = &__init_start; constructor < &__init_end; constructor++)
+    {
+        (**constructor)();
+    }
+
+    //initialize heap.
+    buddy_heap::initialize();
+
+    //todo: change adressing to vc_gpu before mmu can be enabled.
+    // memory::enable_mmu();
+}
+
+void gui_task()
 {
     //initialize gpu and draw a example scene to the screen.
     vc_mailbox_framebuffer a_vc_mailbox_framebuffer;
@@ -320,12 +352,6 @@ extern "C" void __cxa_pure_virtual()
         ;
 }
 
-extern "C" void __aeabi_atexit(void)
-{
-    while(1)
-        ;
-}
-
 void* __dso_handle;
 
 extern "C" int __cxa_guard_acquire(long long int*)
@@ -339,49 +365,4 @@ extern "C" void __cxa_guard_release(long long int*)
 
 extern "C" void __cxa_atexit(void)
 {
-}
-
-extern "C" void _exit()
-{
-}
-
-extern "C" void _kill()
-{
-}
-
-extern "C" void _getpid()
-{
-}
-
-extern "C" void __gxx_personality_v0()
-{
-}
-
-extern "C" u8* __attribute__((weak)) _sbrk(int incr)
-{
-    return (u8*)0;
-}
-
-extern "C" void memcpy(void* destination, void* source, usize size)
-{
-    usize size_u64 = size / 8;
-    usize size_u8 = size % 8;
-
-    u64* destination_u64 = reinterpret_cast<u64*>(destination);
-    u64* source_u64 = reinterpret_cast<u64*>(source);
-    for(usize index = 0; index < size_u64; index++)
-    {
-        *destination_u64 = *source_u64;
-        destination_u64++;
-        source_u64++;
-    }
-
-    u8* destination_u8 = reinterpret_cast<u8*>(destination_u64);
-    u8* source_u8 = reinterpret_cast<u8*>(source_u64);
-    for(usize index = 0; index < size_u8; index++)
-    {
-        *destination_u8 = *source_u8;
-        destination_u8++;
-        source_u8++;
-    }
 }

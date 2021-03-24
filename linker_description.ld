@@ -7,7 +7,8 @@ SECTIONS
 	.text :
 	{
 		. = ALIGN(4);
-		 __text_start = .;
+		__text_start = .;
+		*(.text.start)
 		*(.text)
 		 __text_end = .;
 	}
