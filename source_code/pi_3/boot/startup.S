@@ -2,7 +2,6 @@
 .balign 4
 _start:
     // core 0 starts here. this is initially the only core that is awake.
-    b _start
 
     // a spin table is defined in memory, where pointers are stored where the other cores should start. we
     // let all cores start with the init_core function. address for pointers are found in
