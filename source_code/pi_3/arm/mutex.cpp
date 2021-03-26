@@ -10,10 +10,10 @@ mutex::mutex() :
 
 void mutex::lock()
 {
-    mutex_lock(&the_lock);
+    // mutex_lock(&the_lock); TODO
 }
 
 void mutex::unlock()
 {
-    mutex_unlock(&the_lock);
+    // mutex_unlock(&the_lock);
 }
