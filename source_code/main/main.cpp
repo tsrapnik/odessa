@@ -49,8 +49,8 @@ extern "C" i32 main(usize core_index)
             audio_task();
             break;
         case 1:
-            // gui_task();
-            // break;
+            gui_task();
+            break;
         case 2:
         case 3:
         default:
@@ -255,7 +255,6 @@ void process_input(volatile const vc_mailbox_property_tags::touch_buffer& a_touc
 
     if(!touching && a_touch_buffer.points_size == 1)
     {
-        a_uart->write("touched.\r\n");
         //touched.
         vector_2_f32 mouse_position = vector_2_f32(
             static_cast<f32>(((a_touch_buffer.points[0].x_high_word & 0xf) << 8) | a_touch_buffer.points[0].x_low_word),
@@ -298,7 +297,6 @@ void process_input(volatile const vc_mailbox_property_tags::touch_buffer& a_touc
     }
     else if(touching && (a_touch_buffer.points_size == 0))
     {
-        a_uart->write("released.\r\n");
         //released.
         if(selected_output != nullptr)
         {
