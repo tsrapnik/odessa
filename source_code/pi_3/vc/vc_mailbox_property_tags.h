@@ -436,6 +436,31 @@ class vc_mailbox_property_tags
     } __attribute__((packed, aligned(16)));
 
     public:
-    //returns true on success.
+    //returns size of vc memory in bytes.
     static bool set_touch_buffer(touch_buffer* a_touch_buffer);
+
+    private:
+    struct tag_get_vc_memory_location
+    {
+        buffer_header a_buffer_header = {.size = sizeof(tag_get_vc_memory_location),
+                                         .a_request_response_code = request_response_code::process_request};
+        tag_header a_tag_header = {.a_tag_id = tag_id::get_vc_memory,
+                                   .value_buffer_size = sizeof(tag_get_vc_memory_location::response),
+                                   .response_request_code = {.response_size = 0, .is_response = 0}};
+        union {
+            struct
+            {
+            } request;
+            struct
+            {
+                u32 start_address;
+                u32 size;
+            } response;
+        };
+        u32 end_tag = 0; //indicates end of the tag.
+    } __attribute__((packed, aligned(16)));
+
+    public:
+    //if succesful returns true and fills in start address of vc ram memory and its size, else returns false.
+    static bool get_vc_memory_location(vc_pointer * start, usize * size);
 };

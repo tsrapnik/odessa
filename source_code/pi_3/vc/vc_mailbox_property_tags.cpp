@@ -132,3 +132,22 @@ bool vc_mailbox_property_tags::set_touch_buffer(touch_buffer* a_touch_buffer)
                            vc_mailbox::channel::property_tags_arm_to_vc);
     return (a_tag_set_touch_buffer.a_buffer_header.a_request_response_code == request_response_code::request_succesful);
 }
+
+bool vc_mailbox_property_tags::get_vc_memory_location(vc_pointer * start, usize * size)
+{
+    tag_get_vc_memory_location a_tag_get_vc_memory_location;
+
+    vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_get_vc_memory_location).get_raw_value(),
+                           vc_mailbox::channel::property_tags_arm_to_vc);
+    if (a_tag_get_vc_memory_location.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
+    {
+        *start = vc_pointer(a_tag_get_vc_memory_location.response.start_address);
+        *size = static_cast<usize>(a_tag_get_vc_memory_location.response.size);
+        return true;
+    }
+    // *start = vc_pointer(0u);
+    // *size = 0u;
+        *start = vc_pointer(a_tag_get_vc_memory_location.response.start_address);
+        *size = static_cast<usize>(a_tag_get_vc_memory_location.response.size);
+    return false;
+}
