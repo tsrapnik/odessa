@@ -3,6 +3,7 @@
 #include "vc_mailbox_property_tags.h"
 #include "assert.h"
 
+bool memory::table_initialized = false;
 memory::level_2_descriptor* memory::table;
 
 void memory::clean_data_cache()
@@ -118,13 +119,19 @@ void memory::data_memory_barrier()
                  : "memory");
 }
 
+//enables both mmu and caches (caches require mmu to work properly).
 void memory::enable_mmu()
 {
-    void * start(0u);
-    usize size;
-    const bool success = vc_mailbox_property_tags::get_vc_memory_location(&start, &size);
-    assert(success);
-    table = create_level_2_table(reinterpret_cast<u64>(start));
+    if(!table_initialized)
+    {
+        table_initialized = true;
+        void * start;
+        usize size;
+        //threadsafe parameter is set to false, since it requires locking a mutex, which does not work yet.
+        const bool success = vc_mailbox_property_tags::get_vc_memory_location(&start, &size, false);
+        assert(success);
+        table = create_level_2_table(reinterpret_cast<u64>(start));
+    }
 
     u64 mair_el1 = 0xff << attrindx_normal * 8 //inner/outer write-back non-transient, read/write allocating.
                    | 0x44 << attrindx_normal_non_cacheable * 8 //inner/outer non-cacheable.

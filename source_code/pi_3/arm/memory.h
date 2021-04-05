@@ -158,6 +158,7 @@ class memory
     __attribute__((packed));
 
     private:
+    static bool table_initialized; //not threadsafe, but does not matter since at point of initialization only one thread is running.
     static level_2_descriptor* table;
     static level_3_descriptor* create_level_3_table(u64 base_address, u64 vc_memory_start);
     static level_2_descriptor* create_level_2_table(u64 vc_memory_start);
