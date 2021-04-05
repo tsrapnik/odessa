@@ -1,7 +1,4 @@
-#include "uart.h"
-
-//todo: replace with global logger class.
-extern uart* a_uart;
+#include "debugger.h"
 
 void assert(bool condition)
 {
@@ -9,7 +6,7 @@ void assert(bool condition)
     //assertion failed, when debugging.
     if(!condition)
     {
-        a_uart->write("assertion failed.\r\n");
+        debugger::print("assertion failed.\r\n");
         while(true)
             ;
     }
@@ -19,25 +16,25 @@ void assert(bool condition)
 //error handlers.
 extern "C" void err_cur_el0()
 {
-    a_uart->write("err_cur_el0\r\n");
+    debugger::print("err_cur_el0\r\n");
     while(true)
         ;
 }
 extern "C" void err_cur_elx()
 {
-    a_uart->write("err_cur_elx\r\n");
+    debugger::print("err_cur_elx\r\n");
     while(true)
         ;
 }
 extern "C" void err_low64_elx()
 {
-    a_uart->write("err_low64_elx\r\n");
+    debugger::print("err_low64_elx\r\n");
     while(true)
         ;
 }
 extern "C" void err_low32_elx()
 {
-    a_uart->write("err_low32_elx\r\n");
+    debugger::print("err_low32_elx\r\n");
     while(true)
         ;
 }

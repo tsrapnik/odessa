@@ -1,12 +1,7 @@
 #include "buddy_heap.h"
 
 #include "math.h"
-
-//todo: remove.
-#include "string_.h"
-#include "uart.h"
-
-extern uart* a_uart;
+#include "debugger.h"
 
 buddy_heap::block_pointer buddy_heap::block_pointers[1 << (order_count - 2)];
 buddy_heap::block_pointer* buddy_heap::available_block_pointers[1 << (order_count - 2)];
@@ -136,7 +131,7 @@ void* buddy_heap::allocate(usize size)
             higher_order++;
         }
     }
-    a_uart->write("heap full.\r\n");
+    debugger::print("heap full.\r\n");
     return nullptr; //return nullptr if allocation failed.
 }
 
@@ -145,7 +140,7 @@ void buddy_heap::free(void* pointer)
     //cannot free a nullpointer.
     if(pointer == nullptr)
     {
-        a_uart->write("freed nullpointer.\r\n");
+        debugger::print("freed nullpointer.\r\n");
         return;
     }
 

@@ -1,4 +1,5 @@
 #include "assert.h"
+#include "buddy_heap.h"
 #include "effect_chorus.h"
 #include "effect_delay.h"
 #include "effect_graph.h"
@@ -11,18 +12,13 @@
 #include "memory.h"
 #include "scratchpad.h"
 #include "spi.h"
-#include "string_.h"
 #include "system_timer.h"
-#include "uart.h"
+#include "debugger.h"
 #include "vc_gpu.h"
 #include "vc_mailbox_framebuffer.h"
 #include "vc_mailbox_property_tags.h"
-#include "buddy_heap.h"
 
 //todo: check for every created device if it does not return a nullptr.
-
-//todo: make uart singleton like device.
-uart* a_uart;
 
 void initialize_cpp_runtime();
 void gui_task();
@@ -32,7 +28,7 @@ void process_input(volatile const vc_mailbox_property_tags::touch_buffer& a_touc
 //c++ entry point for all cores. different cores are differentiated by core_index, which can be 0 - 3.
 //core 0 first arrives at the main function, while other cores are sleeping. core 0 has to wake the other
 //cores if you want to use them (with sev assembly instruction).
-extern "C" i32 main(usize core_index)
+extern "C" void main(usize core_index)
 {
     switch(core_index)
     {
@@ -40,26 +36,35 @@ extern "C" i32 main(usize core_index)
             //core 0 first initializes everything needed for c++ runtime and some other shared things, then starts the
             //other cores and does gui processing.
             initialize_cpp_runtime();
-            //should be created as soon as possible to enable debugging.
-            a_uart = uart::create(uart::device::uart_pl011);
-            a_uart->write("uart created.\r\n");
+            memory::enable_mmu();
+            debugger::print("core 0 initialized.\r\n");
             //wake other cores.
             asm("sev");
-
+            debugger::print("secondary cores woken.\r\n");
             audio_task();
             break;
         case 1:
+            memory::enable_mmu();
+            debugger::print("core 1 initialized.\r\n");
             gui_task();
             break;
         case 2:
+            memory::enable_mmu();
+            debugger::print("core 2 initialized.\r\n");
+            while(true)
+                ;
+            break;
         case 3:
+            memory::enable_mmu();
+            debugger::print("core 3 initialized.\r\n");
+            while(true)
+                ;
+            break;
         default:
             while(true)
                 ;
             break;
     }
-
-    return (0);
 }
 
 void initialize_cpp_runtime()
@@ -82,18 +87,19 @@ void initialize_cpp_runtime()
 
     //initialize heap.
     buddy_heap::initialize();
-
-    //todo: change adressing to vc_gpu before mmu can be enabled.
-    memory::enable_mmu();
 }
 
 void gui_task()
 {
+    debugger::print("0\r\n");
     //initialize gpu and draw a example scene to the screen.
     vc_mailbox_framebuffer a_vc_mailbox_framebuffer;
+    debugger::print("1\r\n");
     vc_gpu a_vc_gpu(a_vc_mailbox_framebuffer.get_buffer(), 800, 480);
+    debugger::print("2\r\n");
 
     scene_2d a_scene;
+    debugger::print("3\r\n");
 
     effect_graph a_effect_graph;
     effect_chorus a_effect_chorus(rectangle(vector_2_f32(300.0f, 200.0f), vector_2_f32(200.0f, 100.0f)),
@@ -105,14 +111,17 @@ void gui_task()
     effect_source a_effect_source(&source,
                                   rectangle(vector_2_f32(50.0f, 200.0f), vector_2_f32(200.0f, 100.0f)),
                                   color(50, 80, 50, 125));
+    debugger::print("4\r\n");
 
     a_effect_graph.add_effect(&a_effect_chorus);
     a_effect_graph.add_effect(&a_effect_sink);
     a_effect_graph.add_effect(&a_effect_source);
+    debugger::print("5\r\n");
 
     //initialize touch screen.
     volatile vc_mailbox_property_tags::touch_buffer a_touch_buffer;
     vc_mailbox_property_tags::set_touch_buffer(const_cast<vc_mailbox_property_tags::touch_buffer*>(&a_touch_buffer));
+    debugger::print("6\r\n");
 
     enum class gui_state_enum
     {
@@ -127,6 +136,7 @@ void gui_task()
 
     gui_state_enum gui_state = gui_state_enum::redraw_scene;
 
+    debugger::print("7\r\n");
     while(true)
     {
         //process gui.
@@ -319,25 +329,25 @@ void process_input(volatile const vc_mailbox_property_tags::touch_buffer& a_touc
 //exception handlers.
 extern "C" void syn_cur_el0()
 {
-    a_uart->write("syn_cur_el0\r\n");
+    debugger::print("syn_cur_el0\r\n");
     while(true)
         ;
 }
 extern "C" void syn_cur_elx()
 {
-    a_uart->write("syn_cur_elx\r\n");
+    debugger::print("syn_cur_elx\r\n");
     while(true)
         ;
 }
 extern "C" void syn_low64_elx()
 {
-    a_uart->write("csyn_low64_elx\r\n");
+    debugger::print("csyn_low64_elx\r\n");
     while(true)
         ;
 }
 extern "C" void syn_low32_elx()
 {
-    a_uart->write("syn_low32_elx\r\n");
+    debugger::print("syn_low32_elx\r\n");
     while(true)
         ;
 }
@@ -345,7 +355,7 @@ extern "C" void syn_low32_elx()
 //dummy functions to avoid linker complaints.
 extern "C" void __cxa_pure_virtual()
 {
-    a_uart->write("pure virtual function call.\r\n");
+    debugger::print("pure virtual function call.\r\n");
     while(1)
         ;
 }

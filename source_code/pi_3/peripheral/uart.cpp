@@ -1,8 +1,6 @@
 #include "uart.h"
 #include "assert.h"
 
-#include "string_.h" //todo: remove.
-
 bool uart::device_used[device_count] = {false};
 constexpr uart::registers* uart::registers_base_address[device_count];
 

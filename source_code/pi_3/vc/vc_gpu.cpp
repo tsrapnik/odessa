@@ -1,11 +1,7 @@
 #include "vc_gpu.h"
 #include "enum_flags.h"
 #include "memory.h"
-#include "string_.h"
-#include "uart.h"
 #include "vc_mailbox_property_tags.h"
-
-extern uart* a_uart;
 
 vc_gpu::v3d_registers* const vc_gpu::v3d = reinterpret_cast<v3d_registers* const>(0x3fc00000);
 

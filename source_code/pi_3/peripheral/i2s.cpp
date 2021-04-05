@@ -2,10 +2,6 @@
 #include "assert.h"
 #include "enum_flags.h"
 #include "interrupt.h"
-#include "string_.h"
-#include "uart.h" //todo: remove.
-
-extern uart* a_uart;
 
 bool i2s::device_used[device_count] = {false};
 constexpr i2s::registers* i2s::registers_base_address[device_count];

@@ -1,11 +1,8 @@
 #include "interrupt.h"
 #include "list_iterator.h"
 #include "memory.h"
-#include "uart.h" //todo: remove.
+#include "debugger.h"
 #include "assert.h"
-
-//todo: replace with global logger class.
-extern uart* a_uart;
 
 interrupt::disabler::disabler()
 {
@@ -119,14 +116,14 @@ void interrupt::handle()
 extern "C" void irq_cur_el0()
 {
     //not used for the moment, so we write a log and just hang for debugging purposes.
-    a_uart->write("irq_cur_el0\r\n");
+    debugger::print("irq_cur_el0\r\n");
     while(true)
         ;
 }
 extern "C" void fiq_cur_el0()
 {
     //not used for the moment, so we write a log and just hang for debugging purposes.
-    a_uart->write("fiq_cur_el0\r\n");
+    debugger::print("fiq_cur_el0\r\n");
     while(true)
         ;
 }
@@ -141,35 +138,35 @@ extern "C" void irq_cur_elx(void)
 extern "C" void fiq_cur_elx()
 {
     //not used for the moment, so we write a log and just hang for debugging purposes.
-    a_uart->write("fiq_cur_elx\r\n");
+    debugger::print("fiq_cur_elx\r\n");
     while(true)
         ;
 }
 extern "C" void irq_low64_elx()
 {
     //not used for the moment, so we write a log and just hang for debugging purposes.
-    a_uart->write("irq_low64_elx\r\n");
+    debugger::print("irq_low64_elx\r\n");
     while(true)
         ;
 }
 extern "C" void fiq_low64_elx()
 {
     //not used for the moment, so we write a log and just hang for debugging purposes.
-    a_uart->write("fiq_low64_elx\r\n");
+    debugger::print("fiq_low64_elx\r\n");
     while(true)
         ;
 }
 extern "C" void irq_low32_elx()
 {
     //not used for the moment, so we write a log and just hang for debugging purposes.
-    a_uart->write("irq_low32_elx\r\n");
+    debugger::print("irq_low32_elx\r\n");
     while(true)
         ;
 }
 extern "C" void fiq_low32_elx()
 {
     //not used for the moment, so we write a log and just hang for debugging purposes.
-    a_uart->write("fiq_low32_elx\r\n");
+    debugger::print("fiq_low32_elx\r\n");
     while(true)
         ;
 }
