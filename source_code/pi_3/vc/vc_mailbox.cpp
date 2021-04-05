@@ -4,15 +4,18 @@
 vc_mailbox::mail_box_registers* const vc_mailbox::mail_box_0_interface = reinterpret_cast<mail_box_registers*>(0x3f00b880);
 vc_mailbox::mail_box_registers* const vc_mailbox::mail_box_1_interface = reinterpret_cast<mail_box_registers*>(0x3f00b8a0);
 mutex vc_mailbox::a_mutex;
-u32 vc_mailbox::write_read(u32 data, channel a_channel)
+u32 vc_mailbox::write_read(u32 data, channel a_channel, bool threadsafe)
 {
-    a_mutex.lock();
+    if(threadsafe)
+        a_mutex.lock();
 
     flush();
     write(data, a_channel);
     data = read(a_channel);
 
-    a_mutex.unlock();
+    if(threadsafe)
+        a_mutex.unlock();
+
     return data;
 }
 

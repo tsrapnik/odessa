@@ -49,7 +49,7 @@ class vc_mailbox
     ~vc_mailbox() = delete;
 
     public:
-    static u32 write_read(u32 data, channel a_channel);
+    static u32 write_read(u32 data, channel a_channel, bool threadsafe = true);
 
     private:
     static void flush();

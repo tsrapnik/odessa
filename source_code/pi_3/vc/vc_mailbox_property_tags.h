@@ -462,7 +462,7 @@ class vc_mailbox_property_tags
 
     public:
     //if succesful returns true and fills in start address of arm ram memory and its size, else returns false.
-    static bool get_arm_memory_location(void ** start, usize * size);
+    static bool get_arm_memory_location(void ** start, usize * size, bool threadsafe = true);
 
     private:
     struct tag_get_vc_memory_location
@@ -487,5 +487,5 @@ class vc_mailbox_property_tags
 
     public:
     //if succesful returns true and fills in start address of vc ram memory and its size, else returns false.
-    static bool get_vc_memory_location(void ** start, usize * size);
+    static bool get_vc_memory_location(void ** start, usize * size, bool threadsafe = true);
 };

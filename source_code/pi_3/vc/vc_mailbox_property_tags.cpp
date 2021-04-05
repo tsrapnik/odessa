@@ -133,12 +133,13 @@ bool vc_mailbox_property_tags::set_touch_buffer(touch_buffer* a_touch_buffer)
     return (a_tag_set_touch_buffer.a_buffer_header.a_request_response_code == request_response_code::request_succesful);
 }
 
-bool vc_mailbox_property_tags::get_arm_memory_location(void ** start, usize * size)
+bool vc_mailbox_property_tags::get_arm_memory_location(void ** start, usize * size, bool threadsafe)
 {
     tag_get_arm_memory_location a_tag_get_arm_memory_location;
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_get_arm_memory_location).get_raw_value(),
-                           vc_mailbox::channel::property_tags_arm_to_vc);
+                           vc_mailbox::channel::property_tags_arm_to_vc,
+                           threadsafe);
     if (a_tag_get_arm_memory_location.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
     {
         *start = vc_pointer(a_tag_get_arm_memory_location.response.start_address).to_arm_pointer();
@@ -150,12 +151,13 @@ bool vc_mailbox_property_tags::get_arm_memory_location(void ** start, usize * si
     return false;
 }
 
-bool vc_mailbox_property_tags::get_vc_memory_location(void ** start, usize * size)
+bool vc_mailbox_property_tags::get_vc_memory_location(void ** start, usize * size, bool threadsafe)
 {
     tag_get_vc_memory_location a_tag_get_vc_memory_location;
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_get_vc_memory_location).get_raw_value(),
-                           vc_mailbox::channel::property_tags_arm_to_vc);
+                           vc_mailbox::channel::property_tags_arm_to_vc,
+                           threadsafe);
     if (a_tag_get_vc_memory_location.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
     {
         *start = vc_pointer(a_tag_get_vc_memory_location.response.start_address).to_arm_pointer();
