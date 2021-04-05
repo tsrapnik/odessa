@@ -84,7 +84,7 @@ void initialize_cpp_runtime()
     buddy_heap::initialize();
 
     //todo: change adressing to vc_gpu before mmu can be enabled.
-    // memory::enable_mmu();
+    memory::enable_mmu();
 }
 
 void gui_task()

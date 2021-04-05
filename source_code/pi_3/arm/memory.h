@@ -30,8 +30,8 @@ class memory
 
     private:
     static constexpr u64 attrindx_normal = 0;
-    static constexpr u64 attrindx_device = 1;
-    static constexpr u64 attrindx_coherent = 2;
+    static constexpr u64 attrindx_normal_non_cacheable = 1;
+    static constexpr u64 attrindx_device = 2;
     static constexpr u64 sctlr_el1_wxn = (1 << 19);
     static constexpr u64 sctlr_el1_i = (1 << 12);
     static constexpr u64 sctlr_el1_c = (1 << 2);
@@ -159,8 +159,8 @@ class memory
 
     private:
     static level_2_descriptor* table;
-    static level_3_descriptor* create_level_3_table(u64 base_address);
-    static level_2_descriptor* create_level_2_table();
+    static level_3_descriptor* create_level_3_table(u64 base_address, u64 vc_memory_start);
+    static level_2_descriptor* create_level_2_table(u64 vc_memory_start);
 
     public:
     static void enable_mmu();

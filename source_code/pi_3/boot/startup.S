@@ -57,13 +57,6 @@ init_core:
     mov x1, #(1 << 31) // enable 64bit in el1.
     msr hcr_el2, x1
 
-    // bit 12, I (enable instruction cache) = 1
-    // bit 2, C (enable data cache) = 1
-    // and some other settings...
-    mov x1, #0x1804
-    movk x1, #0x30d0, lsl #16
-    msr sctlr_el1, x1
-
     // spsr_el2 will be copied to pstate of el1 when we return to it, so we set some configurations in it.
     // mask all exceptions except irq interrupts.
     // bit 9, D (debug exception mask) = 1

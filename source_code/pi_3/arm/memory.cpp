@@ -1,5 +1,8 @@
 #include "memory.h"
 
+#include "vc_mailbox_property_tags.h"
+#include "assert.h"
+
 memory::level_2_descriptor* memory::table;
 
 void memory::clean_data_cache()
@@ -117,11 +120,15 @@ void memory::data_memory_barrier()
 
 void memory::enable_mmu()
 {
-    table = create_level_2_table();
+    void * start(0u);
+    usize size;
+    const bool success = vc_mailbox_property_tags::get_vc_memory_location(&start, &size);
+    assert(success);
+    table = create_level_2_table(reinterpret_cast<u64>(start));
 
-    u64 mair_el1 = 0xcc << attrindx_normal * 8 //inner/outer write-back non-transient, non-allocating.
-                   | 0x04 << attrindx_device * 8 //device-nGnRE.
-                   | 0x00 << attrindx_coherent * 8; //device-nGnRnE.
+    u64 mair_el1 = 0xff << attrindx_normal * 8 //inner/outer write-back non-transient, read/write allocating.
+                   | 0x44 << attrindx_normal_non_cacheable * 8 //inner/outer non-cacheable.
+                   | 0x00 << attrindx_device * 8; //device-nGnRnE.
     asm volatile("msr mair_el1, %0"
                  :
                  : "r"(mair_el1));
@@ -171,7 +178,7 @@ void* palloc(void)
     return pFreePage;
 }
 
-memory::level_3_descriptor* __attribute__((optimize(0))) memory::create_level_3_table(u64 base_address)
+memory::level_3_descriptor* __attribute__((optimize(0))) memory::create_level_3_table(u64 base_address, u64 vc_memory_start)
 {
     level_3_descriptor* level_3_table = (level_3_descriptor*)palloc();
 
@@ -180,10 +187,8 @@ memory::level_3_descriptor* __attribute__((optimize(0))) memory::create_level_3_
         level_3_page_descriptor* descriptor = &level_3_table[page].Page;
 
         descriptor->value_11 = 3;
-        descriptor->attribute_index = attrindx_normal;
         descriptor->ns = 0;
         descriptor->ap = attrib_ap_rw_el1;
-        descriptor->sh = attrib_sh_inner_shareable;
         descriptor->af = 1;
         descriptor->ng = 0;
         descriptor->reserved_0_1 = 0;
@@ -194,21 +199,28 @@ memory::level_3_descriptor* __attribute__((optimize(0))) memory::create_level_3_
         descriptor->uxn = 1;
         descriptor->ignored = 0;
 
-        u8 _etext;
-        if(base_address >= reinterpret_cast<u64>(&_etext))
+        if(base_address < vc_memory_start)
         {
-            descriptor->pxn = 1;
-
-            if(base_address >= 0)
-            {
-                descriptor->attribute_index = attrindx_device;
-                descriptor->sh = attrib_sh_outer_shareable;
-            }
-            else if(base_address >= mem_coherent_region && base_address < mem_heap_start)
-            {
-                descriptor->attribute_index = attrindx_coherent;
-                descriptor->sh = attrib_sh_outer_shareable;
-            }
+            //arm ram memmory region.
+            descriptor->sh = attrib_sh_inner_shareable;
+            descriptor->attribute_index = attrindx_normal;
+        }
+        else if(base_address < 0x3f000000u)
+        {
+            //vc ram memory region.
+            descriptor->sh = attrib_sh_non_shareable;
+            descriptor->attribute_index = attrindx_normal_non_cacheable;
+        }
+        else if(base_address < 0x40000000u)
+        {
+            //peripherals memory region.
+            descriptor->sh = attrib_sh_non_shareable;
+            descriptor->attribute_index = attrindx_device;
+        }
+        else
+        {
+            descriptor->sh = attrib_sh_non_shareable;
+            descriptor->attribute_index = attrindx_device;
         }
 
         base_address += level_3_page_size;
@@ -217,7 +229,7 @@ memory::level_3_descriptor* __attribute__((optimize(0))) memory::create_level_3_
     return level_3_table;
 }
 
-memory::level_2_descriptor* __attribute__((optimize(0))) memory::create_level_2_table()
+memory::level_2_descriptor* __attribute__((optimize(0))) memory::create_level_2_table(u64 vc_memory_start)
 {
     level_2_descriptor* level_2_table;
     level_2_table = reinterpret_cast<level_2_descriptor*>(palloc());
@@ -228,7 +240,7 @@ memory::level_2_descriptor* __attribute__((optimize(0))) memory::create_level_2_
     {
         u64 base_address = (u64)nEntry * table_entries * level_3_page_size;
 
-        level_3_descriptor* level_3_table = create_level_3_table(base_address);
+        level_3_descriptor* level_3_table = create_level_3_table(base_address, vc_memory_start);
 
         level_2_table_descriptor* descriptor = &level_2_table[nEntry].table;
 
