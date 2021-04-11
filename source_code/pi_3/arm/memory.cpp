@@ -179,7 +179,7 @@ void* memset(void* pBuffer, u32 nValue, u64 nLength)
 
 void* palloc(void)
 {
-    static u8* s_pNextPage = (u8*)0x1b010000;
+    static u8* s_pNextPage = (u8*)0x1b010000; //TODO: Replace with static values.
     void* pFreePage = (void*)s_pNextPage;
     s_pNextPage += 0x10000;
     return pFreePage;
