@@ -91,15 +91,11 @@ void initialize_cpp_runtime()
 
 void gui_task()
 {
-    debugger::print("0\r\n");
     //initialize gpu and draw a example scene to the screen.
     vc_mailbox_framebuffer a_vc_mailbox_framebuffer;
-    debugger::print("1\r\n");
     vc_gpu a_vc_gpu(a_vc_mailbox_framebuffer.get_buffer(), 800, 480);
-    debugger::print("2\r\n");
 
     scene_2d a_scene;
-    debugger::print("3\r\n");
 
     effect_graph a_effect_graph;
     effect_chorus a_effect_chorus(rectangle(vector_2_f32(300.0f, 200.0f), vector_2_f32(200.0f, 100.0f)),
@@ -111,17 +107,14 @@ void gui_task()
     effect_source a_effect_source(&source,
                                   rectangle(vector_2_f32(50.0f, 200.0f), vector_2_f32(200.0f, 100.0f)),
                                   color(50, 80, 50, 125));
-    debugger::print("4\r\n");
 
     a_effect_graph.add_effect(&a_effect_chorus);
     a_effect_graph.add_effect(&a_effect_sink);
     a_effect_graph.add_effect(&a_effect_source);
-    debugger::print("5\r\n");
 
     //initialize touch screen.
     volatile vc_mailbox_property_tags::touch_buffer a_touch_buffer;
     vc_mailbox_property_tags::set_touch_buffer(const_cast<vc_mailbox_property_tags::touch_buffer*>(&a_touch_buffer));
-    debugger::print("6\r\n");
 
     enum class gui_state_enum
     {
@@ -136,7 +129,6 @@ void gui_task()
 
     gui_state_enum gui_state = gui_state_enum::redraw_scene;
 
-    debugger::print("7\r\n");
     while(true)
     {
         //process gui.
