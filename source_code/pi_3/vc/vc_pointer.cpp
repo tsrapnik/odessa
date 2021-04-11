@@ -12,7 +12,7 @@ void vc_pointer::operator=(const vc_pointer& source) volatile
 
 vc_pointer vc_pointer::arm_to_vc_pointer(void* arm_pointer)
 {
-    return vc_pointer(static_cast<u32>(reinterpret_cast<usize>(arm_pointer)) | 0x80000000); //todo: find out what the fuck is going on with addressing.
+    return vc_pointer(static_cast<u32>(reinterpret_cast<usize>(arm_pointer)) | 0x80000000);
 }
 
 vc_pointer vc_pointer::arm_to_vc_pointer(volatile void* arm_pointer)
