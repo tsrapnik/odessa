@@ -1,15 +1,19 @@
 #include "vc_mailbox_property_tags.h"
 #include "vc_mailbox.h"
 #include "vc_pointer.h"
+#include "memory.h"
 
 bool vc_mailbox_property_tags::set_clock_rate(clock_id a_clock_id, u32 rate)
 {
     tag_set_clock_rate a_tag_set_clock_rate;
     a_tag_set_clock_rate.request.a_clock_id = a_clock_id;
     a_tag_set_clock_rate.request.rate = rate;
+    memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_set_clock_rate).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc);
+
+    memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
     if (a_tag_set_clock_rate.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return true;
     return false;
@@ -19,9 +23,12 @@ u32 vc_mailbox_property_tags::get_max_clock_rate(clock_id a_clock_id)
 {
     tag_get_max_clock_rate a_tag_get_max_clock_rate;
     a_tag_get_max_clock_rate.request.a_clock_id = a_clock_id;
+    memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_get_max_clock_rate).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc);
+
+    memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
     return a_tag_get_max_clock_rate.response.rate;
 }
 
@@ -29,9 +36,12 @@ bool vc_mailbox_property_tags::enable_qpu(bool enable)
 {
     tag_enable_qpu a_tag_enable_qpu;
     a_tag_enable_qpu.request.enable = 1;
+    memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_enable_qpu).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc);
+
+    memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
     if (a_tag_enable_qpu.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return true;
     return false;
@@ -44,9 +54,12 @@ vc_handle vc_mailbox_property_tags::allocate_memory(u32 size, u32 alignment, all
     a_tag_allocate_memory.request.size = size;
     a_tag_allocate_memory.request.alignment = alignment;
     a_tag_allocate_memory.request.flag = flag;
+    memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_allocate_memory).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc);
+
+    memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
     if (a_tag_allocate_memory.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return vc_handle(a_tag_allocate_memory.response.handle);
     return vc_handle(0u);
@@ -56,9 +69,12 @@ bool vc_mailbox_property_tags::release_memory(vc_handle handle)
 {
     tag_release_memory a_tag_release_memory;
     a_tag_release_memory.request.handle = handle.get_raw_value();
+    memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_release_memory).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc);
+
+    memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
     if (a_tag_release_memory.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         if (a_tag_release_memory.response.status == 0)
             return true;
@@ -69,9 +85,12 @@ vc_pointer vc_mailbox_property_tags::lock_memory(vc_handle handle)
 {
     tag_lock_memory a_tag_lock_memory;
     a_tag_lock_memory.request.handle = handle.get_raw_value();
+    memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_lock_memory).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc);
+
+    memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
     if (a_tag_lock_memory.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return vc_pointer(a_tag_lock_memory.response.handle);
     return vc_pointer(0u);
@@ -81,9 +100,12 @@ bool vc_mailbox_property_tags::unlock_memory(vc_handle handle)
 {
     tag_unlock_memory a_tag_unlock_memory;
     a_tag_unlock_memory.request.handle = handle.get_raw_value();
+    memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_unlock_memory).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc);
+
+    memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
     if (a_tag_unlock_memory.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         if (a_tag_unlock_memory.response.status == 0)
             return true;
@@ -100,9 +122,12 @@ bool vc_mailbox_property_tags::execute_code(u32 function_pointer, u32 r0, u32 r1
     a_tag_execute_code.request.r3 = r3;
     a_tag_execute_code.request.r4 = r4;
     a_tag_execute_code.request.r5 = r5;
+    memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_execute_code).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc);
+
+    memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
     if (a_tag_execute_code.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return true;
     return false;
@@ -115,9 +140,12 @@ bool vc_mailbox_property_tags::execute_qpu(u32 num_qpus, u32 control, u32 noflus
     a_tag_execute_qpu.request.control = control;
     a_tag_execute_qpu.request.noflush = noflush;
     a_tag_execute_qpu.request.timeout = timeout;
+    memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_execute_qpu).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc);
+
+    memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
     if (a_tag_execute_qpu.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return true;
     return a_tag_execute_qpu.a_tag_header.value_buffer_size;
@@ -127,19 +155,25 @@ bool vc_mailbox_property_tags::set_touch_buffer(touch_buffer* a_touch_buffer)
 {
     tag_set_touch_buffer a_tag_set_touch_buffer;
     a_tag_set_touch_buffer.request.touch_buffer_address = vc_pointer::arm_to_vc_pointer(a_touch_buffer).get_raw_value(); //static_cast<u32>(reinterpret_cast<usize>(a_touch_buffer));
+    memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_set_touch_buffer).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc);
+
+    memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
     return (a_tag_set_touch_buffer.a_buffer_header.a_request_response_code == request_response_code::request_succesful);
 }
 
 bool vc_mailbox_property_tags::get_arm_memory_location(void ** start, usize * size, bool threadsafe)
 {
     tag_get_arm_memory_location a_tag_get_arm_memory_location;
+    memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_get_arm_memory_location).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc,
                            threadsafe);
+
+    memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
     if (a_tag_get_arm_memory_location.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
     {
         *start = vc_pointer(a_tag_get_arm_memory_location.response.start_address).to_arm_pointer();
@@ -154,10 +188,13 @@ bool vc_mailbox_property_tags::get_arm_memory_location(void ** start, usize * si
 bool vc_mailbox_property_tags::get_vc_memory_location(void ** start, usize * size, bool threadsafe)
 {
     tag_get_vc_memory_location a_tag_get_vc_memory_location;
+    memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_get_vc_memory_location).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc,
                            threadsafe);
+
+    memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
     if (a_tag_get_vc_memory_location.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
     {
         *start = vc_pointer(a_tag_get_vc_memory_location.response.start_address).to_arm_pointer();
