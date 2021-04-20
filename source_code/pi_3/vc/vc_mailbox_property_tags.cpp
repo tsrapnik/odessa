@@ -2,6 +2,8 @@
 #include "vc_mailbox.h"
 #include "vc_pointer.h"
 #include "memory.h"
+#include "debugger.h"
+#include "string_.h"
 
 bool vc_mailbox_property_tags::set_clock_rate(clock_id a_clock_id, u32 rate)
 {
@@ -43,7 +45,11 @@ bool vc_mailbox_property_tags::enable_qpu(bool enable)
 
     memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
     if (a_tag_enable_qpu.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
+    {
+        debugger::print("qpu success.\r\n");
         return true;
+    }
+    debugger::print("qpu failure.\r\n");
     return false;
 }
 
@@ -54,15 +60,22 @@ vc_handle vc_mailbox_property_tags::allocate_memory(u32 size, u32 alignment, all
     a_tag_allocate_memory.request.size = size;
     a_tag_allocate_memory.request.alignment = alignment;
     a_tag_allocate_memory.request.flag = flag;
+    debugger::print("allocate: ");
+    debugger::print(string_(a_tag_allocate_memory.response.handle, string_::integer_style::hexadecimal));
+    debugger::print("\r\n");
     memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_allocate_memory).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc);
 
     memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
+    debugger::print("allocate: ");
+    debugger::print(string_(a_tag_allocate_memory.response.handle, string_::integer_style::hexadecimal));
+    debugger::print("\r\n");
+
     if (a_tag_allocate_memory.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return vc_handle(a_tag_allocate_memory.response.handle);
-    return vc_handle(0u);
+    return vc_handle(a_tag_allocate_memory.response.handle);
 }
 
 bool vc_mailbox_property_tags::release_memory(vc_handle handle)
@@ -85,15 +98,21 @@ vc_pointer vc_mailbox_property_tags::lock_memory(vc_handle handle)
 {
     tag_lock_memory a_tag_lock_memory;
     a_tag_lock_memory.request.handle = handle.get_raw_value();
+    debugger::print("lock: ");
+    debugger::print(string_(a_tag_lock_memory.response.handle, string_::integer_style::hexadecimal));
+    debugger::print("\r\n");
     memory::clean_data_cache(); //required to make tag struct visible to videocore.
 
     vc_mailbox::write_read(vc_pointer::arm_to_vc_pointer(&a_tag_lock_memory).get_raw_value(),
                            vc_mailbox::channel::property_tags_arm_to_vc);
 
     memory::invalidate_data_cache(); //required to make changes to struct made by videocore visible to arm core.
+    debugger::print("lock: ");
+    debugger::print(string_(a_tag_lock_memory.response.handle, string_::integer_style::hexadecimal));
+    debugger::print("\r\n");
     if (a_tag_lock_memory.a_buffer_header.a_request_response_code == request_response_code::request_succesful)
         return vc_pointer(a_tag_lock_memory.response.handle);
-    return vc_pointer(0u);
+    return vc_pointer(a_tag_lock_memory.response.handle);
 }
 
 bool vc_mailbox_property_tags::unlock_memory(vc_handle handle)

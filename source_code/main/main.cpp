@@ -135,35 +135,44 @@ void gui_task()
         switch(gui_state)
         {
             case gui_state_enum::redraw_scene:
+                debugger::print("redraw scene.\r\n");
                 a_scene.clear();
                 a_effect_graph.draw(a_scene);
                 gui_state = gui_state_enum::process_input;
                 break;
             case gui_state_enum::process_input:
+                debugger::print("process input.\r\n");
                 process_input(a_touch_buffer, a_effect_graph, a_scene);
                 gui_state = gui_state_enum::set_triangles;
                 break;
             case gui_state_enum::set_triangles:
+                debugger::print("set triangles.\r\n");
                 a_vc_gpu.set_triangles(a_scene, color(100, 0, 100, 255));
                 gui_state = gui_state_enum::prepare_binning;
                 break;
             case gui_state_enum::prepare_binning:
+                debugger::print("prepare binning.\r\n");
                 a_vc_gpu.start_binning();
                 gui_state = gui_state_enum::wait_for_binning_to_finish;
+                debugger::print("binning.\r\n");
                 break;
             case gui_state_enum::wait_for_binning_to_finish:
                 if(a_vc_gpu.binning_finished())
                 {
+                    debugger::print("binned.\r\n");
                     gui_state = gui_state_enum::prepare_rendering;
                 }
                 break;
             case gui_state_enum::prepare_rendering:
+                debugger::print("prepare rendering.\r\n");
                 a_vc_gpu.start_rendering();
                 gui_state = gui_state_enum::wait_for_rendering_to_finish;
+                debugger::print("rendering.\r\n");
                 break;
             case gui_state_enum::wait_for_rendering_to_finish:
                 if(a_vc_gpu.rendering_finished())
                 {
+                    debugger::print("rendered.\r\n");
                     gui_state = gui_state_enum::redraw_scene;
                 }
                 break;

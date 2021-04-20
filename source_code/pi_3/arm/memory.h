@@ -19,14 +19,16 @@ class memory
 
     public:
     static void clean_data_cache();
-    static void clean_l1_data_cache();
-    static void clean_l2_unified_cache();
     static void invalidate_data_cache();
-    static void invalidate_l1_data_cache();
-    static void invalidate_l2_unified_cache();
     static void invalidate_virtual_address_range(void* start, usize size);
     static void data_sync_barrier();
     static void data_memory_barrier();
+
+    private:
+    static void clean_l1_data_cache();
+    static void clean_l2_unified_cache();
+    static void invalidate_l1_data_cache();
+    static void invalidate_l2_unified_cache();
 
     private:
     static constexpr u64 attrindx_normal = 0;

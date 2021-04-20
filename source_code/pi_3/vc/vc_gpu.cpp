@@ -2,6 +2,8 @@
 #include "enum_flags.h"
 #include "memory.h"
 #include "vc_mailbox_property_tags.h"
+#include "debugger.h"
+#include "string_.h"
 
 vc_gpu::v3d_registers* const vc_gpu::v3d = reinterpret_cast<v3d_registers* const>(0x3fc00000);
 
@@ -10,7 +12,7 @@ constexpr vc_gpu::vc_instruction vc_gpu::fragment_shader_0[];
 void vc_gpu::resize_vertices(u32 vertices_size)
 {
     const vc_mailbox_property_tags::allocate_memory_flag allocate_flags =
-        vc_mailbox_property_tags::allocate_memory_flag::coherent | vc_mailbox_property_tags::allocate_memory_flag::zero;
+        vc_mailbox_property_tags::allocate_memory_flag::direct | vc_mailbox_property_tags::allocate_memory_flag::zero;
     if(vertices_size != this->vertices_size)
     {
         if(!vertices_handle.is_null())
@@ -32,7 +34,7 @@ void vc_gpu::resize_vertices(u32 vertices_size)
 void vc_gpu::resize_triangles(u32 triangles_size)
 {
     const vc_mailbox_property_tags::allocate_memory_flag allocate_flags =
-        vc_mailbox_property_tags::allocate_memory_flag::coherent | vc_mailbox_property_tags::allocate_memory_flag::zero;
+        vc_mailbox_property_tags::allocate_memory_flag::direct | vc_mailbox_property_tags::allocate_memory_flag::zero;
     if(triangles_size != this->triangles_size)
     {
         if(!triangles_handle.is_null())
@@ -68,11 +70,21 @@ vc_gpu::vc_gpu(vc_pointer framebuffer, u16 framebuffer_width, u16 framebuffer_he
     triangles_handle(vc_handle::make_null_handler()),
     a_render_control_list_handle(vc_handle::make_null_handler())
 {
+            usize* const myreg = reinterpret_cast<usize* const>(0x3fc00020);
+            debugger::print("before clock.\r\n");
+            debugger::print(string_(*myreg, string_::integer_style::hexadecimal));
+            debugger::print("\r\n");
     vc_mailbox_property_tags::set_clock_rate(vc_mailbox_property_tags::clock_id::v3d, 250000000);
+            debugger::print("before qpu.\r\n");
+            debugger::print(string_(*myreg, string_::integer_style::hexadecimal));
+            debugger::print("\r\n");
     vc_mailbox_property_tags::enable_qpu(true);
+            debugger::print("after.\r\n");
+            debugger::print(string_(*myreg, string_::integer_style::hexadecimal));
+            debugger::print("\r\n");
 
     const vc_mailbox_property_tags::allocate_memory_flag allocate_flags =
-        vc_mailbox_property_tags::allocate_memory_flag::coherent | vc_mailbox_property_tags::allocate_memory_flag::zero;
+        vc_mailbox_property_tags::allocate_memory_flag::direct | vc_mailbox_property_tags::allocate_memory_flag::zero;
 
     //initially allocate an empty vertices and triangles object, so only background is shown.
     vertices_size = 0;
@@ -80,6 +92,10 @@ vc_gpu::vc_gpu(vc_pointer framebuffer, u16 framebuffer_width, u16 framebuffer_he
     vertices = reinterpret_cast<volatile vertex*>(
         vc_mailbox_property_tags::lock_memory(vertices_handle)
             .to_arm_pointer());
+
+    debugger::print("vertices:");
+    debugger::print(string_(reinterpret_cast<usize>(vertices), string_::integer_style::hexadecimal));
+    debugger::print("\r\n");
 
     triangles_size = 0;
     triangles_handle = vc_mailbox_property_tags::allocate_memory(triangles_size * sizeof(triangle), 0x1000, allocate_flags);
@@ -405,8 +421,15 @@ void vc_gpu::render()
 
 void vc_gpu::start_binning()
 {
+    vc_gpu::v3d_registers* const v3d = reinterpret_cast<v3d_registers* const>(0x3fc00000);
     //clear caches.
+    debugger::print("l2cactl:");
+    debugger::print(string_(v3d->l2cactl, string_::integer_style::hexadecimal));
+    debugger::print("\r\n");
     v3d->l2cactl = 4;
+    debugger::print("l2cactl:");
+    debugger::print(string_(v3d->l2cactl, string_::integer_style::hexadecimal));
+    debugger::print("\r\n");
     v3d->slcactl = 0x0f0f0f0f;
 
     //stop the thread.
